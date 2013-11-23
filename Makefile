@@ -9,7 +9,7 @@
 #**********************************************************************/
 
 TARGET = _hsolve.o
-
+CLIB = cudaLibrary/_hsolveCudaLib.o
 OBJ = \
 	HSolveStruct.o \
 	HinesMatrix.o \
@@ -27,6 +27,10 @@ OBJ = \
 
 HEADERS = \
 	../basecode/header.h
+
+SUBDIR = \
+	cudaLibrary \
+	testHines
 
 default: $(TARGET)
 
@@ -47,7 +51,9 @@ ZombieHHChannel.o:	ZombieHHChannel.h ../biophysics/HHChannel.h ../biophysics/Cha
 	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I. -I../basecode -I../msg $< -c
 
 $(TARGET): $(OBJ) $(SMOLDYN_OBJ) $(HEADERS)
-	$(LD) -r -o $(TARGET) $(OBJ) $(SMOLDYN_OBJ) $(SMOLDYN_LIB_PATH) $(SMOLDYN_LIBS) $(GSL_LIBS)
+	@(for i in $(SUBDIR) ; do $(MAKE) -C $$i; done)
+	$(LD) -r -o $(TARGET) $(OBJ) $(SMOLDYN_OBJ) $(SMOLDYN_LIB_PATH) $(SMOLDYN_LIBS) $(GSL_LIBS) $(CLIB) 
 
 clean:
+	@(for i in $(SUBDIR) ; do $(MAKE) -C $$i clean;  done)
 	rm -f *.o $(TARGET) core core.*
