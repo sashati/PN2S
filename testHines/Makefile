@@ -9,11 +9,12 @@
  
 OBJS =	\
  	launchHines.o \
-
+ 	
+CLIB = ../cudaLibrary/_hsolveCudaLib.o
 TARGET = testHines
 
 $(TARGET):	$(OBJS)
-		g++ -Wall -Wl,-rpath,../cudaLibrary -o $(TARGET) $(OBJS) ../cudaLibrary/libmooseCudaLibrary.so -lpthread 
+		g++ -o $(TARGET) $(OBJS) $(CLIB) -L/usr/local/cuda/lib64 -lcuda -lcudart -lm  -lpthread 
 
 default: $(TARGET)
 

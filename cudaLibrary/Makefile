@@ -15,10 +15,7 @@ USE_GSL = 1
 endif
 ####################################################################
 
-
-CU_SRCS += 	CudaModule.cu 			
-		
-CU_DEPS += CudaModule.d 
+TARGET = _hsolveCudaLib.o
 
 COBJS += CudaModule.o 		\
 		 HinesGpu.o 		\
@@ -33,11 +30,9 @@ OBJS += SynapticChannels.o  \
 		NeuronInfoWriter.o  \
 		PerformSimulation.o \
 		
-libmooseCudaLibrary.so: $(OBJS) $(COBJS)
-	nvcc -shared -link -o  "libmooseCudaLibrary.so" $(OBJS) $(COBJS)
 
 .PHONY: all
-all: libmooseCudaLibrary.so
+all: $(TARGET)
 default: all
 
 SynapticChannels.o: 	SynapticChannels.cpp 	SynapticChannels.hpp
@@ -53,13 +48,14 @@ CudaModule.o:	CudaModule.cu CudaModule.h
 HinesGpu.o:		HinesGpu.cu
 GpuSimulationControl.o: GpuSimulationControl.cu GpuSimulationControl.hpp
 
+$(TARGET): $(OBJS) $(COBJS)
+	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) 
 $(OBJS):
 	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg $< -c 
 	
-
 $(COBJS):
 	nvcc --compile -G -O0 -Xcompiler -fPIC -g -gencode arch=compute_30,code=compute_30 -gencode arch=compute_30,code=sm_30  -x cu -o  "$@" "$<" #-lpthread --compiler-options -O3 --ptxas-options=-v -m64 
 
 .PHONY: clean
 clean:
-	rm -rf $(CU_DEPS) $(OBJS) $(COBJS) libmooseCudaLibrary.so
+	rm -rf $(OBJS) $(COBJS) $(TARGET)
