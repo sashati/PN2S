@@ -249,7 +249,7 @@ int GpuSimulationControl::prepareExecution(int type) {
 	for (int neuron = 0; neuron < nNeurons; neuron++ ) {
 
 		HSC_HinesMatrix & m = sharedData->matrixList[type][neuron];
-		HSC_HinesMatrix & h = hList[neuron];
+		HinesStruct & h = hList[neuron];
 
 		/****************************************************
 		 * Fields of the HinesStruct

@@ -1,10 +1,10 @@
-#include "HSC_HinesMatrix.hpp"
 #include "PlatformFunctions.hpp"
 //#include "HinesStruct.hpp"
 #include "Connections.hpp"
 #include "SpikeStatistics.hpp"
 #include "NeuronInfoWriter.hpp"
 #include "RandomSpikeInfo.hpp"
+#include "HSC_HinesMatrix.hpp"
 //#include "KernelProfiler.hpp"
 
 #include <cassert>
