@@ -1,3 +1,6 @@
+#include "header.h"
+#include "HinesMatrixProxy.h"
+
 #include "cudaLibrary/HSC_HinesMatrix.hpp"
 #include "cudaLibrary/PlatformFunctions.hpp"
 
@@ -26,7 +29,7 @@ private:
 public:
     HSC_PerformSimulation(struct ThreadInfo *tInfo);
     int launchExecution();
-//    int setup(Id seed, double dt);
+    int setup(const vector< TreeNodeStruct >& tree, double dt);
     int performHostExecution();
 private:
     void addReceivedSpikesToTargetChannelCPU();

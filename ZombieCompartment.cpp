@@ -11,7 +11,7 @@
 #include "ElementValueFinfo.h"
 #include "../randnum/randnum.h"
 #include "../biophysics/Compartment.h"
-#include "HinesMatrix.h"
+#include "HinesMatrixProxy.h"
 #include "HSolveStruct.h"
 #include "HSolvePassive.h"
 #include "RateLookup.h"

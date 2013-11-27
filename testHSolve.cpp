@@ -13,9 +13,9 @@
 #include <map>
 using namespace std;
 
-#include "HinesMatrix.h"
+#include "HinesMatrixProxy.h"
 
-extern void testHinesMatrix(); // Defined in HinesMatrix.cpp
+extern void testHinesMatrix(); // Defined in HinesMatrixProxy.cpp
 extern void testHSolvePassive(); // Defined in HSolvePassive.cpp
 extern void testHSolveUtils(); // Defined in HSolveUtils.cpp
 

@@ -17,7 +17,7 @@
 
 //#include "HinesStruct.hpp"
 #include "cudaLibrary/SpikeStatistics.hpp"
-#include <cuda_runtime_api.h> // Necessary to allow better eclipse integration
+//#include <cuda_runtime_api.h> // Necessary to allow better eclipse integration
 
 #include <cmath>
 #include <unistd.h>
@@ -89,10 +89,11 @@ void HSC_PerformSimulation::initializeThreadInformation(){
 	}
 	pthread_mutex_unlock (sharedData->mutex);
 
-	char *randstate = new char[256];
-	sharedData->randBuf[tInfo->threadNumber] = (struct random_data*)calloc(1, sizeof(struct random_data));
-	initstate_r(tInfo->sharedData->globalSeed + tInfo->threadNumber,
-			randstate, 256, tInfo->sharedData->randBuf[tInfo->threadNumber]);
+	//TODO: Random number in GPU
+//	char *randstate = new char[256];
+//	sharedData->randBuf[tInfo->threadNumber] = (struct random_data*)calloc(1, sizeof(struct random_data));
+//	initstate_r(tInfo->sharedData->globalSeed + tInfo->threadNumber,
+//			randstate, 256, tInfo->sharedData->randBuf[tInfo->threadNumber]);
 
 	int nThreadsCpu 	= tInfo->sharedData->nThreadsCpu;
 	int nTypesPerThread = (tInfo->totalTypes / nThreadsCpu);
@@ -347,12 +348,12 @@ int HSC_PerformSimulation::launchExecution() {
 	 *--------------------------------------------------------------*/
     syncCpuThreads();
 
-    printf("Launching GPU kernel with %d blocks and %d (+1) threads per block for types %d-%d for thread %d "
-    		"on device %d [%s|%d.%d|MP=%d|G=%dMB|S=%dkB].\n", kernelInfo->nBlocksProc[startTypeThread],
-    		nNeurons[startTypeThread] / kernelInfo->nBlocksProc[startTypeThread], startTypeThread, endTypeThread - 1,
-    		threadNumber, tInfo->deviceNumber, tInfo->prop->name, tInfo->prop->major, tInfo->prop->minor,
-    		tInfo->prop->multiProcessorCount, (int)((tInfo->prop->totalGlobalMem / 1024 / 1024)),
-    		(int)((tInfo->prop->sharedMemPerBlock / 1024)));
+//    printf("Launching GPU kernel with %d blocks and %d (+1) threads per block for types %d-%d for thread %d "
+//    		"on device %d [%s|%d.%d|MP=%d|G=%dMB|S=%dkB].\n", kernelInfo->nBlocksProc[startTypeThread],
+//    		nNeurons[startTypeThread] / kernelInfo->nBlocksProc[startTypeThread], startTypeThread, endTypeThread - 1,
+//    		threadNumber, tInfo->deviceNumber, tInfo->prop->name, tInfo->prop->major, tInfo->prop->minor,
+//    		tInfo->prop->multiProcessorCount, (int)((tInfo->prop->totalGlobalMem / 1024 / 1024)),
+//    		(int)((tInfo->prop->sharedMemPerBlock / 1024)));
 
     if(threadNumber == 0){
         bench.execPrepare = gettimeInMilli();
@@ -379,7 +380,7 @@ int HSC_PerformSimulation::launchExecution() {
 		gpuSimulation->performGpuNeuronalProcessing();
 
 
-		cudaThreadSynchronize();
+//		cudaThreadSynchronize();
 
 		if (threadNumber == 0) // Benchmarking
 			bench.kernelFinish = gettimeInMilli();
@@ -410,12 +411,12 @@ int HSC_PerformSimulation::launchExecution() {
 		// Used to print spike statistics in the end of the simulation
 		updateGenSpkStatistics(nNeurons, synData);
 
-		/*--------------------------------------------------------------
-		 * Copy the Vm from GPUs to the CPU memory
-		 *--------------------------------------------------------------*/
-		if (benchConf.assertResultsAll == 1 || benchConf.printAllVmKernelFinish == 1)
-			for (int type = startTypeThread; type < endTypeThread; type++)
-				cudaMemcpy(synData->vmListHost[type], synData->vmListDevice[type], sizeof(ftype) * nNeurons[type], cudaMemcpyDeviceToHost);
+//		/*--------------------------------------------------------------
+//		 * Copy the Vm from GPUs to the CPU memory
+//		 *--------------------------------------------------------------*/
+//		if (benchConf.assertResultsAll == 1 || benchConf.printAllVmKernelFinish == 1)
+//			for (int type = startTypeThread; type < endTypeThread; type++)
+//				cudaMemcpy(synData->vmListHost[type], synData->vmListDevice[type], sizeof(ftype) * nNeurons[type], cudaMemcpyDeviceToHost);
 
 
 		/*--------------------------------------------------------------
@@ -498,7 +499,7 @@ int HSC_PerformSimulation::launchExecution() {
 /*======================================================================================================
  * Load Model
  *======================================================================================================*/
-int HSC_PerformSimulation::setup(Id seed, double _dt) {
+int HSC_PerformSimulation::setup(const vector< TreeNodeStruct >& tree, double dt_) {
 
 	GpuSimulationControl *gpuSimulation = new GpuSimulationControl(tInfo);
 
@@ -515,237 +516,237 @@ int HSC_PerformSimulation::setup(Id seed, double _dt) {
     sharedData->maxDelay = 20; // 10ms
 	kernelInfo->nKernelSteps = sharedData->minDelay / sharedData->dt;
 
-    createNeurons(sharedData->dt);
-
-
-    char hostname[50];
-    gethostname(hostname, 50);
-
-	printf("threadNumber = %d | types [%d|%d] | seed=%d | hostname=%s\n" ,
-			tInfo->threadNumber, tInfo->startTypeThread, tInfo->endTypeThread-1, tInfo->sharedData->globalSeed, hostname);
-
-    int *nNeurons = tInfo->nNeurons;
-    int startTypeThread = tInfo->startTypeThread;
-    int endTypeThread = tInfo->endTypeThread;
-    int threadNumber = tInfo->threadNumber;
-
-    if(threadNumber == 0)
-    	gpuSimulation->updateSharedDataInfo();
-
-    /*--------------------------------------------------------------
-	 * Creates the connections between the neurons
-	 *--------------------------------------------------------------*/
-    if (threadNumber == 0) {
-		sharedData->connection = new Connections();
-		if (sharedData->connectivityType == CONNECT_RANDOM_1)
-			sharedData->connection->connectRandom ( tInfo );
-		else if (sharedData->connectivityType == CONNECT_RANDOM_2)
-			sharedData->connection->connectRandom2 ( tInfo );
-		else {
-			printf("ERROR: Invalid connectivity type");
-			exit(-1);
-		}
-		sharedData->connInfo = sharedData->connection->getConnectionInfo();
-	}
-
-    //Synchronize threads before starting
-    syncCpuThreads();
-
-    bench.matrixSetup = gettimeInMilli();
-    bench.matrixSetupF = (bench.matrixSetup - bench.start) / 1000.;
-
-    /*--------------------------------------------------------------
-	 * Configure the Device and GPU kernel information
-	 *--------------------------------------------------------------*/
-    gpuSimulation->configureGpuKernel();
-
-    /*--------------------------------------------------------------
-	 * Initializes the benchmark counters
-	 *--------------------------------------------------------------*/
-    if(threadNumber == 0){
-        bench.totalHinesKernel = 0;
-        bench.totalConnRead = 0;
-        bench.totalConnWait = 0;
-        bench.totalConnWrite = 0;
-    }
-
-	createActivationLists();
-
-    /*--------------------------------------------------------------
-	 * Allocates the memory on the GPU for neuron information and transfers the data
-	 *--------------------------------------------------------------*/
-	for(int type = startTypeThread;type < endTypeThread;type++)
-		gpuSimulation->prepareExecution(type);
-
-    /*--------------------------------------------------------------
-	 * Allocates the memory on the GPU for the communications and transfers the data
-	 *--------------------------------------------------------------*/
-	gpuSimulation->prepareSynapses();
-
-    SynapticData *synData = sharedData->synData;
-    int nKernelSteps = kernelInfo->nKernelSteps;
-
-    /*--------------------------------------------------------------
-	 * Sends the complete data to the GPUs
-	 *--------------------------------------------------------------*/
-   	gpuSimulation->transferHinesStructToGpu();
-
-    /*--------------------------------------------------------------
-	 * Guarantees that all connections have been setup
-	 *--------------------------------------------------------------*/
-    syncCpuThreads();
-
-
-    /*--------------------------------------------------------------
-	 * Prepare the lists of generated spikes used for GPU spike delivery
-	 *--------------------------------------------------------------*/
-   	gpuSimulation->prepareGpuSpikeDeliveryStructures();
-
-    /*--------------------------------------------------------------
-	 * Synchronize threads before beginning [Used only for Benchmarking]
-	 *--------------------------------------------------------------*/
-    syncCpuThreads();
-
-    printf("Launching GPU kernel with %d blocks and %d (+1) threads per block for types %d-%d for thread %d "
-    		"on device %d [%s|%d.%d|MP=%d|G=%dMB|S=%dkB].\n", kernelInfo->nBlocksProc[startTypeThread],
-    		nNeurons[startTypeThread] / kernelInfo->nBlocksProc[startTypeThread], startTypeThread, endTypeThread - 1,
-    		threadNumber, tInfo->deviceNumber, tInfo->prop->name, tInfo->prop->major, tInfo->prop->minor,
-    		tInfo->prop->multiProcessorCount, (int)((tInfo->prop->totalGlobalMem / 1024 / 1024)),
-    		(int)((tInfo->prop->sharedMemPerBlock / 1024)));
-
-    if(threadNumber == 0){
-        bench.execPrepare = gettimeInMilli();
-        bench.execPrepareF = (bench.execPrepare - bench.matrixSetup) / 1000.;
-    }
-
-    /*--------------------------------------------------------------
-	 * Solves the matrix for n steps
-	 *--------------------------------------------------------------*/
-    ftype dt = sharedData->dt;
-    int nSteps = sharedData->totalTime / dt;
-
-    for (tInfo->kStep = 0; tInfo->kStep < nSteps; tInfo->kStep += nKernelSteps) {
-
-		// Synchronizes the thread to wait for the communication
-
-		if (threadNumber == 0 && tInfo->kStep % 1000 == 0)
-			printf("Starting Kernel %d -----------> %d \n", threadNumber, tInfo->kStep);
-
-		if (threadNumber == 0) // Benchmarking
-			bench.kernelStart  = gettimeInMilli();
-
-		addReceivedSpikesToTargetChannelCPU();
-		gpuSimulation->performGpuNeuronalProcessing();
-
-
-		cudaThreadSynchronize();
-
-		if (threadNumber == 0) // Benchmarking
-			bench.kernelFinish = gettimeInMilli();
-
-		/*--------------------------------------------------------------
-		 * Reads information from spike sources fromGPU
-		 *--------------------------------------------------------------*/
-		gpuSimulation->readGeneratedSpikesFromGPU();
-
-		/*--------------------------------------------------------------
-		 * Synchronize threads before communication
-		 *--------------------------------------------------------------*/
-		syncCpuThreads();
-
-		if (threadNumber == 0) {
-			bench.connRead = gettimeInMilli();
-			bench.connWait = gettimeInMilli();
-		}
-
-		/*--------------------------------------------------------------
-		 * Adds the generated spikes to the target synaptic channel
-		 * Used only for communication processing in the CPU
-		 *--------------------------------------------------------------*/
-		gpuSimulation->copyActivationListFromGpu();
-
-		syncCpuThreads();
-
-		// Used to print spike statistics in the end of the simulation
-		updateGenSpkStatistics(nNeurons, synData);
-
-		/*--------------------------------------------------------------
-		 * Copy the Vm from GPUs to the CPU memory
-		 *--------------------------------------------------------------*/
-		if (benchConf.assertResultsAll == 1 || benchConf.printAllVmKernelFinish == 1)
-			for (int type = startTypeThread; type < endTypeThread; type++)
-				cudaMemcpy(synData->vmListHost[type], synData->vmListDevice[type], sizeof(ftype) * nNeurons[type], cudaMemcpyDeviceToHost);
-
-
-		/*--------------------------------------------------------------
-		 * Writes Vm to file at the end of each kernel execution
-		 *--------------------------------------------------------------*/
-		if (benchConf.assertResultsAll == 1)
-			gpuSimulation->checkVmValues();
-
-		/*--------------------------------------------------------------
-		 * Check if Vm is ok for all neurons
-		 *--------------------------------------------------------------*/
-		if (threadNumber == 0 && benchConf.printAllVmKernelFinish == 1)
-			sharedData->neuronInfoWriter->writeVmToFile(tInfo->kStep);
-
-		/*-------------------------------------------------------
-		 * Perform Communications
-		 *-------------------------------------------------------*/
-		for (int type = startTypeThread; type < endTypeThread; type++) {
-
-			/*-------------------------------------------------------
-			 *  Generates random spikes for the network
-			 *-------------------------------------------------------*/
-			struct RandomSpikeInfo randomSpkInfo;
-			generateRandomSpikes(type, randomSpkInfo);
-
-			/*-------------------------------------------------------
-			 * Perform CPU and GPU Communications
-			 *-------------------------------------------------------*/
-			gpuSimulation->copyActivationListToGpu(type);
-
-			delete []randomSpkInfo.spikeTimes;
-			delete []randomSpkInfo.spikeDest;
-		}
-
-		if (threadNumber == 0)
-			if (benchConf.gpuCommBenchMode == GPU_COMM_SIMPLE || benchConf.checkCommMode(NN_CPU) )
-				bench.connWrite = gettimeInMilli();
-
-		if (threadNumber == 0 && benchConf.printSampleVms == 1)
-			sharedData->neuronInfoWriter->writeSampleVm(tInfo->kStep);
-
-		if (benchConf.printAllSpikeTimes == 1)
-			if (threadNumber == 0) // Uses only data from SpikeStatistics::addGeneratedSpikes
-				sharedData->spkStat->printKernelSpikeStatistics((tInfo->kStep+nKernelSteps)*dt);
-
-		if (threadNumber == 0)
-			updateBenchmark();
-
-
-    }
-    // --------------- Finished the simulation ------------------------------------
-
-    if (threadNumber == 0) {
-    	bench.execExecution  = gettimeInMilli();
-    	bench.execExecutionF = (bench.execExecution - bench.execPrepare)/1000.;
-    }
-
-    if (threadNumber == 0) {
-    	//printf("%10.2f\t%10.5f\t%10.5f\n", dt * nSteps, (vmTimeSerie[0])[nCompVmTimeSerie*nKernelSteps-1], (vmTimeSerie[0])[nKernelSteps-1]);
-    	//printf("%10.2f\t%10.5f\t%10.5f\n", dt * nSteps, (vmTimeSerie[1])[nCompVmTimeSerie*nKernelSteps-1], (vmTimeSerie[1])[nKernelSteps-1]);
-    }
-
-    // Used to print spike statistics in the end of the simulation
-    if (threadNumber == 0)
-    	sharedData->spkStat->printSpikeStatistics((const char *)"spikeGpu.dat", sharedData->totalTime, bench);
-
-    // TODO: Free CUDA Memory
-    if (threadNumber == 0) {
-    	delete[] kernelInfo->nBlocksComm;
-    	delete[] kernelInfo->nThreadsComm;
-    }
+//    createNeurons(sharedData->dt);
+//
+//
+//    char hostname[50];
+//    gethostname(hostname, 50);
+//
+//	printf("threadNumber = %d | types [%d|%d] | seed=%d | hostname=%s\n" ,
+//			tInfo->threadNumber, tInfo->startTypeThread, tInfo->endTypeThread-1, tInfo->sharedData->globalSeed, hostname);
+//
+//    int *nNeurons = tInfo->nNeurons;
+//    int startTypeThread = tInfo->startTypeThread;
+//    int endTypeThread = tInfo->endTypeThread;
+//    int threadNumber = tInfo->threadNumber;
+//
+//    if(threadNumber == 0)
+//    	gpuSimulation->updateSharedDataInfo();
+//
+//    /*--------------------------------------------------------------
+//	 * Creates the connections between the neurons
+//	 *--------------------------------------------------------------*/
+//    if (threadNumber == 0) {
+//		sharedData->connection = new Connections();
+//		if (sharedData->connectivityType == CONNECT_RANDOM_1)
+//			sharedData->connection->connectRandom ( tInfo );
+//		else if (sharedData->connectivityType == CONNECT_RANDOM_2)
+//			sharedData->connection->connectRandom2 ( tInfo );
+//		else {
+//			printf("ERROR: Invalid connectivity type");
+//			exit(-1);
+//		}
+//		sharedData->connInfo = sharedData->connection->getConnectionInfo();
+//	}
+//
+//    //Synchronize threads before starting
+//    syncCpuThreads();
+//
+//    bench.matrixSetup = gettimeInMilli();
+//    bench.matrixSetupF = (bench.matrixSetup - bench.start) / 1000.;
+//
+//    /*--------------------------------------------------------------
+//	 * Configure the Device and GPU kernel information
+//	 *--------------------------------------------------------------*/
+//    gpuSimulation->configureGpuKernel();
+//
+//    /*--------------------------------------------------------------
+//	 * Initializes the benchmark counters
+//	 *--------------------------------------------------------------*/
+//    if(threadNumber == 0){
+//        bench.totalHinesKernel = 0;
+//        bench.totalConnRead = 0;
+//        bench.totalConnWait = 0;
+//        bench.totalConnWrite = 0;
+//    }
+//
+//	createActivationLists();
+//
+//    /*--------------------------------------------------------------
+//	 * Allocates the memory on the GPU for neuron information and transfers the data
+//	 *--------------------------------------------------------------*/
+//	for(int type = startTypeThread;type < endTypeThread;type++)
+//		gpuSimulation->prepareExecution(type);
+//
+//    /*--------------------------------------------------------------
+//	 * Allocates the memory on the GPU for the communications and transfers the data
+//	 *--------------------------------------------------------------*/
+//	gpuSimulation->prepareSynapses();
+//
+//    SynapticData *synData = sharedData->synData;
+//    int nKernelSteps = kernelInfo->nKernelSteps;
+//
+//    /*--------------------------------------------------------------
+//	 * Sends the complete data to the GPUs
+//	 *--------------------------------------------------------------*/
+//   	gpuSimulation->transferHinesStructToGpu();
+//
+//    /*--------------------------------------------------------------
+//	 * Guarantees that all connections have been setup
+//	 *--------------------------------------------------------------*/
+//    syncCpuThreads();
+//
+//
+//    /*--------------------------------------------------------------
+//	 * Prepare the lists of generated spikes used for GPU spike delivery
+//	 *--------------------------------------------------------------*/
+//   	gpuSimulation->prepareGpuSpikeDeliveryStructures();
+//
+//    /*--------------------------------------------------------------
+//	 * Synchronize threads before beginning [Used only for Benchmarking]
+//	 *--------------------------------------------------------------*/
+//    syncCpuThreads();
+//
+//    printf("Launching GPU kernel with %d blocks and %d (+1) threads per block for types %d-%d for thread %d "
+//    		"on device %d [%s|%d.%d|MP=%d|G=%dMB|S=%dkB].\n", kernelInfo->nBlocksProc[startTypeThread],
+//    		nNeurons[startTypeThread] / kernelInfo->nBlocksProc[startTypeThread], startTypeThread, endTypeThread - 1,
+//    		threadNumber, tInfo->deviceNumber, tInfo->prop->name, tInfo->prop->major, tInfo->prop->minor,
+//    		tInfo->prop->multiProcessorCount, (int)((tInfo->prop->totalGlobalMem / 1024 / 1024)),
+//    		(int)((tInfo->prop->sharedMemPerBlock / 1024)));
+//
+//    if(threadNumber == 0){
+//        bench.execPrepare = gettimeInMilli();
+//        bench.execPrepareF = (bench.execPrepare - bench.matrixSetup) / 1000.;
+//    }
+//
+//    /*--------------------------------------------------------------
+//	 * Solves the matrix for n steps
+//	 *--------------------------------------------------------------*/
+//    ftype dt = sharedData->dt;
+//    int nSteps = sharedData->totalTime / dt;
+//
+//    for (tInfo->kStep = 0; tInfo->kStep < nSteps; tInfo->kStep += nKernelSteps) {
+//
+//		// Synchronizes the thread to wait for the communication
+//
+//		if (threadNumber == 0 && tInfo->kStep % 1000 == 0)
+//			printf("Starting Kernel %d -----------> %d \n", threadNumber, tInfo->kStep);
+//
+//		if (threadNumber == 0) // Benchmarking
+//			bench.kernelStart  = gettimeInMilli();
+//
+//		addReceivedSpikesToTargetChannelCPU();
+//		gpuSimulation->performGpuNeuronalProcessing();
+//
+//
+//		cudaThreadSynchronize();
+//
+//		if (threadNumber == 0) // Benchmarking
+//			bench.kernelFinish = gettimeInMilli();
+//
+//		/*--------------------------------------------------------------
+//		 * Reads information from spike sources fromGPU
+//		 *--------------------------------------------------------------*/
+//		gpuSimulation->readGeneratedSpikesFromGPU();
+//
+//		/*--------------------------------------------------------------
+//		 * Synchronize threads before communication
+//		 *--------------------------------------------------------------*/
+//		syncCpuThreads();
+//
+//		if (threadNumber == 0) {
+//			bench.connRead = gettimeInMilli();
+//			bench.connWait = gettimeInMilli();
+//		}
+//
+//		/*--------------------------------------------------------------
+//		 * Adds the generated spikes to the target synaptic channel
+//		 * Used only for communication processing in the CPU
+//		 *--------------------------------------------------------------*/
+//		gpuSimulation->copyActivationListFromGpu();
+//
+//		syncCpuThreads();
+//
+//		// Used to print spike statistics in the end of the simulation
+//		updateGenSpkStatistics(nNeurons, synData);
+//
+//		/*--------------------------------------------------------------
+//		 * Copy the Vm from GPUs to the CPU memory
+//		 *--------------------------------------------------------------*/
+//		if (benchConf.assertResultsAll == 1 || benchConf.printAllVmKernelFinish == 1)
+//			for (int type = startTypeThread; type < endTypeThread; type++)
+//				cudaMemcpy(synData->vmListHost[type], synData->vmListDevice[type], sizeof(ftype) * nNeurons[type], cudaMemcpyDeviceToHost);
+//
+//
+//		/*--------------------------------------------------------------
+//		 * Writes Vm to file at the end of each kernel execution
+//		 *--------------------------------------------------------------*/
+//		if (benchConf.assertResultsAll == 1)
+//			gpuSimulation->checkVmValues();
+//
+//		/*--------------------------------------------------------------
+//		 * Check if Vm is ok for all neurons
+//		 *--------------------------------------------------------------*/
+//		if (threadNumber == 0 && benchConf.printAllVmKernelFinish == 1)
+//			sharedData->neuronInfoWriter->writeVmToFile(tInfo->kStep);
+//
+//		/*-------------------------------------------------------
+//		 * Perform Communications
+//		 *-------------------------------------------------------*/
+//		for (int type = startTypeThread; type < endTypeThread; type++) {
+//
+//			/*-------------------------------------------------------
+//			 *  Generates random spikes for the network
+//			 *-------------------------------------------------------*/
+//			struct RandomSpikeInfo randomSpkInfo;
+//			generateRandomSpikes(type, randomSpkInfo);
+//
+//			/*-------------------------------------------------------
+//			 * Perform CPU and GPU Communications
+//			 *-------------------------------------------------------*/
+//			gpuSimulation->copyActivationListToGpu(type);
+//
+//			delete []randomSpkInfo.spikeTimes;
+//			delete []randomSpkInfo.spikeDest;
+//		}
+//
+//		if (threadNumber == 0)
+//			if (benchConf.gpuCommBenchMode == GPU_COMM_SIMPLE || benchConf.checkCommMode(NN_CPU) )
+//				bench.connWrite = gettimeInMilli();
+//
+//		if (threadNumber == 0 && benchConf.printSampleVms == 1)
+//			sharedData->neuronInfoWriter->writeSampleVm(tInfo->kStep);
+//
+//		if (benchConf.printAllSpikeTimes == 1)
+//			if (threadNumber == 0) // Uses only data from SpikeStatistics::addGeneratedSpikes
+//				sharedData->spkStat->printKernelSpikeStatistics((tInfo->kStep+nKernelSteps)*dt);
+//
+//		if (threadNumber == 0)
+//			updateBenchmark();
+//
+//
+//    }
+//    // --------------- Finished the simulation ------------------------------------
+//
+//    if (threadNumber == 0) {
+//    	bench.execExecution  = gettimeInMilli();
+//    	bench.execExecutionF = (bench.execExecution - bench.execPrepare)/1000.;
+//    }
+//
+//    if (threadNumber == 0) {
+//    	//printf("%10.2f\t%10.5f\t%10.5f\n", dt * nSteps, (vmTimeSerie[0])[nCompVmTimeSerie*nKernelSteps-1], (vmTimeSerie[0])[nKernelSteps-1]);
+//    	//printf("%10.2f\t%10.5f\t%10.5f\n", dt * nSteps, (vmTimeSerie[1])[nCompVmTimeSerie*nKernelSteps-1], (vmTimeSerie[1])[nKernelSteps-1]);
+//    }
+//
+//    // Used to print spike statistics in the end of the simulation
+//    if (threadNumber == 0)
+//    	sharedData->spkStat->printSpikeStatistics((const char *)"spikeGpu.dat", sharedData->totalTime, bench);
+//
+//    // TODO: Free CUDA Memory
+//    if (threadNumber == 0) {
+//    	delete[] kernelInfo->nBlocksComm;
+//    	delete[] kernelInfo->nThreadsComm;
+//    }
 
     printf("Finished GPU execution.\n" );
 

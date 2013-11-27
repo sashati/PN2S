@@ -28,7 +28,6 @@ OBJS += SynapticChannels.o  \
 		Connections.o  		\
 		SpikeStatistics.o  	\
 		NeuronInfoWriter.o  \
-		PerformSimulation.o \
 		
 
 .PHONY: all
@@ -42,7 +41,6 @@ PlatformFunctions.o:	PlatformFunctions.cpp	PlatformFunctions.hpp
 Connections.o:			Connections.cpp			Connections.hpp
 SpikeStatistics.o:  	SpikeStatistics.cpp		SpikeStatistics.hpp
 NeuronInfoWriter.o: 	NeuronInfoWriter.cpp	NeuronInfoWriter.hpp
-PerformSimulation.o:	PerformSimulation.cpp	PerformSimulation.hpp
 
 CudaModule.o:	CudaModule.cu CudaModule.h
 HinesGpu.o:		HinesGpu.cu

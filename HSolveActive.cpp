@@ -10,7 +10,7 @@
 #include "header.h"
 #include <queue>
 #include "HSolveStruct.h"
-#include "HinesMatrix.h"
+#include "HinesMatrixProxy.h"
 #include "HSolvePassive.h"
 #include "RateLookup.h"
 #include "HSolveActive.h"
@@ -22,7 +22,7 @@ using namespace moose;
 //~ #include "ZombieCompartment.h"
 //~ #include "ZombieCaConc.h"
 
-extern ostream& operator <<( ostream& s, const HinesMatrix& m );
+extern ostream& operator <<( ostream& s, const HinesMatrixProxy& m );
 
 const int HSolveActive::INSTANT_X = 1;
 const int HSolveActive::INSTANT_Y = 2;

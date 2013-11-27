@@ -10,6 +10,7 @@
 #ifndef _HSOLVE_H
 #define _HSOLVE_H
 #include <set>
+#include "HSC_PerformSimulation.hpp"
 /**
  * HSolve adapts the integrator HSolveActive into a MOOSE class.
  */
@@ -148,6 +149,7 @@ public:
 						 *   element if its class that is handled by HSolve */
 	
 private:
+    HSC_PerformSimulation *hsc_simulation;
 	static vector< Id > children( Id obj );
 	static Id deepSearchForCompartment( Id base );
 	
@@ -163,6 +165,10 @@ private:
 	double dt_;
 	string path_;
 	Id seed_;
+
+//	//Added to port model to GPU
+//	void clear();
+//	void walkTree(Id seed);
 };
 
 #endif // _HSOLVE_H

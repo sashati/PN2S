@@ -10,7 +10,8 @@
 #include "header.h"
 #include "ElementValueFinfo.h"
 #include "HSolveStruct.h"
-#include "HinesMatrix.h"
+#include "HSolveUtils.h"
+#include "HinesMatrixProxy.h"
 #include "HSolvePassive.h"
 #include "RateLookup.h"
 #include "HSolveActive.h"
@@ -24,8 +25,6 @@
 #include "../biophysics/HHChannel.h"
 #include "ZombieHHChannel.h"
 
-// CUDA module
-#include "cudaLibrary/PerformSimulation.hpp"
 
 const Cinfo* HSolve::initCinfo()
 {
@@ -196,6 +195,7 @@ HSolve::HSolve()
 void HSolve::process( const Eref& hsolve, ProcPtr p )
 {
 	this->HSolveActive::step( p );
+//	simulation->launchExecution();
 }
 
 void HSolve::reinit( const Eref& hsolve, ProcPtr p )
@@ -223,10 +223,10 @@ void HSolve::setup( Eref hsolve )
 	// Setup solver.
 	this->HSolveActive::setup( seed_, dt_ );
 
-	PerformSimulation *simulation = new PerformSimulation(NULL);
-
 	zombify( hsolve );
 	mapIds();
+
+
 }
 
 ///////////////////////////////////////////////////

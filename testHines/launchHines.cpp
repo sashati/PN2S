@@ -44,10 +44,10 @@
 #include <unistd.h>
 #include <cmath>
 
+#include "PerformSimulation.hpp"
 #include "../cudaLibrary/SharedNeuronGpuData.hpp"
 #include "../cudaLibrary/KernelInfo.hpp"
 #include "../cudaLibrary/ThreadInfo.hpp"
-#include "../cudaLibrary/PerformSimulation.hpp"
 #include "../cudaLibrary/Connections.hpp"
 #include "../cudaLibrary/HSC_HinesMatrix.hpp"
 #include "../cudaLibrary/ActiveChannels.hpp"

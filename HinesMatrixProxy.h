@@ -126,6 +126,10 @@ private:
 	map< unsigned int, unsigned int >  groupNumber_;
 		/**< Tells you the index of a compartment's group within coupled_, 
 		 *   given the compartment's Hines index. */
+
+	//New CUDA supports
+	void configureSimulation(const vector< TreeNodeStruct >& tree, double dt, ThreadInfo *& tInfo, int nNeurons, char *configFile);
+	void configureNeuronTypes(const vector< TreeNodeStruct >& tree, double dt, ThreadInfo*& tInfo, int nNeuronsTotal,  char *configFileName);
 };
 
 #endif // _HINES_MATRIX_H

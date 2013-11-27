@@ -348,7 +348,7 @@ int HSolveUtils::targets(
 
 #ifdef DO_UNIT_TESTS
 
-#include "HinesMatrix.h"
+#include "HinesMatrixProxy.h"
 #include "../shell/Shell.h"
 void testHSolveUtils( )
 {

@@ -33,26 +33,119 @@ HinesMatrixProxy::HinesMatrixProxy()
 { ; }
 
 void HinesMatrixProxy::GPU_KernelSetup() {
-	//Config GPU kernel
 	tInfo = new ThreadInfo;
 	tInfo->sharedData = new SharedNeuronGpuData;
 	tInfo->sharedData->kernelInfo = new KernelInfo;
+
 	tInfo->sharedData->nBarrier = 0;
 	tInfo->sharedData->mutex = new pthread_mutex_t;
 	tInfo->sharedData->cond = new pthread_cond_t;
-	pthread_cond_init(tInfo->sharedData->cond, NULL);
-	pthread_mutex_init(tInfo->sharedData->mutex, NULL);
+	pthread_cond_init (  tInfo->sharedData->cond, NULL );
+	pthread_mutex_init( tInfo->sharedData->mutex, NULL );
+
 	tInfo->sharedData->synData = 0;
 	tInfo->sharedData->hGpu = 0;
 	tInfo->sharedData->hList = 0;
 	tInfo->sharedData->globalSeed = time(NULL);
+}
 
-	hsc_simulation = new HSC_PerformSimulation(tInfo);
+
+
+ThreadInfo *createInfoArray(int nThreads, ThreadInfo *model){
+	ThreadInfo *tInfoArray = new ThreadInfo[nThreads];
+	for (int i=0; i<nThreads; i++) {
+		tInfoArray[i].sharedData 	= model->sharedData;
+		tInfoArray[i].nComp			= model->nComp;
+		tInfoArray[i].nNeurons		= model->nNeurons;
+		tInfoArray[i].nNeuronsTotalType = model->nNeuronsTotalType;
+
+		tInfoArray[i].nTypes		= model->nTypes;
+		tInfoArray[i].totalTypes	= model->totalTypes;
+	}
+
+	return tInfoArray;
+}
+
+void HinesMatrixProxy::configureNeuronTypes(const vector< TreeNodeStruct >& tree, double dt, ThreadInfo*& tInfo, int nNeuronsTotal,  char *configFileName) {
+
+	int nComp = tree.size();
+
+	tInfo->nTypes = 1;
+	tInfo->totalTypes = tInfo->nTypes * tInfo->sharedData->nThreadsCpu;
+
+	tInfo->nNeurons = new int[tInfo->totalTypes];
+	tInfo->nComp = new int[tInfo->totalTypes];
+	tInfo->sharedData->typeList = new int[tInfo->totalTypes];
+	tInfo->nNeuronsTotalType = new int[tInfo->nTypes];
+	for (int type=0; type < tInfo->nTypes; type++)
+		tInfo->nNeuronsTotalType[ type ] = 0;
+
+	tInfo->sharedData->matrixList = new HSC_HinesMatrix *[tInfo->totalTypes];
+	for (int i = 0; i < tInfo->totalTypes; i += tInfo->nTypes) {
+		tInfo->nNeurons[i] = nNeuronsTotal / (tInfo->totalTypes);
+		tInfo->nComp[i] = nComp;
+		tInfo->sharedData->typeList[i] = PYRAMIDAL_CELL;
+		tInfo->nNeuronsTotalType[ tInfo->sharedData->typeList[i] ] += tInfo->nNeurons[i];
+
+		tInfo->nNeurons[i + 1] = nNeuronsTotal / (tInfo->totalTypes);
+		tInfo->nComp[i + 1] = nComp;
+		tInfo->sharedData->typeList[i + 1] = INHIBITORY_CELL;
+		tInfo->nNeuronsTotalType[ tInfo->sharedData->typeList[i] ] += tInfo->nNeurons[i];
+
+		tInfo->nNeurons[i + 2] = nNeuronsTotal / (tInfo->totalTypes);
+		tInfo->nComp[i + 2] = nComp;
+		tInfo->sharedData->typeList[i + 2] = BASKET_CELL;
+		tInfo->nNeuronsTotalType[ tInfo->sharedData->typeList[i] ] += tInfo->nNeurons[i];
+
+	}
+}
+
+void HinesMatrixProxy::configureSimulation(const vector< TreeNodeStruct >& tree, double dt, ThreadInfo *& tInfo, int nNeurons, char *configFile)
+{
+
+//	// Configure the types and number of neurons
+//	configureNeuronTypes(tree,dt,tInfo, nNeurons, configFile);
+//
+//	// defines some default values
+//	tInfo->sharedData->inputSpikeRate = 0.1;
+//	tInfo->sharedData->pyrPyrConnRatio   = 0.1;
+//	tInfo->sharedData->pyrInhConnRatio   = 0.1;
+//	tInfo->sharedData->totalTime   = 100; // in ms
+//
+//	tInfo->sharedData->randWeight = 1;
+//
+//	printf ("Simulation configured as: Running scalability experiments.\n");
+//
+//	benchConf.printSampleVms = 1;
+//	benchConf.printAllVmKernelFinish = 0;
+//	benchConf.printAllSpikeTimes = 0;
+//	benchConf.checkGpuComm = 0;
+//
+//	benchConf.setMode(NN_GPU, NN_CPU);
+//
+//	benchConf.gpuCommBenchMode = GPU_COMM_SIMPLE;
+//
+//	//TODO: Saeed remove
+//	tInfo->sharedData->totalTime   = 1000;
+//	tInfo->sharedData->inputSpikeRate = 0.01;
+//	tInfo->sharedData->connectivityType = CONNECT_RANDOM_1;
+//
+//	tInfo->sharedData->excWeight = 0.01;  //1.0/(nPyramidal/100.0); 0.05
+//	tInfo->sharedData->pyrInhWeight = 0.1; //1.0/(nPyramidal/100.0);
+//	tInfo->sharedData->inhPyrWeight = 1;
+//
+//	tInfo->sharedData->pyrPyrConnRatio   = 100.0 / (nNeurons/tInfo->nTypes); // nPyramidal //100
+//	tInfo->sharedData->pyrInhConnRatio   = 100.0 / (nNeurons/tInfo->nTypes); // nPyramidal //100
+//
+//	tInfo->sharedData->excWeight    = 0.030;
+//	tInfo->sharedData->pyrInhWeight = 0.035;
+//	tInfo->sharedData->inhPyrWeight = 10;
+
 }
 
 void HinesMatrixProxy::setup( const vector< TreeNodeStruct >& tree, double dt )
 {
-	GPU_KernelSetup();
+//	GPU_KernelSetup();
 
 	clear();
 	
@@ -67,48 +160,15 @@ void HinesMatrixProxy::setup( const vector< TreeNodeStruct >& tree, double dt )
 	makeMatrix();
 	makeOperands();
 
-	hsc_simulation->setup()
-//	//Import Model
-//	GpuSimulationControl *gpuSimulation = new GpuSimulationControl(tInfo);
+
+//	int nNeuronsTotal = 1;
 //
-//	/**
-//	 * Initializes thread information
-//	 */
-//	initializeThreadInformation( );
+//	tInfo->sharedData->nThreadsCpu = 1;
+//	configureSimulation(tree, dt, tInfo, nNeuronsTotal, 0);
 //
-//		/**------------------------------------------------------------------------------------
-//		 * Creates the neurons that will be simulated by the threads
-//		 *-------------------------------------------------------------------------------------*/
-//	    sharedData->dt = 0.1; // 0.1ms
-//	    sharedData->minDelay = 10; // 10ms
-//	    sharedData->maxDelay = 20; // 10ms
-//		kernelInfo->nKernelSteps = sharedData->minDelay / sharedData->dt;
-//
-//	    createNeurons(sharedData->dt);
-//	SharedNeuronGpuData *sharedData = tInfo->sharedData;
-//	/**------------------------------------------------------------------------------------
-//	 * Creates the neurons that will be simulated by the threads
-//	 *-------------------------------------------------------------------------------------*/
-//	for(int type = tInfo->startTypeThread;type < tInfo->endTypeThread;type++){
-//		int nComp = tInfo->nComp[type];
-//		int nNeurons = tInfo->nNeurons[type];
-//
-//		sharedData->matrixList[type] = new HSC_HinesMatrix[nNeurons];
-//
-//		for(int n = 0;n < nNeurons;n++){
-//			HSC_HinesMatrix & m = sharedData->matrixList[type][n];
-//			if(nComp == 1)
-//				m.defineNeuronCableSquid();
-//
-//			else
-//				m.defineNeuronTreeN(nComp, 1);
-//
-//			m.createTestMatrix();
-//			m.dt     = dt;
-//			m.neuron = n;
-//			m.type   = type;
-//		}
-//	}
+//	HSC_PerformSimulation *simulation = new HSC_PerformSimulation(tInfo);
+//	simulation->setup(tree,dt);
+
 }
 
 void HinesMatrixProxy::clear()

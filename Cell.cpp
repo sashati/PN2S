@@ -12,7 +12,7 @@
 #include "Cell.h"
 
 #include "HSolveStruct.h"
-#include "HinesMatrix.h"
+#include "HinesMatrixProxy.h"
 #include "HSolvePassive.h"
 #include "RateLookup.h"
 #include "HSolveActive.h"
