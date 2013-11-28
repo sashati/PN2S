@@ -247,78 +247,78 @@ int Connections::connectTypeToTypeOneToOne( ThreadInfo *tInfo,
 
 int Connections::connectRandom ( struct ThreadInfo *tInfo ) {
 
-	SharedNeuronGpuData *sharedData = tInfo->sharedData;
-
-	setPositionsPlanar(tInfo, PYRAMIDAL_CELL,  10e-3);
-	setPositionsPlanar(tInfo, INHIBITORY_CELL, 10e-3);
-
-	int nConnTotal = 0;
-
-	/**
-	 * Connects the pyramidal-pyramidal cells
-	 */
-	nConnTotal += connectTypeToTypeRandom(
-			tInfo, PYRAMIDAL_CELL, PYRAMIDAL_CELL, 0, sharedData->pyrPyrConnRatio,
-			sharedData->excWeight, 0.5, 10, 10);
-
-	/**
-	 * Connects the pyramidal-inhibitory cells
-	 */
-	nConnTotal += connectTypeToTypeRandom(
-			tInfo, PYRAMIDAL_CELL, INHIBITORY_CELL, 0, sharedData->pyrInhConnRatio/10,
-			sharedData->pyrInhWeight*4, 0.5, 10, 10);
-
-
-	nConnTotal += connectTypeToTypeRandom(
-			tInfo, PYRAMIDAL_CELL, BASKET_CELL, 0, sharedData->pyrInhConnRatio,
-			sharedData->pyrInhWeight, 0.5, 10, 10);
-
-	/**
-	 * Connects the inhibitory-pyramidal cells
-	 * Each inhibitory cell connects to a single pyramidal neuron
-	 */
-	nConnTotal += connectTypeToTypeRandom(
-			tInfo, INHIBITORY_CELL, PYRAMIDAL_CELL, 1, sharedData->pyrInhConnRatio/10,
-			sharedData->inhPyrWeight/20, 0.5, 10, 10);
-
-	nConnTotal += connectTypeToTypeOneToOne(
-			tInfo, BASKET_CELL, PYRAMIDAL_CELL, 1,
-			tInfo->sharedData->inhPyrWeight/2, 10);
-
-	//printf("Total number of connections = %d.\n", nConnTotal);
+//	SharedNeuronGpuData *sharedData = tInfo->sharedData;
+//
+//	setPositionsPlanar(tInfo, PYRAMIDAL_CELL,  10e-3);
+//	setPositionsPlanar(tInfo, INHIBITORY_CELL, 10e-3);
+//
+//	int nConnTotal = 0;
+//
+//	/**
+//	 * Connects the pyramidal-pyramidal cells
+//	 */
+//	nConnTotal += connectTypeToTypeRandom(
+//			tInfo, PYRAMIDAL_CELL, PYRAMIDAL_CELL, 0, sharedData->pyrPyrConnRatio,
+//			sharedData->excWeight, 0.5, 10, 10);
+//
+//	/**
+//	 * Connects the pyramidal-inhibitory cells
+//	 */
+//	nConnTotal += connectTypeToTypeRandom(
+//			tInfo, PYRAMIDAL_CELL, INHIBITORY_CELL, 0, sharedData->pyrInhConnRatio/10,
+//			sharedData->pyrInhWeight*4, 0.5, 10, 10);
+//
+//
+//	nConnTotal += connectTypeToTypeRandom(
+//			tInfo, PYRAMIDAL_CELL, BASKET_CELL, 0, sharedData->pyrInhConnRatio,
+//			sharedData->pyrInhWeight, 0.5, 10, 10);
+//
+//	/**
+//	 * Connects the inhibitory-pyramidal cells
+//	 * Each inhibitory cell connects to a single pyramidal neuron
+//	 */
+//	nConnTotal += connectTypeToTypeRandom(
+//			tInfo, INHIBITORY_CELL, PYRAMIDAL_CELL, 1, sharedData->pyrInhConnRatio/10,
+//			sharedData->inhPyrWeight/20, 0.5, 10, 10);
+//
+//	nConnTotal += connectTypeToTypeOneToOne(
+//			tInfo, BASKET_CELL, PYRAMIDAL_CELL, 1,
+//			tInfo->sharedData->inhPyrWeight/2, 10);
+//
+//	//printf("Total number of connections = %d.\n", nConnTotal);
 
 	return 0;
 }
 
 int Connections::connectRandom2 ( struct ThreadInfo *tInfo ) {
 
-	SharedNeuronGpuData *sharedData = tInfo->sharedData;
-
-	setPositionsPlanar(tInfo, PYRAMIDAL_CELL,  10e-3);
-	setPositionsPlanar(tInfo, INHIBITORY_CELL, 10e-3);
-
-	int nConnTotal = 0;
-
-	/**
-	 * Connects the pyramidal-pyramidal cells
-	 */
-	nConnTotal += connectTypeToTypeRandom(
-			tInfo, PYRAMIDAL_CELL, PYRAMIDAL_CELL, 0, sharedData->pyrPyrConnRatio,
-			sharedData->excWeight, 0.5, 10, 10);
-
-	/**
-	 * Connects the pyramidal-inhibitory cells
-	 */
-	nConnTotal += connectTypeToTypeRandom(
-			tInfo, PYRAMIDAL_CELL, INHIBITORY_CELL, 0, sharedData->pyrInhConnRatio,
-			sharedData->pyrInhWeight, 0.5, 10, 10);
-
-	/**
-	 * Connects the inhibitory-pyramidal cells
-	 */
-	nConnTotal += connectTypeToTypeRandom(
-			tInfo, INHIBITORY_CELL, PYRAMIDAL_CELL, 1, sharedData->inhPyrConnRatio,
-			sharedData->inhPyrWeight, 0.5, 10, 10);
+//	SharedNeuronGpuData *sharedData = tInfo->sharedData;
+//
+//	setPositionsPlanar(tInfo, PYRAMIDAL_CELL,  10e-3);
+//	setPositionsPlanar(tInfo, INHIBITORY_CELL, 10e-3);
+//
+//	int nConnTotal = 0;
+//
+//	/**
+//	 * Connects the pyramidal-pyramidal cells
+//	 */
+//	nConnTotal += connectTypeToTypeRandom(
+//			tInfo, PYRAMIDAL_CELL, PYRAMIDAL_CELL, 0, sharedData->pyrPyrConnRatio,
+//			sharedData->excWeight, 0.5, 10, 10);
+//
+//	/**
+//	 * Connects the pyramidal-inhibitory cells
+//	 */
+//	nConnTotal += connectTypeToTypeRandom(
+//			tInfo, PYRAMIDAL_CELL, INHIBITORY_CELL, 0, sharedData->pyrInhConnRatio,
+//			sharedData->pyrInhWeight, 0.5, 10, 10);
+//
+//	/**
+//	 * Connects the inhibitory-pyramidal cells
+//	 */
+//	nConnTotal += connectTypeToTypeRandom(
+//			tInfo, INHIBITORY_CELL, PYRAMIDAL_CELL, 1, sharedData->inhPyrConnRatio,
+//			sharedData->inhPyrWeight, 0.5, 10, 10);
 
 	return 0;
 }

@@ -50,9 +50,14 @@ void HSolveActive::step( ProcPtr info ) {
 	
 	advanceChannels( info->dt );
 	calculateChannelCurrents();
+
+
+	HinesMatrixProxy::hsc_simulation->step(info);
+
 	updateMatrix();
 	HSolvePassive::forwardEliminate();
 	HSolvePassive::backwardSubstitute();
+
 	advanceCalcium();
 	advanceSynChans( info );
 	

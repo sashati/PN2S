@@ -28,14 +28,16 @@ private:
 
 public:
     HSC_PerformSimulation(struct ThreadInfo *tInfo);
-    int launchExecution();
-    int setup(const vector< TreeNodeStruct >& tree, double dt);
+//    int launchExecution();
+    int setup(const vector< TreeNodeStruct >* tree, double dt);
+    void step( ProcPtr info );
+
     int performHostExecution();
 private:
     void addReceivedSpikesToTargetChannelCPU();
     void syncCpuThreads();
     void updateBenchmark();
-    void createNeurons( ftype dt );
+    void createNeurons(const vector< TreeNodeStruct >* tree, ftype dt );
     void createActivationLists( );
     void initializeThreadInformation();
     void updateGenSpkStatistics(int *& nNeurons, struct SynapticData *& synData);

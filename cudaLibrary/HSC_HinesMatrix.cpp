@@ -24,6 +24,9 @@ HSC_HinesMatrix::HSC_HinesMatrix() {
 	minSpikeInterval = 5;
 
 	posx=0; posy=0; posz=0;
+
+	synapticChannels = NULL;
+	activeChannels = NULL;
 }
 
 void HSC_HinesMatrix::freeMem() {
@@ -44,6 +47,10 @@ HSC_HinesMatrix::~HSC_HinesMatrix() {
 	freeMem();
 }
 
+void HSC_HinesMatrix::defineNeuron()
+{
+
+}
 void HSC_HinesMatrix::redefineGenSpikeTimeList( ftype *targetSpikeTimeListAddress ) {
 	delete []spikeTimes;
 	spikeTimes = targetSpikeTimeListAddress;

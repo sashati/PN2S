@@ -17,9 +17,10 @@ using namespace std;
 #ifndef HINESMATRIX_HPP_
 #define HINESMATRIX_HPP_
 
-#define PYRAMIDAL_CELL 0
-#define INHIBITORY_CELL 1
-#define BASKET_CELL 2
+//#define PYRAMIDAL_CELL 0
+//#define INHIBITORY_CELL 1
+//#define BASKET_CELL 2
+#define NORMAL_CELL 0
 
 class HSC_HinesMatrix {
 
@@ -108,6 +109,8 @@ public:
 	void setCurrent(int comp, ftype value) {
 		curr[comp] = value;
 	}
+
+	void defineNeuron();
 
 	/**
 	 *  [ 1 | 2 | 3 ]

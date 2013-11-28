@@ -195,7 +195,6 @@ HSolve::HSolve()
 void HSolve::process( const Eref& hsolve, ProcPtr p )
 {
 	this->HSolveActive::step( p );
-//	simulation->launchExecution();
 }
 
 void HSolve::reinit( const Eref& hsolve, ProcPtr p )

@@ -120,7 +120,7 @@ void SynapticChannels::configureSynapticActivationList(ftype dt, int listSize) {
 	synapseCompList = new ucomp[2*synapseListSize];
 	synapseTypeList = synapseCompList + synapseListSize;
 	synapseCompList[0] = 0;
-	synapseCompList[1] = 3; // TODO: should be ncomp-1
+	synapseCompList[1] = 3; // TODO: SAEED-ask: should be ncomp-1
 	synapseTypeList[0] = SYNAPSE_AMPA;
 	synapseTypeList[1] = SYNAPSE_GABA;
 
@@ -142,7 +142,7 @@ void SynapticChannels::configureSynapticActivationList(ftype dt, int listSize) {
 	}
 
 	// TODO: used only for testing
-	synCurrentTmp = new ftype[synapseListSize * synapseListSize];
+//	synCurrentTmp = new ftype[synapseListSize * synapseListSize];
 
 	synConstants = new ftype[synapseListSize * SYN_CONST_N];
 	for (int syn=0; syn < synapseListSize; syn++) {

@@ -128,8 +128,8 @@ private:
 		 *   given the compartment's Hines index. */
 
 	//New CUDA supports
-	void configureSimulation(const vector< TreeNodeStruct >& tree, double dt, ThreadInfo *& tInfo, int nNeurons, char *configFile);
-	void configureNeuronTypes(const vector< TreeNodeStruct >& tree, double dt, ThreadInfo*& tInfo, int nNeuronsTotal,  char *configFileName);
+	void configureSimulation(ThreadInfo *& tInfo, int nNeurons, char *configFile);
+	void configureNeuronTypes( ThreadInfo*& tInfo, int nNeuronsTotal,  char *configFileName);
 };
 
 #endif // _HINES_MATRIX_H

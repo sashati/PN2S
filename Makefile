@@ -9,7 +9,7 @@
 #**********************************************************************/
 
 TARGET = _hsolve.o
-#CLIB = cudaLibrary/_hsolveCudaLib.o
+CLIB = cudaLibrary/_hsolveCudaLib.o
 OBJ = \
 	HSolveStruct.o \
 	HinesMatrixProxy.o \
@@ -24,15 +24,15 @@ OBJ = \
 	ZombieCompartment.o \
 	ZombieCaConc.o \
 	ZombieHHChannel.o \
-#	HSC_PerformSimulation.o \
+	HSC_PerformSimulation.o \
 	
 
 HEADERS = \
 	../basecode/header.h
 
-#SUBDIR = \
-#	cudaLibrary \
-#	testHines
+SUBDIR = \
+	cudaLibrary \
+	testHines
 
 default: $(TARGET)
 

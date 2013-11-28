@@ -192,8 +192,8 @@ int GpuSimulationControl::prepareExecution(int type) {
 
 	HSC_HinesMatrix & m0 = sharedData->matrixList[type][0];
 	int nComp = m0.nComp;
-	int nCompActive = m0.activeChannels->getCompListSize();
-	int nSynaptic = m0.synapticChannels->synapseListSize;
+//	int nCompActive = m0.activeChannels->getCompListSize();
+//	int nSynaptic = m0.synapticChannels->synapseListSize;
 
 	/******************************************************************************************
 	 * Allocates the ftype memory for all neurons and copies data to device
