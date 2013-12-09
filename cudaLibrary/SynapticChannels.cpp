@@ -10,6 +10,17 @@
 #include <cassert>
 #include <cmath>
 
+SynapticChannels::SynapticChannels() {
+	this->synapticCurrent = NULL;
+	this->vmList = NULL;
+	this->nAddedSpikes = 0;
+	spikeList = 0;
+	spikeListSize = 0;
+	synapseWeightList = 0;
+	activationList = NULL;
+	activationListSize = 0;
+}
+
 SynapticChannels::SynapticChannels(ftype *synapticCurrent, ftype *vmList, int nComp) {
 	this->synapticCurrent = synapticCurrent;
 	this->vmList = vmList;
@@ -17,7 +28,7 @@ SynapticChannels::SynapticChannels(ftype *synapticCurrent, ftype *vmList, int nC
 	spikeList = 0;
 	spikeListSize = 0;
 	synapseWeightList = 0;
-	activationList = 0;
+	activationList = NULL;
 	activationListSize = 0;
 
 	pthread_mutex_init( &addSpikeMutex, NULL );
@@ -33,8 +44,6 @@ SynapticChannels::~SynapticChannels() {
 	//if (synapseWeightList != 0) delete[] synapseWeightList;
 
 	if (activationList != 0) delete[] activationList;
-
-
 
 }
 

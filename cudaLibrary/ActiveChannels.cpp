@@ -12,13 +12,24 @@
 
 #define PYR_M_ALPHA (V != 25.0) ? (0.1 * (25 - V)) / ( expf( 0.1 * (25-V) ) - 1 ) : 1
 
-ActiveChannels::ActiveChannels(ftype dt_, ftype *vmListNeuron_, int nComp) {
+ActiveChannels::ActiveChannels(ftype dt_) {
+
+	ucompMemSize = 0;
+	ftypeMemSize = 0;
+	nChannels =0;
+	nGatesTotal = 0;
+	nActiveComp = 0;
 
 	this->dt = dt_;
+	this->nComp = 0;
+
+	this->vmList = NULL;
+
+}
+ActiveChannels::ActiveChannels(ftype dt_, ftype *vmListNeuron_, int nComp) {
+	ActiveChannels::ActiveChannels(dt_);
 	this->nComp = nComp;
-
 	this->vmList = vmListNeuron_;
-
 }
 
 void ActiveChannels::setActiveChannels(int nActiveComp_, ucomp *activeCompList_) {

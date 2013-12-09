@@ -84,11 +84,6 @@ public:
 	int *nDelieveredSpikes;
 	int nRandom;
 
-
-
-
-
-
 	/**
 	 * The start position in the spikeList for each synapse from synapseList
 	 */
@@ -132,25 +127,23 @@ public:
 	ucomp *synapseTypeList; // The type of each synaptic channel from synapseCompList
 
 	int activationListSize;
-
-	void addToSynapticActivationList(ftype currTime, ftype dt, ucomp synapse, ftype spikeTime, ftype delay, ftype weight);
-	void clearSynapticActivationList();
-	void configureSynapticActivationList(ftype dt, int listSize);
-
-	void evaluateCurrentsNew(ftype currTime);
-
-	// TODO: REMOVE ME used only for testing
-	ftype *synCurrentTmp;
-
-
 	/**
 	 * Synaptic constants
 	 */
 	int nChannelTypes;
 	ftype *tau, *gmax, *esyn;
 
+
+	SynapticChannels();
 	SynapticChannels(ftype *synapticCurrent, ftype *vmList, int nComp);
 	virtual ~SynapticChannels();
+
+
+	void addToSynapticActivationList(ftype currTime, ftype dt, ucomp synapse, ftype spikeTime, ftype delay, ftype weight);
+	void clearSynapticActivationList();
+	void configureSynapticActivationList(ftype dt, int listSize);
+
+	void evaluateCurrentsNew(ftype currTime);
 
 	int getAndResetNumberOfAddedSpikes();
 	int getNumberOfAddedSpikes() { return nAddedSpikes;}

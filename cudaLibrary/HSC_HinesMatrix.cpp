@@ -13,7 +13,6 @@ HSC_HinesMatrix::HSC_HinesMatrix() {
 	currStep = -1;
 
 	outFile = 0;
-	activeChannels = 0;
 	triangAll = 0;
 
 	lastSpike = -1000;
@@ -25,8 +24,8 @@ HSC_HinesMatrix::HSC_HinesMatrix() {
 
 	posx=0; posy=0; posz=0;
 
-	synapticChannels = NULL;
-	activeChannels = NULL;
+	synapticChannels = new SynapticChannels();
+	activeChannels = new ActiveChannels(dt);
 }
 
 void HSC_HinesMatrix::freeMem() {
@@ -130,6 +129,7 @@ void HSC_HinesMatrix::defineNeuronCableSquid() {
 	int nActivecomp = 1;
 	ucomp *activeCompList = new ucomp[nActivecomp];
 	activeCompList[0] = nComp-1;
+	delete activeChannels;
 	activeChannels = new ActiveChannels (dt, vmList, nComp);
 	activeChannels->setActiveChannels (nActivecomp, activeCompList);
 }
@@ -210,6 +210,7 @@ void HSC_HinesMatrix::defineNeuronTreeN(int nComp, int active) {
 	for (int i=0; i<nActivecomp; i++)
 		activeCompList[i] = (ucomp)( (nComp-1)-i );
 
+	delete activeChannels;
 	activeChannels = new ActiveChannels (dt, vmList, nComp);
 
 	int nChannels    = 2 * nActivecomp;

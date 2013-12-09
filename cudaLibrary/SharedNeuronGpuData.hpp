@@ -45,6 +45,8 @@ struct SharedNeuronGpuData {
 
 	ftype totalTime;
 	ftype dt;
+
+	//TODO: Saeed Initial it
 	ftype minDelay; // connectionDelay
 	ftype maxDelay; // connectionDelay
 

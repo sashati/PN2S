@@ -34,11 +34,11 @@ HSC_PerformSimulation::HSC_PerformSimulation(struct ThreadInfo *tInfo) {
 
 void HSC_PerformSimulation::createActivationLists( ) {
 
-//	int listSize = sharedData->maxDelay / sharedData->dt;
-//
-//	for (int type = tInfo->startTypeThread; type < tInfo->endTypeThread; type++)
-//		for (int target = 0; target < tInfo->nNeurons[type]; target++)
-//			sharedData->matrixList[type][target].synapticChannels->configureSynapticActivationList( sharedData->dt, listSize );
+	int listSize = sharedData->maxDelay / sharedData->dt;
+
+	for (int type = tInfo->startTypeThread; type < tInfo->endTypeThread; type++)
+		for (int target = 0; target < tInfo->nNeurons[type]; target++)
+			sharedData->matrixList[type][target].synapticChannels->configureSynapticActivationList( sharedData->dt, listSize );
 
 }
 

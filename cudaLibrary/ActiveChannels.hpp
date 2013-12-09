@@ -46,6 +46,7 @@ class ActiveChannels {
 
 	ftype *vmList;
 
+	ActiveChannels(ftype dt_);
 	ActiveChannels(ftype dt, ftype *vmListNeuron_, int nComp);
 	virtual ~ActiveChannels();
 
