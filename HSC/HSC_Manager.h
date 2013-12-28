@@ -9,12 +9,13 @@
 #define A1182FDE9_1428_42fc_B1C4_EB304C128113__INCLUDED_
 
 #include "Definitions.h"
-#include "modelSolver/HSCModel.h"
+#include "modelSolver/HSCModel_Base.h"
 //#include "HSC_Solver.h"
 #include "HSC_Scheduler.h"
 
 /**
- *
+ * This class has a thread to look at scheduler for new tasks and send them to
+ * devices.
  */
 class HSC_Manager
 {
@@ -23,15 +24,18 @@ public:
 	virtual ~HSC_Manager();
 
 	hscError Setup();
-	hscError InsertModel(HSCModel &model);
 	hscError Reinit();
 	hscError PrepareSolver();
-//	hscError Process();
+	hscError InsertModel(uint key, vector<HSCModel_Base> model);
+	hscError AddInputTask(hscID_t id);
+	hscError Process(HSC_TaskInfo * task, HSC_Device* d);
 
 private:
-	vector<HSCModel> _models;
+	HSC_Solver _solver;
+	map<uint,vector<HSCModel_Base> > _models;
 	HSC_Scheduler _scheduler;
-//	void startDeviceThreads();
+
+	void startDeviceThreads();
 
 };
 #endif // !defined(A1182FDE9_1428_42fc_B1C4_EB304C128113__INCLUDED_)

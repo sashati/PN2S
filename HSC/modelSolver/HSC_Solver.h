@@ -8,18 +8,28 @@
 #if !defined(FCD33A96_9E58_4bec_BA66_91CF4FD383BD__INCLUDED_)
 #define FCD33A96_9E58_4bec_BA66_91CF4FD383BD__INCLUDED_
 
-#include "HSC_ModelPack.h"
-#include "HSCModel.h"
 #include "../Definitions.h"
+#include "HSC_SolverData.h"
+#include "HSCModel_Base.h"
+#include "HSC_SolverChannels.h"
+#include "HSC_SolverComps.h"
 
+#include "../HSC_Device.h"
 class HSC_Solver
 {
+private:
+	map<hscID_t, HSC_SolverData*> _modelToPackMap;
 public:
-	static vector<HSC_ModelPack> modelPacks;
-	static hscError Setup();
-	static hscError CreateModelPack(vector<HSCModel> _models);
-	static hscError SendDataToGPU();
-//	void DoProcess(HSC_Device* d);
+	vector<HSC_SolverData> solverPacks;
+	HSC_SolverData *m_HSC_SolverData;
+
+	HSC_Solver();
+	virtual ~HSC_Solver();
+
+	hscError Setup();
+	hscError PrepareSolver(map<hscID_t, vector<HSCModel_Base> > & _models);
+	HSC_SolverData* LocateDataByID(hscID_t id);
+	void Process(HSC_SolverData* data, HSC_Device* d);
 
 };
 

@@ -5,15 +5,18 @@
 //  Original author: saeed
 ///////////////////////////////////////////////////////////
 
-#if !defined(EA_B1F38D16_FE78_4893_BC39_356BCBBCF345__INCLUDED_)
-#define EA_B1F38D16_FE78_4893_BC39_356BCBBCF345__INCLUDED_
+#if !defined(AB1F38D16_FE78_4893_BC39_356BCBBCF345__INCLUDED_)
+#define AB1F38D16_FE78_4893_BC39_356BCBBCF345__INCLUDED_
+#include "Definitions.h"
 
 class HSC_Device
 {
 
 public:
-	HSC_Device();
+	HSC_Device(int _id);
 	virtual ~HSC_Device();
-
+	static int GetNumberOfActiveDevices();
+	hscError SelectDevice();
+	int id;
 };
-#endif // !defined(EA_B1F38D16_FE78_4893_BC39_356BCBBCF345__INCLUDED_)
+#endif // !defined(AB1F38D16_FE78_4893_BC39_356BCBBCF345__INCLUDED_)

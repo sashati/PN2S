@@ -6,14 +6,28 @@
 ///////////////////////////////////////////////////////////
 
 #include "HSC_Device.h"
+#include "Definitions.h"
+#include <cuda.h>
+#include <cuda_runtime.h>
 
+HSC_Device::HSC_Device(int _id): id(_id){
+}
 
-HSC_Device::HSC_Device(){
-
+HSC_Device::~HSC_Device(){
+	cudaDeviceReset();
 }
 
 
+int HSC_Device::GetNumberOfActiveDevices(){
+	 int device_count = 0;
+	 cudaGetDeviceCount(&device_count);
+	 return device_count;
+}
 
-HSC_Device::~HSC_Device(){
-
+hscError HSC_Device::SelectDevice(){
+	cudaDeviceProp deviceProp;
+	cudaSetDevice(id);
+	cudaGetDeviceProperties(&deviceProp, id);
+	//TODO: Set configurations in device
+	return  NO_ERROR;
 }

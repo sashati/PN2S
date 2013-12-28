@@ -11,15 +11,20 @@
 
 #include <math.h>
 #include <algorithm>
-#include <vector>
 #include <string>
+
+#include <vector>
 #include <map>
+#include <set>
+#include <deque>
+
 #include <iostream>
 #include <sstream>
 //#include <typeinfo> // used in Conv.h to extract compiler independent typeid
 //#include <climits> // Required for g++ 4.3.2
 //#include <cstring> // Required for g++ 4.3.2
 //#include <cstdlib> // Required for g++ 4.3.2
+using namespace std;
 
 enum hscError
 {
@@ -27,6 +32,9 @@ enum hscError
 
 };
 
-using namespace std;
+//#define checkCudaErrors(val)    ( (val), #val, __FILE__, __LINE__ )
+
+//#define hsc_uint uint
+#define hscID_t uint
 
 #endif // !defined(EA_412A01E5_7D8D_4c56_A915_73B69DCFE454__INCLUDED_)

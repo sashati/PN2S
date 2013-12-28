@@ -6,9 +6,10 @@
 //  Original author: Saeed Shariati
 ///////////////////////////////////////////////////////////
 
-#include "Definitions.h"
 #include "HSC_Manager.h"
-#include "modelSolver/HSCModel.h"
+#include "modelSolver/HSCModel_Base.h"
+#include "modelSolver/HSCModel_HHChannel.h"
+
 
 HSC_Manager::HSC_Manager(){
 
@@ -23,43 +24,60 @@ HSC_Manager::~HSC_Manager(){
  * Initialize the manager and set main parameters
  */
 hscError HSC_Manager::Setup(){
-	HSC_Solver::Setup();
+	_solver.Setup();
 
 	return  NO_ERROR;
 }
 
 
-hscError HSC_Manager::InsertModel(HSCModel &model){
-	_models.push_back(model);
+hscError HSC_Manager::InsertModel(uint key, vector<HSCModel_Base> model){
+	_models[key] = model;
 	return  NO_ERROR;
 }
 
-//
-//void HSC_Manager::startDeviceThreads(){
-//
-//}
-//
-//
+
+void HSC_Manager::startDeviceThreads(){
+	//TODO: using scheduler to asynchronous execution
+}
+
+
 hscError HSC_Manager::Reinit(){
 	return  NO_ERROR;
 }
 
 
 hscError HSC_Manager::PrepareSolver(){
-	hscError res = HSC_Solver::CreateModelPack(_models);
+	hscError res = _solver.PrepareSolver(_models);
 	if( res == NO_ERROR)
 		_models.clear();
+
+	startDeviceThreads();
 	return res;
 }
 
 
-///**
-// * A time increment process for each object
-// */
-//hscError HSC_Manager::Process(){
-//
-//	return  NULL;
-//}
+/**
+ * Create and add a task to scheduler
+ */
+hscError HSC_Manager::AddInputTask(hscID_t id){
+	//make taskID
+	HSC_TaskInfo task;
+	task.modelPack = _solver.LocateDataByID(id);
+
+	//Add to scheduler
+	_scheduler.AddInputTask(task);
+	return  NO_ERROR;
+}
+
+/**
+ * A time increment process for each object
+ */
+hscError HSC_Manager::Process(HSC_TaskInfo * task, HSC_Device* d){
+	task = _scheduler.GetInputTask();
+	_solver.Process(task->modelPack, d);
+	return  NO_ERROR;
+}
+
 
 //#ifdef DO_UNIT_TESTS
 #include <cassert>
@@ -76,18 +94,32 @@ void testHSC_manager()
 	assert(manager.Setup() == NO_ERROR);
 
 	//Create HHChannels and check execution
+	int modelNumber = 100;
 	int modelSize = 100;
-	for (int var = 0; var < modelSize; ++var) {
-		HSCModel_HHChannel ch;
-		ch.Vm = var;
 
-		HSCModel n;
-		n.AddElement(ch);
+	uint id = 0;
+	for (int var = 0; var < modelNumber; ++var) {
+		vector<HSCModel_Base> model;
+		for (int channels = 0; channels < modelSize; ++channels) {
+			HSCModel_HHChannel ch;
+			ch.Vm = var+channels;
+			ch.id = id++;
 
-		manager.InsertModel(n);
+			model.push_back(ch);
+		}
+		manager.InsertModel(var+200,model);
 	}
 	manager.Reinit();
 	manager.PrepareSolver();
+	manager.AddInputTask(0);
+
+	int ndev= HSC_Device::GetNumberOfActiveDevices();
+	if(ndev > 0)
+	{
+		HSC_Device* d = new HSC_Device(1);
+		manager.Process(NULL, d);
+		delete d;
+	}
 
 
 	//Create Models
@@ -136,3 +168,4 @@ void testHSC_manager()
 //	}
 }
 //#endif
+

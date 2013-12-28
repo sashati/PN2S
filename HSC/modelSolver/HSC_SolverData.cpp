@@ -19,37 +19,29 @@ HSC_SolverData::~HSC_SolverData(){
 
 }
 
-hscError HSC_SolverData::PrepareSolver(vector< vector<HSCModel_Base> > &models){
+hscError HSC_SolverData::PrepareSolver(map<hscID_t, vector<HSCModel_Base> > &models){
 	hscError res = NO_ERROR;
 
 	//Get model's statistic
-	hsc_uint modelNumeber = models.size();
-	vector<hsc_uint> numHHChannels(modelNumeber);
-	vector<hsc_uint> numCaChannels;
-	vector<hsc_uint> numSynChannels;
-	vector<hsc_uint> numCompartments;
+	HSCModelStatistic st;
+	uint modelNumeber = models.size();
+	st.resize(modelNumeber);
 
-	cout << numHHChannels.size() << endl;
-	cout << numCaChannels.size() << endl;
-
-	for (hsc_uint i = 0; i< modelNumeber; i++) {
-		hsc_uint modelSize = models[i].size();
-		hsc_uint numHHChannels = 0;
-		hsc_uint numCaChannels = 0;
-		hsc_uint numSynChannels = 0;
-		hsc_uint numCompartments = 0;
-		for (hsc_uint j = 0; j < modelSize ; j++) {
-//			switch(models[i][j].type)
-//			{
-//			case HSCModel_Base::Type::HHCHannel:
-//				num
-//				break;
-//			}
+	for (uint i = 0; i< modelNumeber; i++) {
+		uint modelSize = models[i].size();
+		for (uint j = 0; j < modelSize ; j++) {
+			//TODO: Pars trees
+			switch(models[i][j].type)
+			{
+			case HHCHannel:
+				st.numHHChannels[i]++;
+				break;
+			}
 		}
 	}
-	res = channels.PrepareSolver(models);
+	res = channels.PrepareSolver(models,st);
 	assert(res);
-	res = comps.PrepareSolver(models);
+	res = comps.PrepareSolver(models, st);
 	assert(res);
 	return  res;
 }

@@ -13,11 +13,13 @@
 class HSC_SolverChannels
 {
 private:
-
+	float* hostMemory;
 public:
 	HSC_SolverChannels();
 	virtual ~HSC_SolverChannels();
 
-	hscError PrepareSolver(vector<vector<HSCModel_Base> > &models);
+	hscError PrepareSolver(
+			map<hscID_t, vector<HSCModel_Base> > &models,
+			HSCModelStatistic st);
 };
 #endif // !defined(A8661C97F_679E_4bb9_84D8_5EEB3718169D__INCLUDED_)

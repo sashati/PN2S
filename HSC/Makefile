@@ -17,13 +17,11 @@ endif
 
 TARGET = _hsc.o
 
-COBJS += 
+#COBJS += HSC_Device.o \
 		 
 OBJS += HSC_Manager.o \
 	HSC_Scheduler.o \
 
-	
-	
 SUBDIR = \
 	modelSolver \
 	
@@ -33,9 +31,9 @@ MODULES = modelSolver/_modelSolver.o
 all: $(TARGET)
 default: all
 
-HSC_Manager.o: HSC_Manager.cpp HSC_Manager.h
-HSC_Scheduler.o: HSC_Scheduler.cpp HSC_Scheduler.h
-
+HSC_Manager.o: HSC_Manager.cpp HSC_Manager.h 
+HSC_Scheduler.o: HSC_Scheduler.cpp HSC_Scheduler.h 
+HSC_Device.o: HSC_Device.cpp HSC_Device.h 
 
 $(TARGET): $(OBJS) $(COBJS) $(SUBDIR)
 #	@(for i in $(SUBDIR) ; do $(MAKE) -C $$i; done)
@@ -45,7 +43,7 @@ $(OBJS):
 	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg $< -c 
 	
 $(COBJS):
-	nvcc --compile -o  "$@" "$<" #-G -O0 -Xcompiler -fPIC -g -gencode arch=compute_30,code=compute_30 -gencode arch=compute_30,code=sm_30  -x cu   
+	nvcc --compile -o  "$@" "$<" -G -O0 -Xcompiler -fPIC -g -gencode arch=compute_30,code=sm_30  -x cu     
 
 .PHONY: clean
 $(SUBDIR): force

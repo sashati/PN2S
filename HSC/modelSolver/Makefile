@@ -17,23 +17,32 @@ endif
 
 TARGET = _modelSolver.o
 
-COBJS += HSC_Solver.o 		\
+COBJS += HSC_SolverChannels.o	\
+		HSC_SolverComps.o	\
+		HSC_SolverData.o	\
+		HSC_Solver.o 		\
+		
 		 
-OBJS += HSCModel.o \
+#OBJS += HSCModel.o \
+
+HEADERS = ../Definitions.h 
 
 .PHONY: all
 all: $(TARGET)
 default: all
 
-HSC_Solver.o: HSC_Solver.cpp HSC_Solver.h
-HSCModel.o: HSCModel.cpp HSCModel.h
+HSC_Solver.o: HSC_Solver.cpp HSC_Solver.h HSC_SolverData.h HSC_SolverData.cpp HSC_SolverChannels.h HSC_SolverChannels.cpp HSC_SolverComps.h HSC_SolverComps.cpp HSCModel_Base.h 
+HSC_SolverData.o: HSC_SolverData.cpp HSC_SolverData.h HSC_SolverChannels.cpp HSC_SolverChannels.h HSC_SolverComps.cpp HSC_SolverComps.h 
+HSC_SolverChannels.o: HSC_SolverChannels.cpp HSC_SolverChannels.h 
+HSC_SolverComps.o: HSC_SolverComps.cpp HSC_SolverComps.h 
+
 
 $(TARGET): $(OBJS) $(COBJS)
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) 
-$(OBJS):
+$(OBJS): $(HEADERS)
 	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg $< -c 
 	
-$(COBJS):
+$(COBJS): $(HEADERS)
 	nvcc --compile -o  "$@" "$<" -G -O0 -Xcompiler -fPIC -g -gencode arch=compute_30,code=sm_30  -x cu   
 
 .PHONY: clean

@@ -20,15 +20,16 @@ HSC_Scheduler::~HSC_Scheduler(){
 }
 
 
-hscError HSC_Scheduler::AddInputTask(HSC_TaskInfo task){
-
+hscError HSC_Scheduler::AddInputTask(HSC_TaskInfo &task){
+	_inputTasks.push_front(task);
 	return  NO_ERROR;
 }
 
 
 HSC_TaskInfo* HSC_Scheduler::GetInputTask(){
-
-	return  NULL;
+	HSC_TaskInfo* res= &_inputTasks[0];
+	_inputTasks.pop_back();
+	return res;
 }
 
 

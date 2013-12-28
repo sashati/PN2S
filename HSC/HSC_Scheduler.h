@@ -14,11 +14,12 @@ class HSC_Scheduler
 {
 
 public:
-	HSC_TaskInfo *m_HSC_TaskInfo;
+	deque<HSC_TaskInfo> _inputTasks; //FIFO queue
+	deque<HSC_TaskInfo> _outputTasks; //FIFO queue
 
 	HSC_Scheduler();
 	virtual ~HSC_Scheduler();
-	hscError AddInputTask(HSC_TaskInfo task);
+	hscError AddInputTask(HSC_TaskInfo &task);
 	HSC_TaskInfo* GetInputTask();
 	void Process();
 	hscError AddOutputTask();

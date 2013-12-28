@@ -8,7 +8,7 @@
 #include "HSC_SolverComps.h"
 
 
-hscError HSC_SolverComps::PrepareSolver(vector< vector<HSCModel_Base> > &models){
+hscError HSC_SolverComps::PrepareSolver(map<hscID_t,  vector<HSCModel_Base> > &models, HSCModelStatistic st){
 
 	return NO_ERROR;
 }

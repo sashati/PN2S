@@ -16,7 +16,7 @@ class HSC_SolverData
 public:
 	HSC_SolverData();
 	virtual ~HSC_SolverData();
-	hscError PrepareSolver(vector<vector<HSCModel_Base> > &models);
+	hscError PrepareSolver(map<hscID_t,vector<HSCModel_Base> > &models);
 
 //	vector<vector<HSCModel_Base> > models; //TODO: Encapsulation
 

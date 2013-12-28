@@ -6,6 +6,18 @@
 ///////////////////////////////////////////////////////////
 
 #include "HSC_Solver.h"
+#include <assert.h>
+
+HSC_Solver::HSC_Solver()
+{
+	solverPacks.clear();
+	_modelToPackMap.clear();
+}
+
+HSC_Solver::~HSC_Solver()
+{
+
+}
 
 hscError HSC_Solver::Setup(){
 
@@ -13,21 +25,27 @@ hscError HSC_Solver::Setup(){
 }
 
 
-hscError HSC_Solver::CreateModelPack(vector<HSCModel> models){
-	for (vector<HSCModel>::iterator i = models.begin(); i != models.end(); ++i) {
-
+hscError HSC_Solver::PrepareSolver(map<hscID_t, vector<HSCModel_Base> > &m){
+	hscError res;
+	//Estimate size of modelpack
+	uint modelPackSize = 1;
+	solverPacks.resize(modelPackSize);
+	// Prepare solver for each modelpack
+	res = solverPacks[0].PrepareSolver(m);
+	//Assign keys to modelPack, to be able to find later
+	for(map<hscID_t, vector<HSCModel_Base> >::iterator it = m.begin(); it != m.end(); ++it) {
+		_modelToPackMap[it->first] = &solverPacks[0];
 	}
 
-	return NO_ERROR;
+	assert(res);
+
+	return res;
 }
 
 
-hscError HSC_Solver::SendDataToGPU(){
-
-	return  NO_ERROR;
+HSC_SolverData* HSC_Solver::LocateDataByID(hscID_t id){
+	return _modelToPackMap[id];
 }
-
-
 /**
  * <ul>
  * 	<li>H2D stream call</li>
@@ -37,9 +55,10 @@ hscError HSC_Solver::SendDataToGPU(){
  *
  * When the output is ready, send it to the output task list
  */
-//void HSC_Solver::DoProcess(HSC_Device* d){
-//
-//}
+void HSC_Solver::Process(HSC_SolverData* data, HSC_Device* d){
+
+
+}
 
 //#ifdef DO_UNIT_TESTS
 #include <cassert>
@@ -52,3 +71,5 @@ void testHSC_Solver()
 
 }
 //#endif
+
+

@@ -15,6 +15,6 @@ class HSC_SolverComps
 {
 
 public:
-	hscError PrepareSolver(vector< vector<HSCModel_Base> > &models);
+	hscError PrepareSolver(map<hscID_t,  vector<HSCModel_Base> > &models, HSCModelStatistic st);
 };
 #endif // !defined(EA_ABB95B66_E531_4681_AE2B_D1CE4B940FF6__INCLUDED_)
