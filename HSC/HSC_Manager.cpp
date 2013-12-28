@@ -7,8 +7,6 @@
 ///////////////////////////////////////////////////////////
 
 #include "HSC_Manager.h"
-#include "modelSolver/HSCModel_Base.h"
-#include "modelSolver/HSCModel_HHChannel.h"
 
 
 HSC_Manager::HSC_Manager(){
@@ -82,8 +80,7 @@ hscError HSC_Manager::Process(HSC_TaskInfo * task, HSC_Device* d){
 //#ifdef DO_UNIT_TESTS
 #include <cassert>
 
-using namespace std;
-
+#include "modelSolver/HSCModel_HHChannel.h"
 void testHSC_manager()
 {
 	cout << "testHSC_manager" << endl <<flush;
@@ -113,13 +110,13 @@ void testHSC_manager()
 	manager.PrepareSolver();
 	manager.AddInputTask(0);
 
-	int ndev= HSC_Device::GetNumberOfActiveDevices();
-	if(ndev > 0)
-	{
-		HSC_Device* d = new HSC_Device(1);
-		manager.Process(NULL, d);
-		delete d;
-	}
+//	int ndev= HSC_Device::GetNumberOfActiveDevices();
+//	if(ndev > 0)
+//	{
+//		HSC_Device* d = new HSC_Device(1);
+//		manager.Process(NULL, d);
+//		delete d;
+//	}
 
 
 	//Create Models

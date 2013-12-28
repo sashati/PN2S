@@ -10,8 +10,9 @@
 
 #include "Definitions.h"
 #include "modelSolver/HSCModel_Base.h"
-//#include "HSC_Solver.h"
+#include "modelSolver/HSC_Solver.h"
 #include "HSC_Scheduler.h"
+#include "HSC_Device.h"
 
 /**
  * This class has a thread to look at scheduler for new tasks and send them to

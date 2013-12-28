@@ -21,7 +21,6 @@ private:
 	map<hscID_t, HSC_SolverData*> _modelToPackMap;
 public:
 	vector<HSC_SolverData> solverPacks;
-	HSC_SolverData *m_HSC_SolverData;
 
 	HSC_Solver();
 	virtual ~HSC_Solver();

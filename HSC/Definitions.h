@@ -6,8 +6,8 @@
 //  Original author: Saeed Shariati
 ///////////////////////////////////////////////////////////
 
-#if !defined(EA_412A01E5_7D8D_4c56_A915_73B69DCFE454__INCLUDED_)
-#define EA_412A01E5_7D8D_4c56_A915_73B69DCFE454__INCLUDED_
+#if !defined(A412A01E5_7D8D_4c56_A915_73B69DCFE454__INCLUDED_)
+#define A412A01E5_7D8D_4c56_A915_73B69DCFE454__INCLUDED_
 
 #include <math.h>
 #include <algorithm>
@@ -37,4 +37,4 @@ enum hscError
 //#define hsc_uint uint
 #define hscID_t uint
 
-#endif // !defined(EA_412A01E5_7D8D_4c56_A915_73B69DCFE454__INCLUDED_)
+#endif // !defined(A412A01E5_7D8D_4c56_A915_73B69DCFE454__INCLUDED_)

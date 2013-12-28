@@ -17,7 +17,7 @@ endif
 
 TARGET = _hsc.o
 
-#COBJS += HSC_Device.o \
+COBJS += HSC_Device.o \
 		 
 OBJS += HSC_Manager.o \
 	HSC_Scheduler.o \

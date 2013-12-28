@@ -40,8 +40,8 @@ hscError HSC_SolverData::PrepareSolver(map<hscID_t, vector<HSCModel_Base> > &mod
 		}
 	}
 	res = channels.PrepareSolver(models,st);
-	assert(res);
+//	assert(1);
 	res = comps.PrepareSolver(models, st);
-	assert(res);
+//	assert(res);
 	return  res;
 }

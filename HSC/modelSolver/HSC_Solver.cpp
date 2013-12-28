@@ -28,17 +28,14 @@ hscError HSC_Solver::Setup(){
 hscError HSC_Solver::PrepareSolver(map<hscID_t, vector<HSCModel_Base> > &m){
 	hscError res;
 	//Estimate size of modelpack
-	uint modelPackSize = 1;
-	solverPacks.resize(modelPackSize);
+	HSC_SolverData d;
+	solverPacks.push_back(d);
 	// Prepare solver for each modelpack
 	res = solverPacks[0].PrepareSolver(m);
 	//Assign keys to modelPack, to be able to find later
 	for(map<hscID_t, vector<HSCModel_Base> >::iterator it = m.begin(); it != m.end(); ++it) {
 		_modelToPackMap[it->first] = &solverPacks[0];
 	}
-
-	assert(res);
-
 	return res;
 }
 

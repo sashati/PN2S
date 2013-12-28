@@ -25,8 +25,6 @@ COBJS += HSC_SolverChannels.o	\
 		 
 #OBJS += HSCModel.o \
 
-HEADERS = ../Definitions.h 
-
 .PHONY: all
 all: $(TARGET)
 default: all
@@ -39,10 +37,10 @@ HSC_SolverComps.o: HSC_SolverComps.cpp HSC_SolverComps.h
 
 $(TARGET): $(OBJS) $(COBJS)
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) 
-$(OBJS): $(HEADERS)
+$(OBJS):
 	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg $< -c 
 	
-$(COBJS): $(HEADERS)
+$(COBJS):
 	nvcc --compile -o  "$@" "$<" -G -O0 -Xcompiler -fPIC -g -gencode arch=compute_30,code=sm_30  -x cu   
 
 .PHONY: clean
