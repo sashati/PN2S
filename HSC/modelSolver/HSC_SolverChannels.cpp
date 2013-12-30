@@ -12,41 +12,49 @@
 
 #define IDX2C(i,j,ld) (((j)*(ld))+(i))
 
-HSC_SolverChannels::HSC_SolverChannels(){
+HSC_SolverChannels::HSC_SolverChannels() {
 
 }
 
-HSC_SolverChannels::~HSC_SolverChannels(){
-	free(hostMemory);
+HSC_SolverChannels::~HSC_SolverChannels() {
+//	free(hostMemory);
 }
 
-static __inline__ void modify (cublasHandle_t handle, float *m, int ldm, int n, int p, int q, float alpha, float beta){
-    cublasSscal (handle, n-p, &alpha, &m[IDX2C(p,q,ldm)], ldm);
-    cublasSscal (handle, ldm-p, &beta, &m[IDX2C(p,q,ldm)], 1);
-}
+hscError HSC_SolverChannels::PrepareSolver(vector<HSCModel> &network, HSC_NetworkAnalyzer &analyzer) {
 
-
-hscError HSC_SolverChannels::PrepareSolver(map<hscID_t, vector <HSCModel_Base> > &models,	HSCModelStatistic st){
-	uint hhSize = st.GetSumHHChannels();
-	hostMemory = (float *)malloc (hhSize * sizeof (*hostMemory));
-
-
-
-
-//	free(hostMemory)
-
-//	uint modelNumeber = models.size();
-//	for (int i = 0; i< modelNumeber; i++) {
-//		uint modelSize = models[i].size();
-//		for (int j = 0; j < modelSize ; j++) {
-//			switch(models[i][j].type)
-//			{
-//			case HSCModel_Base::Type::HHCHannel:
+//	uint hhSize = 0;
+//	uint networkSize = network.size();
+//	for (uint i = 0; i < networkSize; i++)
+//		hhSize += analyzer.[i].size();
 //
-//				break;
-//			}
+//	hostMemory = (float *) malloc(hhSize * sizeof(*hostMemory));
+//
+//	//Fill data
+//	float* dataPointer = hostMemory;
+//	for (uint i = 0; i < networkSize; i++) {
+//		uint modelSize = network[i].hhChannels.size();
+//		for (uint j = 0; j < modelSize; j++) {
+//			*dataPointer = network[i].hhChannels[j].Vm;
+//			dataPointer++;
 //		}
 //	}
+//
+//	cudaMalloc((void**) &deviceMemory, hhSize * sizeof(*deviceMemory));
+//
+//	cublasHandle_t cublasHandle;
+//	cublasStatus_t stat = cublasCreate(&cublasHandle);
+//
+//	cublasSetVector(hhSize, sizeof(*hostMemory), hostMemory, 1, deviceMemory,1);
+//
+//	for(float f =1.1; f<10; f+=.001)
+//		cublasSscal(cublasHandle, hhSize,&f , deviceMemory, 1);
+//
+//	cublasGetVector(hhSize, sizeof(*hostMemory), deviceMemory, 1, hostMemory,	1);
+//
+//	cudaFree(deviceMemory);
+//	cublasDestroy(cublasHandle);
+//	free(hostMemory);
 
-	return  NO_ERROR;
+
+	return NO_ERROR;
 }

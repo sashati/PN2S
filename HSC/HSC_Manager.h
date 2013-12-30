@@ -9,7 +9,7 @@
 #define A1182FDE9_1428_42fc_B1C4_EB304C128113__INCLUDED_
 
 #include "Definitions.h"
-#include "modelSolver/HSCModel_Base.h"
+#include "modelSolver/HSCModel.h"
 #include "modelSolver/HSC_Solver.h"
 #include "HSC_Scheduler.h"
 #include "HSC_Device.h"
@@ -24,16 +24,17 @@ public:
 	HSC_Manager();
 	virtual ~HSC_Manager();
 
-	hscError Setup();
+	vector<HSCModel> models;
+
+	hscError Setup(double dt);
 	hscError Reinit();
 	hscError PrepareSolver();
-	hscError InsertModel(uint key, vector<HSCModel_Base> model);
-	hscError AddInputTask(hscID_t id);
+	hscError AddInputTask(uint id);
 	hscError Process(HSC_TaskInfo * task, HSC_Device* d);
 
 private:
+	double _dt;
 	HSC_Solver _solver;
-	map<uint,vector<HSCModel_Base> > _models;
 	HSC_Scheduler _scheduler;
 
 	void startDeviceThreads();

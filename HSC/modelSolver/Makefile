@@ -23,17 +23,23 @@ COBJS += HSC_SolverChannels.o	\
 		HSC_Solver.o 		\
 		
 		 
-#OBJS += HSCModel.o \
+OBJS += HSCModel_HHChannel.o \
+	HSCModel.o \
+	HSCModel_Compartment.o \
+	HSC_NetworkAnalyzer.o \
 
 .PHONY: all
 all: $(TARGET)
 default: all
 
-HSC_Solver.o: HSC_Solver.cpp HSC_Solver.h HSC_SolverData.h HSC_SolverData.cpp HSC_SolverChannels.h HSC_SolverChannels.cpp HSC_SolverComps.h HSC_SolverComps.cpp HSCModel_Base.h 
+HSC_Solver.o: HSC_Solver.cpp HSC_Solver.h HSC_SolverData.h HSC_SolverData.cpp HSC_SolverChannels.h HSC_SolverChannels.cpp HSC_SolverComps.h HSC_SolverComps.cpp 
 HSC_SolverData.o: HSC_SolverData.cpp HSC_SolverData.h HSC_SolverChannels.cpp HSC_SolverChannels.h HSC_SolverComps.cpp HSC_SolverComps.h 
 HSC_SolverChannels.o: HSC_SolverChannels.cpp HSC_SolverChannels.h 
-HSC_SolverComps.o: HSC_SolverComps.cpp HSC_SolverComps.h 
-
+HSC_SolverComps.o: HSC_SolverComps.cpp HSC_SolverComps.h
+HSCModel_HHChannel.o: HSCModel_HHChannel.cpp HSCModel_HHChannel.h
+HSCModel.o: HSCModel.cpp HSCModel.h 
+HSCModel_Compartment.o: HSCModel_Compartment.cpp HSCModel_Compartment.h
+HSC_NetworkAnalyzer.o: HSC_NetworkAnalyzer.cpp HSC_NetworkAnalyzer.h
 
 $(TARGET): $(OBJS) $(COBJS)
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) 

@@ -8,12 +8,11 @@
 #include "HSCModel_HHChannel.h"
 
 
-//HSCModel_HHChannel::HSCModel_HHChannel(){
-//
-//}
-//
-//
-//
-//HSCModel_HHChannel::~HSCModel_HHChannel(){
-//
-//}
+HSCModel_HHChannel::HSCModel_HHChannel(){
+}
+
+
+
+HSCModel_HHChannel::~HSCModel_HHChannel(){
+
+}

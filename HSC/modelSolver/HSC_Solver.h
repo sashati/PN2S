@@ -10,26 +10,29 @@
 
 #include "../Definitions.h"
 #include "HSC_SolverData.h"
-#include "HSCModel_Base.h"
 #include "HSC_SolverChannels.h"
 #include "HSC_SolverComps.h"
-
+#include "HSCModel.h"
 #include "../HSC_Device.h"
+
 class HSC_Solver
 {
 private:
-	map<hscID_t, HSC_SolverData*> _modelToPackMap;
+	double _dt;
+	map<uint, HSC_SolverData*> _modelToPackMap;
 public:
 	vector<HSC_SolverData> solverPacks;
 
 	HSC_Solver();
 	virtual ~HSC_Solver();
 
-	hscError Setup();
-	hscError PrepareSolver(map<hscID_t, vector<HSCModel_Base> > & _models);
+	double GetDt(){ return _dt;}
+	void SetDt(double dt){ _dt = dt;}
+
+	hscError Setup(double dt);
+	hscError PrepareSolver( vector<HSCModel> & _models);
 	HSC_SolverData* LocateDataByID(hscID_t id);
 	void Process(HSC_SolverData* data, HSC_Device* d);
-
 };
 
 #endif // !defined(FCD33A96_9E58_4bec_BA66_91CF4FD383BD__INCLUDED_)

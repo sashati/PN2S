@@ -21,15 +21,10 @@ HSC_Manager::~HSC_Manager(){
 /**
  * Initialize the manager and set main parameters
  */
-hscError HSC_Manager::Setup(){
-	_solver.Setup();
+hscError HSC_Manager::Setup(double dt){
+	_dt = dt;
+	_solver.Setup(dt);
 
-	return  NO_ERROR;
-}
-
-
-hscError HSC_Manager::InsertModel(uint key, vector<HSCModel_Base> model){
-	_models[key] = model;
 	return  NO_ERROR;
 }
 
@@ -45,9 +40,9 @@ hscError HSC_Manager::Reinit(){
 
 
 hscError HSC_Manager::PrepareSolver(){
-	hscError res = _solver.PrepareSolver(_models);
-	if( res == NO_ERROR)
-		_models.clear();
+	hscError res = _solver.PrepareSolver(models);
+//	if( res == NO_ERROR)
+//		models.clear();
 
 	startDeviceThreads();
 	return res;
@@ -57,7 +52,7 @@ hscError HSC_Manager::PrepareSolver(){
 /**
  * Create and add a task to scheduler
  */
-hscError HSC_Manager::AddInputTask(hscID_t id){
+hscError HSC_Manager::AddInputTask(uint id){
 	//make taskID
 	HSC_TaskInfo task;
 	task.modelPack = _solver.LocateDataByID(id);
@@ -81,6 +76,8 @@ hscError HSC_Manager::Process(HSC_TaskInfo * task, HSC_Device* d){
 #include <cassert>
 
 #include "modelSolver/HSCModel_HHChannel.h"
+#include "modelSolver/HSCModel_Compartment.h"
+
 void testHSC_manager()
 {
 	cout << "testHSC_manager" << endl <<flush;
@@ -88,27 +85,55 @@ void testHSC_manager()
 	HSC_Manager manager;
 
 	//Setup Manager
-	assert(manager.Setup() == NO_ERROR);
+	assert(manager.Setup(1) == NO_ERROR);
 
-	//Create HHChannels and check execution
-	int modelNumber = 100;
-	int modelSize = 100;
+	/*********************
+	 * Check Hines Solver
+	 *********************/
+	/**
+	 *  Cell 2:
+	 *
+	 *             3
+	 *             |
+	 *   Soma--->  2
+	 *            / \
+	 *           /   \
+	 *          1     0
+	 *
+	 */
 
-	uint id = 0;
-	for (int var = 0; var < modelNumber; ++var) {
-		vector<HSCModel_Base> model;
-		for (int channels = 0; channels < modelSize; ++channels) {
-			HSCModel_HHChannel ch;
-			ch.Vm = var+channels;
-			ch.id = id++;
+	int array[ ] =
+	{
+		/* c0  */  -1,
+		/* c1  */  -1,
+		/* c2  */  -1, 0, 1, 3,
+		/* c3  */  -1,
+	};
+	uint arraySize= sizeof( array ) / sizeof( int ) ;
+	uint nCompt = count( array, array + arraySize, -1 );
 
-			model.push_back(ch);
-		}
-		manager.InsertModel(var+200,model);
+	HSCModel neutral(10);
+	for (uint i = 0; i < nCompt; ++i) {
+		HSCModel_Compartment cmp;
+		cmp.Ra = 15.0 + 3.0 * i;
+		cmp.Rm = 45.0 + 15.0 * i;
+		cmp.Cm = 500.0 + 200.0 * i * i;
+
+		neutral.compts.push_back(cmp);
 	}
+
+	int count = -1;
+	for ( unsigned int a = 0; a < arraySize; a++ )
+		if ( array[ a ] == -1 )
+			count++;
+		else
+			neutral.compts[count].children.push_back( array[ a ] );
+
+	manager.models.push_back(neutral);
+
 	manager.Reinit();
 	manager.PrepareSolver();
-	manager.AddInputTask(0);
+//	manager.AddInputTask(0);
 
 //	int ndev= HSC_Device::GetNumberOfActiveDevices();
 //	if(ndev > 0)
@@ -118,51 +143,6 @@ void testHSC_manager()
 //		delete d;
 //	}
 
-
-	//Create Models
-//	vector< int* > childArray;
-//	vector< unsigned int > childArraySize;
-//
-//	/**
-//	 *  Cell 4:
-//	 *
-//	 *             3  <--- Soma
-//	 *             |
-//	 *             2
-//	 *            / \
-//	 *           /   \
-//	 *          1     0
-//	 *
-//	 */
-//
-//	int childArray_4[ ] =
-//	{
-//		/* c0  */  -1,
-//		/* c1  */  -1,
-//		/* c2  */  -1, 0, 1,
-//		/* c3  */  -1, 2,
-//	};
-//
-//	childArray.push_back( childArray_4 );
-//	childArraySize.push_back( sizeof( childArray_4 ) / sizeof( int ) );
-//
-//	double epsilon = 1e-17;
-//	unsigned int i;
-//	unsigned int j;
-//	unsigned int nCompt;
-//	int* array;
-//	unsigned int arraySize;
-//
-//	int cellNumber = 100;
-//	for ( unsigned int cell = 0; cell < childArray.size(); cell++ ) {
-//		array = childArray[ cell ];
-//		arraySize = childArraySize[ cell ];
-//		nCompt = count( array, array + arraySize, -1 );
-//
-//
-//
-//		assert(m.InsertModel() == NO_ERROR);
-//	}
 }
-//#endif
+
 

@@ -6,12 +6,9 @@
 ///////////////////////////////////////////////////////////
 
 #include "HSCModel_Compartment.h"
-
-
-
+//#include "../Definitions.h"
 
 HSCModel_Compartment::HSCModel_Compartment(){
-
 }
 
 

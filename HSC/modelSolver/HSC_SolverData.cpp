@@ -10,7 +10,8 @@
 #include <assert.h>
 
 
-HSC_SolverData::HSC_SolverData(){
+HSC_SolverData::HSC_SolverData(double _dt): 	dt(_dt), _compsSolver(_dt)
+{
 
 }
 
@@ -19,29 +20,14 @@ HSC_SolverData::~HSC_SolverData(){
 
 }
 
-hscError HSC_SolverData::PrepareSolver(map<hscID_t, vector<HSCModel_Base> > &models){
+hscError HSC_SolverData::PrepareSolver(vector<HSCModel > &net){
 	hscError res = NO_ERROR;
 
-	//Get model's statistic
-	HSCModelStatistic st;
-	uint modelNumeber = models.size();
-	st.resize(modelNumeber);
+	analyzer.ImportNetwork(net);
 
-	for (uint i = 0; i< modelNumeber; i++) {
-		uint modelSize = models[i].size();
-		for (uint j = 0; j < modelSize ; j++) {
-			//TODO: Pars trees
-			switch(models[i][j].type)
-			{
-			case HHCHannel:
-				st.numHHChannels[i]++;
-				break;
-			}
-		}
-	}
-	res = channels.PrepareSolver(models,st);
-//	assert(1);
-	res = comps.PrepareSolver(models, st);
-//	assert(res);
+	res = _compsSolver.PrepareSolver(net, analyzer);
+	assert(res==NO_ERROR);
+	res = _channelSolver.PrepareSolver(net, analyzer);
+	assert(res==NO_ERROR);
 	return  res;
 }

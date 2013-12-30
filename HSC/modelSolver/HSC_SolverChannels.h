@@ -8,18 +8,19 @@
 #if !defined(A8661C97F_679E_4bb9_84D8_5EEB3718169D__INCLUDED_)
 #define A8661C97F_679E_4bb9_84D8_5EEB3718169D__INCLUDED_
 #include "../Definitions.h"
-#include "HSCModel_Base.h"
+#include "HSCModel.h"
+#include "HSC_NetworkAnalyzer.h"
 
 class HSC_SolverChannels
 {
 private:
 	float* hostMemory;
+	float* deviceMemory;
+
 public:
 	HSC_SolverChannels();
 	virtual ~HSC_SolverChannels();
 
-	hscError PrepareSolver(
-			map<hscID_t, vector<HSCModel_Base> > &models,
-			HSCModelStatistic st);
+	hscError PrepareSolver(vector<HSCModel> &models, HSC_NetworkAnalyzer &analyzer);
 };
 #endif // !defined(A8661C97F_679E_4bb9_84D8_5EEB3718169D__INCLUDED_)

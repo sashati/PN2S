@@ -9,12 +9,22 @@
 #define EA_ABB95B66_E531_4681_AE2B_D1CE4B940FF6__INCLUDED_
 
 #include "../Definitions.h"
-#include "HSCModel_Base.h"
+#include "HSCModel.h"
+#include "HSC_NetworkAnalyzer.h"
+
+struct HSC_HinexMatrix
+{
+
+};
 
 class HSC_SolverComps
 {
+private:
+	double dt;
 
 public:
-	hscError PrepareSolver(map<hscID_t,  vector<HSCModel_Base> > &models, HSCModelStatistic st);
+	HSC_SolverComps(double _dt);
+	hscError PrepareSolver(vector< HSCModel> &models, HSC_NetworkAnalyzer &analyzer);
+	void  makeHinesMatrix(HSCModel *model, HSC_HinexMatrix& matrix);
 };
 #endif // !defined(EA_ABB95B66_E531_4681_AE2B_D1CE4B940FF6__INCLUDED_)

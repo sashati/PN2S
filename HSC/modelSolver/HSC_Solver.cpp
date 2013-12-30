@@ -10,6 +10,7 @@
 
 HSC_Solver::HSC_Solver()
 {
+	_dt = 1; //1ms
 	solverPacks.clear();
 	_modelToPackMap.clear();
 }
@@ -19,22 +20,23 @@ HSC_Solver::~HSC_Solver()
 
 }
 
-hscError HSC_Solver::Setup(){
-
+hscError HSC_Solver::Setup(double dt){
+	_dt = dt;
 	return  NO_ERROR;
 }
 
 
-hscError HSC_Solver::PrepareSolver(map<hscID_t, vector<HSCModel_Base> > &m){
-	hscError res;
+hscError HSC_Solver::PrepareSolver(vector<HSCModel> &m){
 	//Estimate size of modelpack
-	HSC_SolverData d;
+	HSC_SolverData d(_dt);
+
 	solverPacks.push_back(d);
 	// Prepare solver for each modelpack
-	res = solverPacks[0].PrepareSolver(m);
+	hscError res = solverPacks[0].PrepareSolver(m);
+
 	//Assign keys to modelPack, to be able to find later
-	for(map<hscID_t, vector<HSCModel_Base> >::iterator it = m.begin(); it != m.end(); ++it) {
-		_modelToPackMap[it->first] = &solverPacks[0];
+	for(vector<HSCModel>::iterator it = m.begin(); it != m.end(); ++it) {
+		_modelToPackMap[it->id] = &solverPacks[0];
 	}
 	return res;
 }
