@@ -11,6 +11,7 @@
 #include <cuda_runtime.h>
 
 HSC_Device::HSC_Device(int _id): id(_id){
+	cudaDeviceReset();
 }
 
 HSC_Device::~HSC_Device(){

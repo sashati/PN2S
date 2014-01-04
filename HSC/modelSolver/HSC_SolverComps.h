@@ -12,19 +12,21 @@
 #include "HSCModel.h"
 #include "HSC_NetworkAnalyzer.h"
 
-struct HSC_HinexMatrix
-{
-
-};
-
 class HSC_SolverComps
 {
 private:
 	double dt;
 
+	//CUDA variables
+	float ** _hmListOfDevice; //Contains pointers to all LU matrices in GPU
+	int * _pivotArray_h; //Contains Pivots of all models in LU format at GPU
+
+	//Just for test
+	float ** _hmListOfHost; //Pointers to the Hines matrix or LU matrix at host
+
 public:
 	HSC_SolverComps(double _dt);
 	hscError PrepareSolver(vector< HSCModel> &models, HSC_NetworkAnalyzer &analyzer);
-	void  makeHinesMatrix(HSCModel *model, HSC_HinexMatrix& matrix);
+	void  makeHinesMatrix(HSCModel *model, float * matrix);// float** matrix, uint nCompt);
 };
 #endif // !defined(EA_ABB95B66_E531_4681_AE2B_D1CE4B940FF6__INCLUDED_)
