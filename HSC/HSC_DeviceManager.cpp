@@ -6,14 +6,18 @@
 ///////////////////////////////////////////////////////////
 
 #include "HSC_DeviceManager.h"
-
+#include <cuda.h>
 
 HSC_DeviceManager::HSC_DeviceManager(){
-
+	_devices.clear();
 }
 
 
 
 HSC_DeviceManager::~HSC_DeviceManager(){
 
+}
+
+void HSC_DeviceManager::Setup(){
+	cudaDeviceReset();
 }

@@ -111,8 +111,6 @@ hscError HSC_SolverComps::PrepareSolver(vector<HSCModel > &network, HSC_NetworkA
 	if (infoArray_d) cudaFree(infoArray_d);
 	if (pivotArray_d) cudaFree(pivotArray_d);
 
-	cudaDeviceReset();
-
 	return NO_ERROR;
 }
 

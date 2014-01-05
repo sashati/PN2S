@@ -8,7 +8,6 @@
 
 #include "HSC_Manager.h"
 
-
 HSC_Manager::HSC_Manager(){
 
 }
@@ -40,11 +39,12 @@ hscError HSC_Manager::Reinit(){
 
 
 hscError HSC_Manager::PrepareSolver(){
+	_deviceManager.Setup();
 	hscError res = _solver.PrepareSolver(models);
 //	if( res == NO_ERROR)
 //		models.clear();
 
-	startDeviceThreads();
+//	startDeviceThreads();
 	return res;
 }
 
@@ -59,15 +59,22 @@ hscError HSC_Manager::AddInputTask(uint id){
 
 	//Add to scheduler
 	_scheduler.AddInputTask(task);
+
 	return  NO_ERROR;
 }
 
 /**
  * A time increment process for each object
  */
-hscError HSC_Manager::Process(HSC_TaskInfo * task, HSC_Device* d){
-	task = _scheduler.GetInputTask();
-	_solver.Process(task->modelPack, d);
+hscError HSC_Manager::Process(uint id){
+	HSC_TaskInfo tInfo;
+	tInfo.modelPack = _solver.LocateDataByID(id);
+	_scheduler.AddInputTask(tInfo);
+
+	//TODO: This part should do Asynchronously
+	HSC_TaskInfo* t = _scheduler.GetInputTask();
+
+	_solver.Process(t->modelPack, &(_deviceManager._devices[0]));
 	return  NO_ERROR;
 }
 
@@ -197,7 +204,7 @@ void testHSC_manager()
 
 	manager.Reinit();
 	manager.PrepareSolver();
-//	manager.AddInputTask(0);
+	manager.Process(10);
 
 //	int ndev= HSC_Device::GetNumberOfActiveDevices();
 //	if(ndev > 0)

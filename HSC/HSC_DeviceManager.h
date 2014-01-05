@@ -21,8 +21,7 @@ class HSC_DeviceManager
 public:
 	HSC_DeviceManager();
 	virtual ~HSC_DeviceManager();
-	HSC_Device *m_HSC_Device;
-	HSC_Scheduler *m_HSC_Scheduler;
-
+	void Setup();
+	vector<HSC_Device> _devices; //TODO: Should be private
 };
 #endif // !defined(EA_8204B80E_EF46_47df_8AB8_FC787EF1223C__INCLUDED_)

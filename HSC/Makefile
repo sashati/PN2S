@@ -18,6 +18,7 @@ endif
 TARGET = _hsc.o
 
 COBJS += HSC_Device.o \
+	HSC_DeviceManager.o \
 		 
 OBJS += HSC_Manager.o \
 	HSC_Scheduler.o \
@@ -33,7 +34,8 @@ default: all
 
 HSC_Manager.o: HSC_Manager.cpp HSC_Manager.h 
 HSC_Scheduler.o: HSC_Scheduler.cpp HSC_Scheduler.h 
-HSC_Device.o: HSC_Device.cpp HSC_Device.h 
+HSC_Device.o: HSC_Device.cpp HSC_Device.h
+HSC_DeviceManager.o: HSC_DeviceManager.cpp HSC_DeviceManager.h 
 
 $(TARGET): $(OBJS) $(COBJS) $(SUBDIR)
 #	@(for i in $(SUBDIR) ; do $(MAKE) -C $$i; done)

@@ -13,6 +13,7 @@
 #include "modelSolver/HSC_Solver.h"
 #include "HSC_Scheduler.h"
 #include "HSC_Device.h"
+#include "HSC_DeviceManager.h"
 
 /**
  * This class has a thread to look at scheduler for new tasks and send them to
@@ -30,12 +31,13 @@ public:
 	hscError Reinit();
 	hscError PrepareSolver();
 	hscError AddInputTask(uint id);
-	hscError Process(HSC_TaskInfo * task, HSC_Device* d);
+	hscError Process(uint id);
 
 private:
 	double _dt;
 	HSC_Solver _solver;
 	HSC_Scheduler _scheduler;
+	HSC_DeviceManager _deviceManager;
 
 	void startDeviceThreads();
 
