@@ -55,8 +55,8 @@ HSC_SolverData* HSC_Solver::LocateDataByID(hscID_t id){
  * When the output is ready, send it to the output task list
  */
 void HSC_Solver::Process(HSC_SolverData* data, HSC_Device* d){
-
-
+	hscError res = data->Process();
+	assert(!res);
 }
 
 //#ifdef DO_UNIT_TESTS

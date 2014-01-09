@@ -204,7 +204,9 @@ void testHSC_manager()
 
 	manager.Reinit();
 	manager.PrepareSolver();
-	manager.Process(10);
+
+	uint id = 10;
+	manager.Process(id);
 
 //	int ndev= HSC_Device::GetNumberOfActiveDevices();
 //	if(ndev > 0)

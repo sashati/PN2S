@@ -24,9 +24,12 @@ private:
 	//Just for test
 	float ** _hmListOfHost; //Pointers to the Hines matrix or LU matrix at host
 
+	void  makeHinesMatrix(HSCModel *model, float * matrix);// float** matrix, uint nCompt);
+
 public:
 	HSC_SolverComps(double _dt);
+	~HSC_SolverComps();
 	hscError PrepareSolver(vector< HSCModel> &models, HSC_NetworkAnalyzer &analyzer);
-	void  makeHinesMatrix(HSCModel *model, float * matrix);// float** matrix, uint nCompt);
+	hscError Process();
 };
 #endif // !defined(EA_ABB95B66_E531_4681_AE2B_D1CE4B940FF6__INCLUDED_)

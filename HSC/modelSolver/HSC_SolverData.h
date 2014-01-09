@@ -18,6 +18,7 @@ public:
 	virtual ~HSC_SolverData();
 	hscError PrepareSolver(vector<HSCModel > &models);
 
+	hscError Process();
 //	vector<vector<HSCModel_Base> > models; //TODO: Encapsulation
 
 private:

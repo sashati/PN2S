@@ -31,3 +31,9 @@ hscError HSC_SolverData::PrepareSolver(vector<HSCModel > &net){
 	assert(res==NO_ERROR);
 	return  res;
 }
+
+hscError HSC_SolverData::Process()
+{
+	_compsSolver.Process();
+	return NO_ERROR;
+}
