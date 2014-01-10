@@ -20,6 +20,8 @@
 
 #include <iostream>
 #include <sstream>
+#include <stdio.h>
+#include <stdlib.h>
 #include "HSC_HelperFunctions.h"
 
 //#include <typeinfo> // used in Conv.h to extract compiler independent typeid
@@ -33,6 +35,12 @@ enum hscError
 	NO_ERROR = 0
 
 };
+
+//	Architectures
+#define ARCH_SM13       (0)
+#define ARCH_SM20       (1)
+#define ARCH_SM30       (2)
+#define ARCH_SM35       (3)
 
 //#define checkCudaErrors(val)    ( (val), #val, __FILE__, __LINE__ )
 

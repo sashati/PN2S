@@ -21,6 +21,7 @@ COBJS += HSC_SolverChannels.o	\
 		HSC_SolverComps.o	\
 		HSC_SolverData.o	\
 		HSC_Solver.o 		\
+		solve.o			\
 		
 		 
 OBJS += HSCModel_HHChannel.o \
@@ -40,6 +41,7 @@ HSCModel_HHChannel.o: HSCModel_HHChannel.cpp HSCModel_HHChannel.h
 HSCModel.o: HSCModel.cpp HSCModel.h 
 HSCModel_Compartment.o: HSCModel_Compartment.cpp HSCModel_Compartment.h
 HSC_NetworkAnalyzer.o: HSC_NetworkAnalyzer.cpp HSC_NetworkAnalyzer.h
+solve.o: solve.cu solve.h operations.h
 
 $(TARGET): $(OBJS) $(COBJS)
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) 

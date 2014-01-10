@@ -10,11 +10,9 @@
 #include <assert.h>
 
 
-HSC_SolverData::HSC_SolverData(double _dt): 	dt(_dt), _compsSolver(_dt)
-{
+HSC_SolverData::HSC_SolverData(){
 
 }
-
 
 HSC_SolverData::~HSC_SolverData(){
 
@@ -23,11 +21,11 @@ HSC_SolverData::~HSC_SolverData(){
 hscError HSC_SolverData::PrepareSolver(vector<HSCModel > &net){
 	hscError res = NO_ERROR;
 
-	analyzer.ImportNetwork(net);
+	_analyzer.ImportNetwork(net);
 
-	res = _compsSolver.PrepareSolver(net, analyzer);
+	res = _compsSolver.PrepareSolver(net, _analyzer);
 	assert(res==NO_ERROR);
-	res = _channelSolver.PrepareSolver(net, analyzer);
+	res = _channelSolver.PrepareSolver(net, _analyzer);
 	assert(res==NO_ERROR);
 	return  res;
 }
