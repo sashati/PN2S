@@ -29,7 +29,7 @@ void HSolvePassive::setup( Id seed, double dt ) {
 	
 	HinesMatrix::setup( tree_, dt_ );
 
-	HSC_Proxy::InsertModel(tree_, dt_ );
+	HSC_Proxy::InsertCompartmentModel(seed,tree_, dt_ );
 }
 
 void HSolvePassive::solve() {

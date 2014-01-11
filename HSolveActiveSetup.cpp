@@ -30,6 +30,7 @@ void HSolveActive::setup( Id seed, double dt ) {
 	//~ cout << ".. HA.setup()" << endl;
 	
 	this->HSolvePassive::setup( seed, dt );
+	seed_ = seed;
 	
 	readHHChannels();
 	readGates();

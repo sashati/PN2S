@@ -95,7 +95,7 @@ template <typename T, int arch>
 hscError HSC_SolverComps<T,arch>::Process()
 {
 	for (int var = 0; var < nModel*nComp; ++var) {
-		_rhs[var] = var*1000;
+		_rhs[var] = var;
 //		B[ i ] =V[ i ] * tree[ i ].Cm / ( dt / 2.0 ) +Em[ i ] / tree[ i ].Rm;
 	}
 	_printVector(nModel*nComp, _rhs);

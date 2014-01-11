@@ -24,11 +24,14 @@ class HSC_Manager
 public:
 	static hscError Setup(double dt);
 	static hscError Reinit();
+	static bool IsInitialized();
+	static void InsertModel(HSCModel &m);
 	static hscError PrepareSolver();
-	static hscError AddInputTask(uint id);
 	static hscError Process(uint id);
+	static hscError AddInputTask(uint id);
 
 private:
+
 	static void startDeviceThreads();
 
 };

@@ -12,13 +12,14 @@
  * The class that use HSC package and deal with moose constrains.
  */
 #include "HSC/Definitions.h"
+#include "header.h" //Moose parts
 #include "HinesMatrix.h"
 
 class HSC_Proxy
 {
 
 public:
-	static void InsertModel( const vector< TreeNodeStruct >& tree, double dt);
+	static void InsertCompartmentModel(Id seed, const vector< TreeNodeStruct >& tree, double dt);
 	static void Reinit();
 	static void Process(int id);
 

@@ -22,6 +22,9 @@ using namespace moose;
 //~ #include "ZombieCompartment.h"
 //~ #include "ZombieCaConc.h"
 
+//HSC classes
+#include "HSC/HSC_Manager.h"
+
 extern ostream& operator <<( ostream& s, const HinesMatrix& m );
 
 const int HSolveActive::INSTANT_X = 1;
@@ -55,7 +58,9 @@ void HSolveActive::step( ProcPtr info ) {
 	HSolvePassive::backwardSubstitute();
 	advanceCalcium();
 	advanceSynChans( info );
-	
+
+	HSC_Manager::Process(seed_.value());
+
 	sendValues( info );
 	sendSpikes( info );
 	

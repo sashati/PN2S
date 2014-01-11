@@ -24,6 +24,9 @@
 #include "../biophysics/HHChannel.h"
 #include "ZombieHHChannel.h"
 
+//HSC classes
+#include "HSC/HSC_Manager.h"
+
 const Cinfo* HSolve::initCinfo()
 {
 	static DestFinfo process(
@@ -199,6 +202,12 @@ void HSolve::reinit( const Eref& hsolve, ProcPtr p )
 {
 	dt_ = p->dt;
 	this->HSolveActive::reinit( p );
+
+	if(!HSC_Manager::IsInitialized())
+	{
+		HSC_Manager::Reinit();
+		HSC_Manager::PrepareSolver();
+	}
 }
 
 void HSolve::zombify( Eref hsolve ) const

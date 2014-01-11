@@ -14,7 +14,7 @@ static double _dt;
 static HSC_Solver _solver;
 static HSC_Scheduler _scheduler;
 static HSC_DeviceManager _deviceManager;
-
+static bool _isInitialized = false;
 
 /**
  * Initialize the manager and set main parameters
@@ -33,7 +33,16 @@ void HSC_Manager::startDeviceThreads(){
 
 
 hscError HSC_Manager::Reinit(){
+	_isInitialized = true;
 	return  NO_ERROR;
+}
+
+bool HSC_Manager::IsInitialized(){
+	return  _isInitialized;
+}
+
+void HSC_Manager::InsertModel(HSCModel &neutral){
+	_models.push_back(neutral);
 }
 
 
@@ -100,7 +109,7 @@ static void generateModel(uint nCompt, uint arraySize, int* array, int id) {
 			count++;
 		else
 			neutral.compts[count].children.push_back(array[a]);
-	_models.push_back(neutral);
+	HSC_Manager::InsertModel(neutral);
 }
 
 
