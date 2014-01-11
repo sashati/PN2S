@@ -7,36 +7,16 @@
 
 #include "HSC_Proxy.h"
 
-
-HSC_Proxy::HSC_Proxy(){
-
-}
-
-
-
-HSC_Proxy::~HSC_Proxy(){
-
-}
-
-
-
-
-
 /**
  * This method is responsible to create model and get pertinent information from
  * the Shell and send it to Manager
  */
-void HSC_Proxy::InsertModel(int id){
+void HSC_Proxy::InsertModel( const vector< TreeNodeStruct >& tree, double dt){
 
 }
 
 
 void HSC_Proxy::Reinit(){
-
-}
-
-
-void HSC_Proxy::createModel(){
 
 }
 

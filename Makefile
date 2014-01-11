@@ -9,10 +9,10 @@
 #**********************************************************************/
 
 TARGET = _hsolve.o
-CLIB = cudaLibrary/_hsolveCudaLib.o
+CLIB = HSC/_hsc.o
 OBJ = \
 	HSolveStruct.o \
-	HinesMatrixProxy.o \
+	HinesMatrix.o \
 	HSolvePassive.o \
 	RateLookup.o \
 	HSolveActive.o \
@@ -24,31 +24,30 @@ OBJ = \
 	ZombieCompartment.o \
 	ZombieCaConc.o \
 	ZombieHHChannel.o \
-	HSC_PerformSimulation.o \
+	HSC_Proxy.o
 	
 
 HEADERS = \
 	../basecode/header.h
 
 SUBDIR = \
-	cudaLibrary \
-	testHines
+	HSC
 
 default: $(TARGET)
 
 $(OBJ)	: $(HEADERS)
 HSolveStruct.o:	HSolveStruct.h
-HinesMatrixProxy.o:	HinesMatrixProxy.h TestHSolve.h HinesMatrixProxy.cpp
-HSolvePassive.o:	HSolvePassive.h HinesMatrixProxy.h HSolveStruct.h HSolveUtils.h TestHSolve.h ../biophysics/Compartment.h
+HinesMatrix.o:	HinesMatrix.h TestHSolve.h HinesMatrix.cpp
+HSolvePassive.o:	HSolvePassive.h HinesMatrix.h HSolveStruct.h HSolveUtils.h TestHSolve.h ../biophysics/Compartment.h
 RateLookup.o:	RateLookup.h
-HSolveActive.o:	HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrixProxy.h HSolveStruct.h
-HSolveActiveSetup.o:	HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrixProxy.h HSolveStruct.h HSolveUtils.h ../biophysics/HHChannel.h ../biophysics/ChanBase.h ../biophysics/HHGate.h ../biophysics/CaConc.h
-HSolveInterface.o:	HSolveCuda.h HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrixProxy.h HSolveStruct.h
-HSolveCuda.o:	../biophysics/Compartment.h ZombieCompartment.h ../biophysics/CaConc.h ZombieCaConc.h ../biophysics/HHGate.h ../biophysics/ChanBase.h ../biophysics/HHChannel.h ZombieHHChannel.h HSolveCuda.h HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrixProxy.h HSolveStruct.h ../basecode/ElementValueFinfo.h
-ZombieCompartment.o:	ZombieCompartment.h ../randnum/randnum.h ../biophysics/Compartment.h HSolveCuda.h HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrixProxy.h HSolveStruct.h ../basecode/ElementValueFinfo.h
-ZombieCaConc.o:	ZombieCaConc.h ../biophysics/CaConc.h HSolveCuda.h HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrixProxy.h HSolveStruct.h ../basecode/ElementValueFinfo.h
-ZombieHHChannel.o:	ZombieHHChannel.h ../biophysics/HHChannel.h ../biophysics/ChanBase.h ../biophysics/HHGate.h HSolveCuda.h HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrixProxy.h HSolveStruct.h ../basecode/ElementValueFinfo.h
-HSC_PerformSimulation.o:	HSC_PerformSimulation.cpp	HSC_PerformSimulation.hpp
+HSolveActive.o:	HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrix.h HSolveStruct.h
+HSolveActiveSetup.o:	HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrix.h HSolveStruct.h HSolveUtils.h ../biophysics/HHChannel.h ../biophysics/ChanBase.h ../biophysics/HHGate.h ../biophysics/CaConc.h
+HSolveInterface.o:	HSolveCuda.h HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrix.h HSolveStruct.h
+HSolveCuda.o:	../biophysics/Compartment.h ZombieCompartment.h ../biophysics/CaConc.h ZombieCaConc.h ../biophysics/HHGate.h ../biophysics/ChanBase.h ../biophysics/HHChannel.h ZombieHHChannel.h HSolveCuda.h HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrix.h HSolveStruct.h ../basecode/ElementValueFinfo.h
+ZombieCompartment.o:	ZombieCompartment.h ../randnum/randnum.h ../biophysics/Compartment.h HSolveCuda.h HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrix.h HSolveStruct.h ../basecode/ElementValueFinfo.h
+ZombieCaConc.o:	ZombieCaConc.h ../biophysics/CaConc.h HSolveCuda.h HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrix.h HSolveStruct.h ../basecode/ElementValueFinfo.h
+ZombieHHChannel.o:	ZombieHHChannel.h ../biophysics/HHChannel.h ../biophysics/ChanBase.h ../biophysics/HHGate.h HSolveCuda.h HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrix.h HSolveStruct.h ../basecode/ElementValueFinfo.h
+HSC_Proxy.o:	HSC_Proxy.cpp	HSC_Proxy.h
 
 .cpp.o:
 	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I. -I../basecode -I../msg $< -c -I/usr/local/cuda/include

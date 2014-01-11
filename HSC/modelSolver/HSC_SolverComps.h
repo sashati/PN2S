@@ -22,15 +22,13 @@ private:
 
 
 	//CUDA variables
-	T **_hmList_dev; // A pointer to the Device list of matrix pointers
-	T ** _hmListOfMatricesInDevice; //A list in Host that each node is a device pointers to one LU matrix
-	int * _pivotArray_h; //Contains Pivots of all models in LU format at GPU
-	int * _pivotArray_d;
-	int * _infoArray_d;
-	int * _infoArray_h;
+	T *_hm; // A pointer to Hines Matrices
+	T *_hm_dev; // A pointer to Hines Matrices
+	T *_rhs; // Right hand side of the equation
+	T *_rhs_dev; // Right hand side of the equation
+	T *_Vm; // Vm of the compartments
+	T *_Vm_dev; // Vm of the compartments
 
-	//Just for test
-	T ** _hmListOfHost; //Pointers to the Hines matrix or LU matrix at host
 
 	void  makeHinesMatrix(HSCModel *model, T * matrix);// float** matrix, uint nCompt);
 

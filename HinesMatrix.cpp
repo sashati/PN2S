@@ -8,132 +8,19 @@
 **********************************************************************/
 
 #include "header.h"
-#include "HinesMatrixProxy.h"
+#include "HinesMatrix.h"
 #include <sstream>
 #include <iomanip>
 
-
-#include "HSC_PerformSimulation.hpp"
-// CUDA module
-#include "cudaLibrary/SharedNeuronGpuData.hpp"
-#include "cudaLibrary/KernelInfo.hpp"
-#include "cudaLibrary/ThreadInfo.hpp"
-#include "cudaLibrary/Connections.hpp"
-#include "cudaLibrary/HSC_HinesMatrix.hpp"
-#include "cudaLibrary/ActiveChannels.hpp"
-#include "cudaLibrary/PlatformFunctions.hpp"
-#include "cudaLibrary/SpikeStatistics.hpp"
-#include "cudaLibrary/GpuSimulationControl.hpp"
-
-HinesMatrixProxy::HinesMatrixProxy()
+HinesMatrix::HinesMatrix()
 	:
 	nCompt_( 0 ),
 	dt_( 0.0 ),
 	stage_( -1 )
 { ; }
 
-void HinesMatrixProxy::GPU_KernelSetup() {
-	tInfo = new ThreadInfo;
-	tInfo->sharedData = new SharedNeuronGpuData;
-	tInfo->sharedData->kernelInfo = new KernelInfo;
-
-	tInfo->sharedData->nBarrier = 0;
-	tInfo->sharedData->mutex = new pthread_mutex_t;
-	tInfo->sharedData->cond = new pthread_cond_t;
-	pthread_cond_init (  tInfo->sharedData->cond, NULL );
-	pthread_mutex_init( tInfo->sharedData->mutex, NULL );
-
-	tInfo->sharedData->synData = 0;
-	tInfo->sharedData->hGpu = 0;
-	tInfo->sharedData->hList = 0;
-	tInfo->sharedData->globalSeed = time(NULL);
-}
-
-
-
-ThreadInfo *createInfoArray(int nThreads, ThreadInfo *model){
-	ThreadInfo *tInfoArray = new ThreadInfo[nThreads];
-	for (int i=0; i<nThreads; i++) {
-		tInfoArray[i].sharedData 	= model->sharedData;
-		tInfoArray[i].nComp			= model->nComp;
-		tInfoArray[i].nNeurons		= model->nNeurons;
-		tInfoArray[i].nNeuronsTotalType = model->nNeuronsTotalType;
-
-		tInfoArray[i].nTypes		= model->nTypes;
-		tInfoArray[i].totalTypes	= model->totalTypes;
-	}
-
-	return tInfoArray;
-}
-
-void HinesMatrixProxy::configureNeuronTypes(ThreadInfo*& tInfo, int nNeuronsTotal,  char *configFileName) {
-
-	tInfo->nTypes = 1;
-	tInfo->totalTypes = tInfo->nTypes * tInfo->sharedData->nThreadsCpu;
-
-	tInfo->nNeurons = new int[tInfo->totalTypes];
-	tInfo->nComp = new int[tInfo->totalTypes];
-	tInfo->sharedData->typeList = new int[tInfo->totalTypes];
-	tInfo->nNeuronsTotalType = new int[tInfo->nTypes];
-	for (int type=0; type < tInfo->nTypes; type++)
-		tInfo->nNeuronsTotalType[ type ] = 0;
-
-	tInfo->sharedData->matrixList = new HSC_HinesMatrix *[tInfo->totalTypes];
-	for (int i = 0; i < tInfo->totalTypes; i += tInfo->nTypes) {
-        tInfo->nNeurons[i] = nNeuronsTotal / (tInfo->totalTypes);
-        tInfo->nComp[i] = nCompt_;
-        tInfo->sharedData->typeList[i] = NORMAL_CELL;
-        tInfo->nNeuronsTotalType[ tInfo->sharedData->typeList[i] ] += tInfo->nNeurons[i];
-	}
-}
-
-void HinesMatrixProxy::configureSimulation(ThreadInfo *& tInfo, int nNeurons, char *configFile)
+void HinesMatrix::setup( const vector< TreeNodeStruct >& tree, double dt )
 {
-
-	// Configure the types and number of neurons
-	configureNeuronTypes(tInfo, nNeurons, configFile);
-
-	// defines some default values
-	tInfo->sharedData->inputSpikeRate = 0.1;
-	tInfo->sharedData->pyrPyrConnRatio   = 0.1;
-	tInfo->sharedData->pyrInhConnRatio   = 0.1;
-	tInfo->sharedData->totalTime   = 100; // in ms
-
-	tInfo->sharedData->randWeight = 1;
-
-	printf ("Simulation configured as: Running scalability experiments.\n");
-
-//	benchConf.printSampleVms = 1;
-//	benchConf.printAllVmKernelFinish = 0;
-//	benchConf.printAllSpikeTimes = 0;
-//	benchConf.checkGpuComm = 0;
-//
-//	benchConf.setMode(NN_GPU, NN_CPU);
-//
-//	benchConf.gpuCommBenchMode = GPU_COMM_SIMPLE;
-
-	//TODO: Saeed remove
-	tInfo->sharedData->totalTime   = 1000;
-	tInfo->sharedData->inputSpikeRate = 0.01;
-	tInfo->sharedData->connectivityType = CONNECT_RANDOM_1;
-
-	tInfo->sharedData->excWeight = 0.01;  //1.0/(nPyramidal/100.0); 0.05
-	tInfo->sharedData->pyrInhWeight = 0.1; //1.0/(nPyramidal/100.0);
-	tInfo->sharedData->inhPyrWeight = 1;
-
-	tInfo->sharedData->pyrPyrConnRatio   = 100.0 / (nNeurons/tInfo->nTypes); // nPyramidal //100
-	tInfo->sharedData->pyrInhConnRatio   = 100.0 / (nNeurons/tInfo->nTypes); // nPyramidal //100
-
-	tInfo->sharedData->excWeight    = 0.030;
-	tInfo->sharedData->pyrInhWeight = 0.035;
-	tInfo->sharedData->inhPyrWeight = 10;
-
-}
-
-void HinesMatrixProxy::setup( const vector< TreeNodeStruct >& tree, double dt )
-{
-	GPU_KernelSetup();
-
 	clear();
 	
 	nCompt_ = tree.size();
@@ -146,19 +33,9 @@ void HinesMatrixProxy::setup( const vector< TreeNodeStruct >& tree, double dt )
 	makeJunctions();
 	makeMatrix();
 	makeOperands();
-
-
-	int nNeuronsTotal = 1;
-
-	tInfo->sharedData->nThreadsCpu = 1;
-	configureSimulation(tInfo, nNeuronsTotal, 0);
-
-	HSC_PerformSimulation *simulation = new HSC_PerformSimulation(tInfo);
-	simulation->setup(tree_,dt);
-
 }
 
-void HinesMatrixProxy::clear()
+void HinesMatrix::clear()
 {
 	nCompt_ = 0;
 	dt_ = 0.0;
@@ -189,7 +66,7 @@ bool groupCompare(
 }
 
 // Stage 3
-void HinesMatrixProxy::makeJunctions() {
+void HinesMatrix::makeJunctions() {
 	// 3.1
 	for ( unsigned int i = 0; i < nCompt_; ++i ) {
 		const vector< unsigned int >& c = ( *tree_ )[ i ].children;
@@ -234,7 +111,7 @@ void HinesMatrixProxy::makeJunctions() {
 }
 
 // Stage 4
-void HinesMatrixProxy::makeMatrix() {
+void HinesMatrix::makeMatrix() {
 	const vector< TreeNodeStruct >& node = *tree_;
 	
 	// Setting up HS
@@ -319,7 +196,7 @@ void HinesMatrixProxy::makeMatrix() {
 }
 
 // Stage 5
-void HinesMatrixProxy::makeOperands() {
+void HinesMatrix::makeOperands() {
 	unsigned int index;
 	unsigned int rank;
 	unsigned int farIndex;
@@ -449,12 +326,12 @@ void HinesMatrixProxy::makeOperands() {
 ///////////////////////////////////////////////////////////////////////////
 // Public interface to matrix
 ///////////////////////////////////////////////////////////////////////////
-unsigned int HinesMatrixProxy::getSize() const
+unsigned int HinesMatrix::getSize() const
 {
 	return nCompt_;
 }
 
-double HinesMatrixProxy::getA( unsigned int row, unsigned int col ) const
+double HinesMatrix::getA( unsigned int row, unsigned int col ) const
 {
 	/*
 	 * If forward elimination is done, or backward substitution is done, and
@@ -508,12 +385,12 @@ double HinesMatrixProxy::getA( unsigned int row, unsigned int col ) const
 	}
 }
 
-double HinesMatrixProxy::getB( unsigned int row ) const
+double HinesMatrix::getB( unsigned int row ) const
 {
 	return HS_[ 4 * row + 3 ];
 }
 
-double HinesMatrixProxy::getVMid( unsigned int row ) const
+double HinesMatrix::getVMid( unsigned int row ) const
 {
 	return VMid_[ row ];
 }
@@ -521,7 +398,7 @@ double HinesMatrixProxy::getVMid( unsigned int row ) const
 ///////////////////////////////////////////////////////////////////////////
 // Inserting into a stream
 ///////////////////////////////////////////////////////////////////////////
-ostream& operator <<( ostream& s, const HinesMatrixProxy& m )
+ostream& operator <<( ostream& s, const HinesMatrix& m )
 {
 	unsigned int size = m.getSize();
 	
@@ -552,7 +429,7 @@ ostream& operator <<( ostream& s, const HinesMatrixProxy& m )
 void testHinesMatrix()
 {
 	return;
-	//~ cout << "\nTesting HinesMatrixProxy" << flush;
+	//~ cout << "\nTesting HinesMatrix" << flush;
 	vector< int* > childArray;
 	vector< unsigned int > childArraySize;
 	
@@ -768,7 +645,7 @@ void testHinesMatrix()
 	////////////////////////////////////////////////////////////////////////////
 	// Run tests
 	////////////////////////////////////////////////////////////////////////////
-	HinesMatrixProxy H;
+	HinesMatrix H;
 	vector< TreeNodeStruct > tree;
 	double dt = 1.0;
 	

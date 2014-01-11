@@ -10,7 +10,6 @@
 #include "header.h"
 #include <set>
 #include <limits> // Max and min 'double' values needed for lookup table init.
-#include "HinesMatrixProxy.h"
 #include "../biophysics/CaConc.h"
 #include "../biophysics/HHGate.h"
 #include "../biophysics/ChanBase.h"
@@ -18,6 +17,7 @@
 #include "../biophysics/SpikeGen.h"
 #include "HSolveUtils.h"
 #include "HSolveStruct.h"
+#include "HinesMatrix.h"
 #include "HSolvePassive.h"
 #include "RateLookup.h"
 #include "HSolveActive.h"
