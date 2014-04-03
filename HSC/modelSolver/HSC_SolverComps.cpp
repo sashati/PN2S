@@ -104,11 +104,8 @@ hscError HSC_SolverComps<T,arch>::Process()
     int ret = dsolve_batch (_hm_dev, _rhs_dev, _Vm_dev, nComp, nModel);
     assert(!ret);
 
-//    for (int var = 0; var < nModel*nComp; ++var) {
-//		_Vm[var] = 0;
-//	}
 	cublasGetVector(nModel*nComp, sizeof(_Vm[0]),_Vm_dev, 1,_Vm, 1);
-//	_printVector(nModel*nComp, _Vm);
+	//_printVector(nModel*nComp, _Vm);
 
 	return NO_ERROR;
 }
