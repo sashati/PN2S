@@ -25,6 +25,7 @@ void _printMatrix_Column(int m, int n, T_ELEM* A) {
 	}
 	cout << endl << flush;
 }
+
 template <typename T_ELEM>
 void _printMatrix(int m, int n, T_ELEM* A) {
 	for (int i = 0; i < m; ++i) {
@@ -46,6 +47,13 @@ void inline _printMatrix(vector< vector< double > >& matrix)
 		cout << endl;
 	}
 	cout <<endl<<flush;
+}
+template <typename T_ELEM>
+void _printVector(int n, T_ELEM* A) {
+	for (int j = 0; j < n; ++j) {
+		cout << A[j] << ", ";
+	}
+	cout << endl << flush;
 }
 
 void inline _printVector(vector< double >& vec)

@@ -28,9 +28,9 @@ hscError HSC_Solver::Setup(double dt){
 
 hscError HSC_Solver::PrepareSolver(vector<HSCModel> &m){
 	//Estimate size of modelpack
-	HSC_SolverData d(_dt);
+	solverPacks.resize(1);
+	solverPacks[0].SetDt(_dt);
 
-	solverPacks.push_back(d);
 	// Prepare solver for each modelpack
 	hscError res = solverPacks[0].PrepareSolver(m);
 

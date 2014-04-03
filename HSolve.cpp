@@ -10,12 +10,11 @@
 #include "header.h"
 #include "ElementValueFinfo.h"
 #include "HSolveStruct.h"
-#include "HSolveUtils.h"
-#include "HinesMatrixProxy.h"
+#include "HinesMatrix.h"
 #include "HSolvePassive.h"
 #include "RateLookup.h"
 #include "HSolveActive.h"
-#include "HSolveCuda.h"
+#include "HSolve.h"
 #include "../biophysics/Compartment.h"
 #include "ZombieCompartment.h"
 #include "../biophysics/CaConc.h"
@@ -25,6 +24,8 @@
 #include "../biophysics/HHChannel.h"
 #include "ZombieHHChannel.h"
 
+//HSC classes
+#include "HSC/HSC_Manager.h"
 
 const Cinfo* HSolve::initCinfo()
 {
@@ -201,18 +202,24 @@ void HSolve::reinit( const Eref& hsolve, ProcPtr p )
 {
 	dt_ = p->dt;
 	this->HSolveActive::reinit( p );
+
+	if(!HSC_Manager::IsInitialized())
+	{
+		HSC_Manager::Reinit();
+		HSC_Manager::PrepareSolver();
+	}
 }
 
 void HSolve::zombify( Eref hsolve ) const
 {
 	vector< Id >::const_iterator i;
-
+	
 	for ( i = compartmentId_.begin(); i != compartmentId_.end(); ++i )
 		ZombieCompartment::zombify( hsolve.element(), i->eref().element() );
-
+	
 	for ( i = caConcId_.begin(); i != caConcId_.end(); ++i )
 		ZombieCaConc::zombify( hsolve.element(), i->eref().element() );
-
+	
 	for ( i = channelId_.begin(); i != channelId_.end(); ++i )
 		ZombieHHChannel::zombify( hsolve.element(), i->eref().element() );
 }
@@ -221,11 +228,9 @@ void HSolve::setup( Eref hsolve )
 {
 	// Setup solver.
 	this->HSolveActive::setup( seed_, dt_ );
-
+	
 	zombify( hsolve );
 	mapIds();
-
-
 }
 
 ///////////////////////////////////////////////////
@@ -239,7 +244,7 @@ void HSolve::setSeed( Id seed )
 		     << "' is not derived from type 'Compartment'." << endl;
 		return;
 	}
-
+	
 	seed_ = seed;
 }
 
@@ -254,9 +259,9 @@ void HSolve::setPath( const Eref& hsolve, const Qinfo* q, string path )
 		cerr << "Error: HSolve::setPath(): Must set 'dt' first.\n";
 		return;
 	}
-
+	
 	seed_ = deepSearchForCompartment( Id( path ) );
-
+	
 	if ( seed_ == Id() )
 		cerr << "Warning: HSolve::setPath(): No compartments found at or below '"
 		     << path << "'.\n";
@@ -307,19 +312,19 @@ Id HSolve::deepSearchForCompartment( Id base )
 	while ( !cstack.empty() )
 		if ( cstack.back().empty() ) {
 			cstack.pop_back();
-
+			
 			if ( !cstack.empty() )
 				cstack.back().pop_back();
 		} else {
 			current = cstack.back().back();
-
+			
 			// if ( current()->cinfo() == moose::Compartment::initCinfo() )
 			// Compartment is base class for SymCompartment.
 			if ( current()->cinfo()->isA( "Compartment" ) ) {
 				result = current;
 				break;
 			}
-
+			
 			cstack.push_back( children( current ) );
 		}
 	
@@ -343,7 +348,7 @@ void HSolve::setDt( double dt )
 		cerr << "Error: HSolve: 'dt' must be positive.\n";
 		return;
 	}
-
+	
 	dt_ = dt;
 }
 
@@ -358,7 +363,7 @@ void HSolve::setCaAdvance( int caAdvance )
 		cerr << "Error: HSolve: caAdvance should be either 0 or 1.\n";
 		return;
 	}
-
+	
 	caAdvance_ = caAdvance;
 }
 
@@ -458,7 +463,7 @@ void HSolve::deleteIncomingMessages( Element * orig, const string finfo)
         Element * otherEl = other.id.element();
         if (otherEl &&  HSolve::handledClasses().find(otherEl->cinfo()->name()) != HSolve::handledClasses().end()){
             Msg::deleteMsg(mid);
-        } else {
+        } else { 
 			break; // Have to do this otherwise it is an infinite loop
 		}
         mid = orig->findCaller(concenDest->getFid());
@@ -504,4 +509,4 @@ void testHSolvePassiveSingleComp()
 
 
 #endif // if 0
-
+ 

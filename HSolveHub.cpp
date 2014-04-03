@@ -13,7 +13,7 @@
 #include "biophysics/HHChannel.h"
 #include "biophysics/CaConc.h"
 #include "HSolveStruct.h"
-#include "HinesMatrixProxy.h"
+#include "HinesMatrix.h"
 #include "HSolvePassive.h"
 #include "RateLookup.h"
 #include "HSolveActive.h"

@@ -11,12 +11,12 @@
 #include "ElementValueFinfo.h"
 #include "../randnum/randnum.h"
 #include "../biophysics/Compartment.h"
-#include "HinesMatrixProxy.h"
+#include "HinesMatrix.h"
 #include "HSolveStruct.h"
 #include "HSolvePassive.h"
 #include "RateLookup.h"
 #include "HSolveActive.h"
-#include "HSolveCuda.h"
+#include "HSolve.h"
 #include "ZombieCompartment.h"
 
 using namespace moose;

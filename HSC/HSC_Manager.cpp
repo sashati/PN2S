@@ -8,14 +8,13 @@
 
 #include "HSC_Manager.h"
 
-HSC_Manager::HSC_Manager(){
+static vector<HSCModel> _models;
 
-}
-
-
-HSC_Manager::~HSC_Manager(){
-
-}
+static double _dt;
+static HSC_Solver _solver;
+static HSC_Scheduler _scheduler;
+static HSC_DeviceManager _deviceManager;
+static bool _isInitialized = false;
 
 /**
  * Initialize the manager and set main parameters
@@ -23,7 +22,7 @@ HSC_Manager::~HSC_Manager(){
 hscError HSC_Manager::Setup(double dt){
 	_dt = dt;
 	_solver.Setup(dt);
-
+	_models.clear();
 	return  NO_ERROR;
 }
 
@@ -34,13 +33,22 @@ void HSC_Manager::startDeviceThreads(){
 
 
 hscError HSC_Manager::Reinit(){
+	_isInitialized = true;
 	return  NO_ERROR;
+}
+
+bool HSC_Manager::IsInitialized(){
+	return  _isInitialized;
+}
+
+void HSC_Manager::InsertModel(HSCModel &neutral){
+	_models.push_back(neutral);
 }
 
 
 hscError HSC_Manager::PrepareSolver(){
 	_deviceManager.Setup();
-	hscError res = _solver.PrepareSolver(models);
+	hscError res = _solver.PrepareSolver(_models);
 //	if( res == NO_ERROR)
 //		models.clear();
 
@@ -85,8 +93,7 @@ hscError HSC_Manager::Process(uint id){
 #include "modelSolver/HSCModel_HHChannel.h"
 #include "modelSolver/HSCModel_Compartment.h"
 
-void generateModel(uint nCompt, uint arraySize, int* array,
-		HSC_Manager& manager, int id) {
+static void generateModel(uint nCompt, uint arraySize, int* array, int id) {
 
 	HSCModel neutral(id);
 	for (uint i = 0; i < nCompt; ++i) {
@@ -102,7 +109,7 @@ void generateModel(uint nCompt, uint arraySize, int* array,
 			count++;
 		else
 			neutral.compts[count].children.push_back(array[a]);
-	manager.models.push_back(neutral);
+	HSC_Manager::InsertModel(neutral);
 }
 
 
@@ -110,10 +117,8 @@ void testHSC_manager()
 {
 	cout << "testHSC_manager" << endl <<flush;
 
-	HSC_Manager manager;
-
 	//Setup Manager
-	assert(manager.Setup(1) == NO_ERROR);
+	assert(HSC_Manager::Setup(1) == NO_ERROR);
 
 
 	/*********************
@@ -198,15 +203,15 @@ void testHSC_manager()
 		array = childArray[ cell ];
 		arraySize = childArraySize[ cell ];
 		nCompt = count( array, array + arraySize, -1 );
-		generateModel(nCompt, arraySize, array, manager,cell+10);
+		generateModel(nCompt, arraySize, array, cell+10);
 	}
 
 
-	manager.Reinit();
-	manager.PrepareSolver();
+	HSC_Manager::Reinit();
+	HSC_Manager::PrepareSolver();
 
 	uint id = 10;
-	manager.Process(id);
+	HSC_Manager::Process(id);
 
 //	int ndev= HSC_Device::GetNumberOfActiveDevices();
 //	if(ndev > 0)

@@ -49,12 +49,10 @@ struct TreeNodeStruct
 	double initVm;
 };
 
-#include "HSC_PerformSimulation.hpp"
-
-class HinesMatrixProxy
+class HinesMatrix
 {
 public:
-	HinesMatrixProxy();
+	HinesMatrix();
 	
 	void setup( const vector< TreeNodeStruct >& tree, double dt );
 	
@@ -85,8 +83,7 @@ protected:
 	vector< vdIterator >      backOperand_;
 	int                       stage_;		///< Which stage the simulation has
 											///< reached. Used in getA.
-	HSC_PerformSimulation *hsc_simulation;
-	ThreadInfo* tInfo;
+	
 private:
 	void clear();
 	void makeJunctions();
@@ -97,7 +94,7 @@ private:
 		 *   compartments. Each element of coupled_ is sorted (they are all
 		 *   unsigned ints) and coupled_ itself is sorted by the first element
 		 *   in each element (groupCompare does this comparison in
-		 *   HinesMatrixProxy.cpp).
+		 *   HinesMatrix.cpp).
 		 *   Note: the children themselves are unsigned ints that store the
 		 *   Hines index of the corresponding child compartment.
 		 *   So essentially, at each branch, a JunctionStruct is created for 
@@ -107,9 +104,7 @@ private:
 		 *   All of the electrical circuit analysis goes into this one single
 		 *   function (and updateMatrix, of course). */
 	void makeOperands();	///< Makes operands in order to make forward
-	void GPU_KernelSetup();
-
-	///< elimination easier.
+							///< elimination easier.
 	
 	const vector< TreeNodeStruct >     *tree_;		///< Stores compt info for
 													///< setup.
@@ -126,10 +121,6 @@ private:
 	map< unsigned int, unsigned int >  groupNumber_;
 		/**< Tells you the index of a compartment's group within coupled_, 
 		 *   given the compartment's Hines index. */
-
-	//New CUDA supports
-	void configureSimulation(ThreadInfo *& tInfo, int nNeurons, char *configFile);
-	void configureNeuronTypes( ThreadInfo*& tInfo, int nNeuronsTotal,  char *configFileName);
 };
 
 #endif // _HINES_MATRIX_H

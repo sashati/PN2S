@@ -115,7 +115,7 @@ protected:
 		*   Tells you which compartments have external calcium-dependent
 		*   channels so that you can send out Calcium concentrations in only
 		*   those compartments. */
-	
+	Id seed_;
 private:
 	/**
 	 * Setting up of data structures: Defined in HSolveActiveSetup.cpp

@@ -10,7 +10,7 @@
 #ifndef _HSOLVE_PASSIVE_H
 #define _HSOLVE_PASSIVE_H
 
-class HSolvePassive: public HinesMatrixProxy
+class HSolvePassive: public HinesMatrix
 {
 #ifdef DO_UNIT_TESTS
 	friend void testHSolvePassive();

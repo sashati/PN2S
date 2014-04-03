@@ -12,11 +12,11 @@
 #include "Cell.h"
 
 #include "HSolveStruct.h"
-#include "HinesMatrixProxy.h"
+#include "HinesMatrix.h"
 #include "HSolvePassive.h"
 #include "RateLookup.h"
 #include "HSolveActive.h"
-#include "HSolveCuda.h"
+#include "HSolve.h"
 
 map< string, Cell::MethodInfo > Cell::methodMap_;
 

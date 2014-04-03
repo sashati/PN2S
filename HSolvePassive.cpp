@@ -12,10 +12,12 @@
 using namespace moose; // For moose::Compartment from 'Compartment.h'
 #include "HSolveUtils.h"
 #include "HSolveStruct.h"
-#include "HinesMatrixProxy.h"
+#include "HinesMatrix.h"
 #include "HSolvePassive.h"
 
-extern ostream& operator <<( ostream& s, const HinesMatrixProxy& m );
+#include "HSC_Proxy.h"
+
+extern ostream& operator <<( ostream& s, const HinesMatrix& m );
 
 void HSolvePassive::setup( Id seed, double dt ) {
 	clear();
@@ -25,7 +27,9 @@ void HSolvePassive::setup( Id seed, double dt ) {
 	initialize();
 	storeTree();
 	
-	HinesMatrixProxy::setup( tree_, dt_ );
+	HinesMatrix::setup( tree_, dt_ );
+
+	HSC_Proxy::InsertCompartmentModel(seed,tree_, dt_ );
 }
 
 void HSolvePassive::solve() {

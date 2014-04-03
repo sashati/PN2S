@@ -22,24 +22,17 @@
 class HSC_Manager
 {
 public:
-	HSC_Manager();
-	virtual ~HSC_Manager();
-
-	vector<HSCModel> models;
-
-	hscError Setup(double dt);
-	hscError Reinit();
-	hscError PrepareSolver();
-	hscError AddInputTask(uint id);
-	hscError Process(uint id);
+	static hscError Setup(double dt);
+	static hscError Reinit();
+	static bool IsInitialized();
+	static void InsertModel(HSCModel &m);
+	static hscError PrepareSolver();
+	static hscError Process(uint id);
+	static hscError AddInputTask(uint id);
 
 private:
-	double _dt;
-	HSC_Solver _solver;
-	HSC_Scheduler _scheduler;
-	HSC_DeviceManager _deviceManager;
 
-	void startDeviceThreads();
+	static void startDeviceThreads();
 
 };
 #endif // !defined(A1182FDE9_1428_42fc_B1C4_EB304C128113__INCLUDED_)

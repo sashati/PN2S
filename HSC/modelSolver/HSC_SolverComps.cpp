@@ -8,127 +8,118 @@
 #include "HSC_SolverComps.h"
 #include <assert.h>
 #include <cublas_v2.h>
+#include "solve.h"
 
-HSC_SolverComps::HSC_SolverComps(double _dt): dt(_dt)
+// Macro to catch CUDA errors in CUDA runtime calls
+#define CUDA_SAFE_CALL(call)                                          \
+do {                                                                  \
+    cudaError_t err = call;                                           \
+    if (cudaSuccess != err) {                                         \
+        fprintf (stderr, "Cuda error in file '%s' in line %i : %s.\n",\
+                 __FILE__, __LINE__, cudaGetErrorString(err) );       \
+        exit(EXIT_FAILURE);                                           \
+    }                                                                 \
+} while (0)
+
+cublasHandle_t cublasHandle;
+
+template <typename T, int arch>
+HSC_SolverComps<T,arch>::HSC_SolverComps()
 {
-	_hmListOfHost = 0;
-	_hmListOfDevice = 0;
-	_pivotArray_h = 0;
+	_hm = 0;
+	_hm_dev = 0;
+	_rhs = 0;
+	_rhs_dev = 0;
+	_Vm = 0;
+	_Vm_dev = 0;
 }
 
-HSC_SolverComps::~HSC_SolverComps()
+template <typename T, int arch>
+HSC_SolverComps<T,arch>::~HSC_SolverComps()
 {
-	if (_pivotArray_h) free(_pivotArray_h);
-	if(_hmListOfHost[0]) free(_hmListOfHost[0]);
-	if(_hmListOfDevice[0]) cudaFree(_hmListOfDevice[0]);
+	if (_hm) free(_hm);
+	if(_rhs) free(_rhs);
+	if (_Vm) free(_Vm);
+	if (_hm_dev) cudaFree(_hm_dev);
+	if(_rhs_dev) cudaFree(_rhs_dev);
+	if (_Vm_dev) cudaFree(_Vm_dev);
 }
 
-hscError HSC_SolverComps::PrepareSolver(vector<HSCModel > &network, HSC_NetworkAnalyzer &analyzer)
+template <typename T, int arch>
+hscError HSC_SolverComps<T,arch>::PrepareSolver(vector<HSCModel > &network, HSC_NetworkAnalyzer &analyzer)
 {
-	uint nModel = analyzer.nModel;
-	uint nComp = analyzer.nComp;
-
+	nModel = analyzer.nModel;
+	nComp = analyzer.nComp;
+	uint modelSize = nComp*nComp;
 	cudaError_t success;
+	cublasStatus_t cublasSuccess;
+	//Define memory
+	_hm =(T*)malloc(modelSize*nModel * sizeof(_hm[0]));
+	CUDA_SAFE_CALL(cudaMallocHost((void **) &_rhs, nComp*nModel * sizeof(_rhs[0]))); //Define pinned memories
+	CUDA_SAFE_CALL(cudaMallocHost((void **) &_Vm, nComp*nModel * sizeof(_Vm[0]))); 	//Define pinned memories
 
-	_hmListOfDevice =(float **)malloc(nModel * sizeof(*_hmListOfDevice));
-	_hmListOfHost =(float **)malloc(nModel * sizeof(*_hmListOfHost));
-
-	//Get memory for each hm in GPU and Host
-	success = cudaMalloc((void **)&_hmListOfDevice[0],nModel* nComp*nComp * sizeof(_hmListOfDevice[0][0]));
-	_hmListOfHost[0] = (float *)malloc(nModel* nComp*nComp * sizeof(_hmListOfHost[0][0]));
-	assert(!success);
-	for (int i = 1; i < nModel; ++i) {
-		_hmListOfHost[i] = _hmListOfHost[i-1]+nComp*nComp;
-		_hmListOfDevice[i] = _hmListOfDevice[i-1]+nComp*nComp;
-	}
-
-	// Send pointer list to device
-	float **_hmList_dev = NULL;
-	success = cudaMalloc((void **)&_hmList_dev, nModel * sizeof(*_hmListOfDevice));
-	assert(!success);
-	success = cudaMemcpy(_hmList_dev, _hmListOfDevice, nModel * sizeof(*_hmListOfDevice), cudaMemcpyHostToDevice);
-	assert(!success);
-
-	//Create output variables
-	int * infoArray_h = 0;
-
-	//A nComp x nModel matrix which contains PivotArray of all models in the network
-	_pivotArray_h =(int *)malloc(nComp * nModel * sizeof(*_pivotArray_h));
-	infoArray_h =(int *)malloc(nModel * sizeof(*infoArray_h));
-
-	int * pivotArray_d;
-	int * infoArray_d;
-	cudaMalloc((void**) (&pivotArray_d), nModel*nComp * sizeof(*pivotArray_d));
-	cudaMalloc((void**) (&infoArray_d), nModel * sizeof(*infoArray_d));
-
-	cublasHandle_t cublasHandle;
-	cublasStatus_t stat = cublasCreate(&cublasHandle);
+	CUDA_SAFE_CALL(cudaMalloc((void **) &_hm_dev, modelSize*nModel * sizeof(_hm_dev[0])));
+	CUDA_SAFE_CALL(cudaMalloc((void **) &_rhs_dev, nComp*nModel * sizeof(_rhs_dev[0])));
+	CUDA_SAFE_CALL(cudaMalloc((void **) &_Vm_dev, nComp*nModel * sizeof(_Vm_dev[0])));
 
 	//making Hines Matrices
-	//TODO: use streams
 	for(int i=0; i< nModel;i++ )
 	{
-		makeHinesMatrix(&network[i], _hmListOfHost[i]);
-		_printMatrix_Column(nComp,nComp, _hmListOfHost[i]);
-		cublasSetMatrix(nComp, nComp, sizeof(_hmListOfHost[i][0]), _hmListOfHost[i], nComp, _hmListOfDevice[i], nComp);
+		makeHinesMatrix(&network[i], &_hm[i*modelSize]);
+		_printMatrix_Column(nComp,nComp, &_hm[i*modelSize]);
+		cublasSetMatrix(nComp, nComp, sizeof(_hm[0]),
+				&_hm[i*modelSize], nComp,
+				&_hm_dev[i*modelSize], nComp);
 	}
+
 
 	cudaDeviceSynchronize();
 
-	cublasStatus_t cubSucc = cublasSgetrfBatched(
-			cublasHandle, nComp,
-			(float **)_hmList_dev, nComp,
-			pivotArray_d,
-			infoArray_d,
-			nModel);
-	assert(!cubSucc);
+	//	cublasGetVector(nModel, sizeof(*_infoArray_h), _infoArray_d, 1,_infoArray_h, 1);
 
-	cublasGetMatrix(nComp, nModel, sizeof(*pivotArray_d), pivotArray_d, nComp,_pivotArray_h, nComp);
-	cublasGetVector(nModel, sizeof(*infoArray_h), infoArray_d, 1,infoArray_h, 1);
-
-
-	_printMatrix(nComp,nModel, _pivotArray_h);
-	_printMatrix(nModel,1, infoArray_h);
-
-	memset(_hmListOfHost[0],0,nModel* nComp*nComp * sizeof(_hmListOfHost[0][0]));
-	for(int i=0; i< nModel;i++ )
-	{
-		cubSucc = cublasGetMatrix(nComp, nComp, sizeof(_hmListOfHost[i][0]), _hmListOfDevice[i], nComp,_hmListOfHost[i], nComp);
-		assert(!cubSucc);
-		_printMatrix_Column(nComp,nComp, _hmListOfHost[i]);
-	}
-
-//
-//	printMatrix_Column(n, n, A_h);
-//	printMatrix(n, nModel, pivotArray_h);
-//	printMatrix(nModel, 1, infoArray_h);
-//
-//	cublasDestroy(cublasHandle);
-//
-
-//	free(A_h);
-
-	if (_hmListOfDevice) free(_hmListOfDevice);
-	if (infoArray_h) free(infoArray_h);
-	if (_hmList_dev) cudaFree(_hmList_dev);
-	if (infoArray_d) cudaFree(infoArray_d);
-	if (pivotArray_d) cudaFree(pivotArray_d);
+//	//Reset host mem
+//	for(uint i=0; i< nModel*modelSize;i++ ) _hm[i]=0;
+//	for(int i=0; i< nModel;i++ )
+//	{
+//		cublasSuccess = cublasGetMatrix(nComp, nComp, sizeof(_hm[0]),
+//				&_hm_dev[i*modelSize], nComp,
+//				&_hm[i*modelSize], nComp);
+//		assert(!cublasSuccess);
+//		_printMatrix_Column(nComp,nComp, &_hm[i*modelSize]);
+//	}
 
 	return NO_ERROR;
 }
 
-
-void HSC_SolverComps::makeHinesMatrix(HSCModel *model, float * matrix)
+template <typename T, int arch>
+hscError HSC_SolverComps<T,arch>::Process()
 {
-	unsigned int nCompt = model->compts.size();
+	for (int var = 0; var < nModel*nComp; ++var) {
+		_rhs[var] = var;
+//		B[ i ] =V[ i ] * tree[ i ].Cm / ( dt / 2.0 ) +Em[ i ] / tree[ i ].Rm;
+	}
+	_printVector(nModel*nComp, _rhs);
+	cublasSetVector(nModel*nComp, sizeof(_rhs[0]),_rhs, 1,_rhs_dev, 1);
 
+    int ret = dsolve_batch (_hm_dev, _rhs_dev, _Vm_dev, nComp, nModel);
+    assert(!ret);
+
+	cublasGetVector(nModel*nComp, sizeof(_Vm[0]),_Vm_dev, 1,_Vm, 1);
+	//_printVector(nModel*nComp, _Vm);
+
+	return NO_ERROR;
+}
+
+template <typename T, int arch>
+void HSC_SolverComps<T,arch>::makeHinesMatrix(HSCModel *model, T * matrix)
+{
 	/*
 	 * Some convenience variables
 	 */
-	vector< double > CmByDt(nCompt);
-	vector< double > Ga(nCompt);
-	for ( unsigned int i = 0; i < nCompt; i++ ) {
-		CmByDt[i] = model->compts[ i ].Cm / ( dt / 2.0 ) ;
+	vector< double > CmByDt(nComp);
+	vector< double > Ga(nComp);
+	for ( unsigned int i = 0; i < nComp; i++ ) {
+		CmByDt[i] = model->compts[ i ].Cm / ( _dt / 2.0 ) ;
 		Ga[i] =  2.0 / model->compts[ i ].Ra ;
 	}
 
@@ -137,15 +128,15 @@ void HSC_SolverComps::makeHinesMatrix(HSCModel *model, float * matrix)
 	 * of the cell.
 	 */
 	vector< vector< unsigned int > > coupled;
-	for ( unsigned int i = 0; i < nCompt; i++ )
+	for ( unsigned int i = 0; i < nComp; i++ )
 		if ( model->compts[ i ].children.size() >= 1 ) {
 			coupled.push_back( model->compts[ i ].children );
 			coupled.back().push_back( i );
 		}
 
 	// Setting diagonal elements
-	for ( unsigned int i = 0; i < nCompt; i++ )
-		matrix[ i * nCompt + i ] = CmByDt[ i ] + 1.0 / model->compts[ i ].Rm;
+	for ( unsigned int i = 0; i < nComp; i++ )
+		matrix[ i * nComp + i ] = (T)(CmByDt[ i ] + 1.0 / model->compts[ i ].Rm);
 
 
 	double gi;
@@ -160,7 +151,7 @@ void HSC_SolverComps::makeHinesMatrix(HSCModel *model, float * matrix)
 		for ( ic = group->begin(); ic != group->end(); ++ic ) {
 			gi = Ga[ *ic ];
 
-			matrix[ *ic * nCompt + *ic ] += gi * ( 1.0 - gi / gsum );
+			matrix[ *ic * nComp + *ic ] += (T) (gi * ( 1.0 - gi / gsum ));
 		}
 	}
 
@@ -178,106 +169,11 @@ void HSC_SolverComps::makeHinesMatrix(HSCModel *model, float * matrix)
 			for ( jc = ic + 1; jc != group->end(); ++jc ) {
 				gij = Ga[ *ic ] * Ga[ *jc ] / gsum;
 
-				matrix[ *ic * nCompt + *jc ] = -gij;
-				matrix[ *jc * nCompt + *ic ] = -gij;
+				matrix[ *ic * nComp + *jc ] = (T)(-gij);
+				matrix[ *jc * nComp + *ic ] = (T)(-gij);
 			}
 		}
 	}
 }
 
-hscError HSC_SolverComps::Process()
-{
-//	uint nModel = analyzer.nModel;
-//	uint nComp = analyzer.nComp;
-//
-//	cudaError_t success;
-//
-//	_hmListOfDevice =(float **)malloc(nModel * sizeof(*_hmListOfDevice));
-//	_hmListOfHost =(float **)malloc(nModel * sizeof(*_hmListOfHost));
-//
-//	//Get memory for each hm in GPU and Host
-//	success = cudaMalloc((void **)&_hmListOfDevice[0],nModel* nComp*nComp * sizeof(_hmListOfDevice[0][0]));
-//	_hmListOfHost[0] = (float *)malloc(nModel* nComp*nComp * sizeof(_hmListOfHost[0][0]));
-//	assert(!success);
-//	for (int i = 1; i < nModel; ++i) {
-//		_hmListOfHost[i] = _hmListOfHost[i-1]+nComp*nComp;
-//		_hmListOfDevice[i] = _hmListOfDevice[i-1]+nComp*nComp;
-//	}
-//
-//	// Send pointer list to device
-//	float **_hmList_dev = NULL;
-//	success = cudaMalloc((void **)&_hmList_dev, nModel * sizeof(*_hmListOfDevice));
-//	assert(!success);
-//	success = cudaMemcpy(_hmList_dev, _hmListOfDevice, nModel * sizeof(*_hmListOfDevice), cudaMemcpyHostToDevice);
-//	assert(!success);
-//
-//	//Create output variables
-//	int * infoArray_h = 0;
-//
-//	//A nComp x nModel matrix which contains PivotArray of all models in the network
-//	_pivotArray_h =(int *)malloc(nComp * nModel * sizeof(*_pivotArray_h));
-//	infoArray_h =(int *)malloc(nModel * sizeof(*infoArray_h));
-//
-//	int * pivotArray_d;
-//	int * infoArray_d;
-//	cudaMalloc((void**) (&pivotArray_d), nModel*nComp * sizeof(*pivotArray_d));
-//	cudaMalloc((void**) (&infoArray_d), nModel * sizeof(*infoArray_d));
-//
-//	cublasHandle_t cublasHandle;
-//	cublasStatus_t stat = cublasCreate(&cublasHandle);
-//
-//	//making Hines Matrices
-//	//TODO: use streams
-//	for(int i=0; i< nModel;i++ )
-//	{
-//		makeHinesMatrix(&network[i], _hmListOfHost[i]);
-//		_printMatrix_Column(nComp,nComp, _hmListOfHost[i]);
-//		cublasSetMatrix(nComp, nComp, sizeof(_hmListOfHost[i][0]), _hmListOfHost[i], nComp, _hmListOfDevice[i], nComp);
-//	}
-//
-//	cudaDeviceSynchronize();
-//
-//	for (int level = 0; level < nComp; ++level) {
-//		cublasStatus_t cubSucc = cublasSgetrfBatched(
-//				cublasHandle, nComp,
-//				(float **)_hmList_dev, nComp,
-//				pivotArray_d,
-//				infoArray_d,
-//				nModel);
-//		assert(!cubSucc);
-//	}
-//
-//	cublasGetMatrix(nComp, nModel, sizeof(*pivotArray_d), pivotArray_d, nComp,_pivotArray_h, nComp);
-//	cublasGetVector(nModel, sizeof(*infoArray_h), infoArray_d, 1,infoArray_h, 1);
-//
-//
-//	_printMatrix(nComp,nModel, _pivotArray_h);
-//	_printMatrix(nModel,1, infoArray_h);
-//
-//	memset(_hmListOfHost[0],0,nModel* nComp*nComp * sizeof(_hmListOfHost[0][0]));
-//	for(int i=0; i< nModel;i++ )
-//	{
-//		cubSucc = cublasGetMatrix(nComp, nComp, sizeof(_hmListOfHost[i][0]), _hmListOfDevice[i], nComp,_hmListOfHost[i], nComp);
-//		assert(!cubSucc);
-//		_printMatrix_Column(nComp,nComp, _hmListOfHost[i]);
-//	}
-//
-////
-////	printMatrix_Column(n, n, A_h);
-////	printMatrix(n, nModel, pivotArray_h);
-////	printMatrix(nModel, 1, infoArray_h);
-////
-////	cublasDestroy(cublasHandle);
-////
-//
-////	free(A_h);
-//
-//	if (_hmListOfDevice) free(_hmListOfDevice);
-//	if (infoArray_h) free(infoArray_h);
-//	if (_hmList_dev) cudaFree(_hmList_dev);
-//	if (infoArray_d) cudaFree(infoArray_d);
-//	if (pivotArray_d) cudaFree(pivotArray_d);
-//
-//	return NO_ERROR;
-	return NO_ERROR;
-}
+template class HSC_SolverComps<double, ARCH_SM30>;

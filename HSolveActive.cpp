@@ -10,11 +10,11 @@
 #include "header.h"
 #include <queue>
 #include "HSolveStruct.h"
-#include "HinesMatrixProxy.h"
+#include "HinesMatrix.h"
 #include "HSolvePassive.h"
 #include "RateLookup.h"
 #include "HSolveActive.h"
-#include "HSolveCuda.h"
+#include "HSolve.h"
 #include "../biophysics/Compartment.h"
 #include "../biophysics/CaConc.h"
 #include "ZombieCaConc.h"
@@ -22,7 +22,10 @@ using namespace moose;
 //~ #include "ZombieCompartment.h"
 //~ #include "ZombieCaConc.h"
 
-extern ostream& operator <<( ostream& s, const HinesMatrixProxy& m );
+//HSC classes
+#include "HSC/HSC_Manager.h"
+
+extern ostream& operator <<( ostream& s, const HinesMatrix& m );
 
 const int HSolveActive::INSTANT_X = 1;
 const int HSolveActive::INSTANT_Y = 2;
@@ -50,17 +53,14 @@ void HSolveActive::step( ProcPtr info ) {
 	
 	advanceChannels( info->dt );
 	calculateChannelCurrents();
-
-
-	HinesMatrixProxy::hsc_simulation->step(info);
-
 	updateMatrix();
 	HSolvePassive::forwardEliminate();
 	HSolvePassive::backwardSubstitute();
-
 	advanceCalcium();
 	advanceSynChans( info );
-	
+
+	HSC_Manager::Process(seed_.value());
+
 	sendValues( info );
 	sendSpikes( info );
 	
