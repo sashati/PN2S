@@ -1,0 +1,1 @@
+#define HSC_MAX_THREADS 10

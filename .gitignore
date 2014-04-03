@@ -14,7 +14,6 @@
 
 #Specific files
 HSC/HSC_Test
-HSC.old/*
-cudaLibrary/Debug/*
-testHines/.svn/*
+.svn/
+*/.svn
 

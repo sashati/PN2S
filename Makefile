@@ -8,7 +8,7 @@
 #** See the file COPYING.LIB for the full notice.
 #**********************************************************************/
 
-TARGET = _hsolve.o
+TARGET = _hsolveCuda.o
 CLIB = HSC/_hsc.o
 OBJ = \
 	HSolveStruct.o \
@@ -25,7 +25,6 @@ OBJ = \
 	ZombieCaConc.o \
 	ZombieHHChannel.o \
 	HSC_Proxy.o
-	
 
 HEADERS = \
 	../basecode/header.h
