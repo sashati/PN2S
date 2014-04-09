@@ -25,23 +25,24 @@ private:
 
 	//CUDA variables
 
-	T *_hm; 	// A pointer to Hines Matrices
-	T *_hm_dev; // A pointer to Hines Matrices
-	T *_rhs; 	// Right hand side of the equation
-	T *_rhs_dev;// Right hand side of the equation
+	//CUDA variables
 
-	T *_Vm; 	// Vm of the compartments
-	T *_Vm_dev; // Vm of the compartments
+		T *_hm; 	// A pointer to Hines Matrices
+		T *_hm_dev; // A pointer to Hines Matrices
+		T *_rhs; 	// Right hand side of the equation
+		T *_rhs_dev;// Right hand side of the equation
 
-	T *_Cm; 	// Cm of the compartments
-	T *_Cm_dev; // Cm of the compartments
+		T *_Vm; 	// Vm of the compartments
+		T *_Vm_dev; // Vm of the compartments
 
-	T *_Em; 	// Em of the compartments
-	T *_Em_dev; // Em of the compartments
+		T *_Cm; 	// Cm of the compartments
+		T *_Cm_dev; // Cm of the compartments
 
-	// Rm of the compartments
-	thrust::host_vector<T, thrust::cuda::experimental::pinned_allocator<T> > * _Rm;
-	thrust::device_vector<T> * _Rm_dev;
+		T *_Em; 	// Em of the compartments
+		T *_Em_dev; // Em of the compartments
+
+		T *_Rm; 	// Rm of the compartments
+		T *_Rm_dev; // Rm of the compartments
 
 	void  makeHinesMatrix(HSCModel *model, T * matrix);// float** matrix, uint nCompt);
 
