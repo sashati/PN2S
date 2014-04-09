@@ -430,7 +430,7 @@ void testHSC_manager()
 
 		// Prepare local matrix
 		makeFullMatrix( tree, dt, matrix );
-		_printMatrix(matrix);
+//		_printMatrix(matrix);
 
 		VMid.resize( nCompt );
 		B.resize( nCompt );
@@ -465,148 +465,47 @@ void testHSC_manager()
 			}
 		}
 
-		/*
-		 *
-		 * Gaussian elimination
-		 *
-		 */
-
-		tolerance = 4.0; // ratio to machine epsilon
-
-		for ( int pass = 0; pass < 2; pass++ ) {
-			/*
-			 * First update terms in the equation. This involves setting up the B
-			 * in Ax = B, using the latest voltage values. Also, the coefficients
-			 * stored in A have to be restored to their original values, since
-			 * the matrix is modified at the end of every pass of gaussian
-			 * elimination.
-			 */
-
-			// Do so in the solver..
-			_solver.LocateDataByID(0)->_compsSolver.UpdateMatrix();
-
-			// ..locally..
-			matrix.assign( matrixCopy.begin(), matrixCopy.end() );
-
-			for ( i = 0; i < nCompt; i++ )
-			{
-				B[ i ] = tree[ i ].Vm * tree[ i ].Cm / ( dt / 2.0 ) +
-						tree[ i ].Em / tree[ i ].Rm;
-			}
-
-			// ..and compare B.
-			for ( i = 0; i < nCompt; ++i ) {
-				cout << _solver.LocateDataByID(0)->_compsSolver.GetRHS(cell,i) << endl << flush;
-				cout << B[ i ] << endl << flush;
-				ostringstream error;
-				error << "Updating right-hand side values:"
-					  << " Pass " << pass
-					  << " Cell# " << cell + 1
-					  << " B(" << i << ")";
-				ASSERT (
-					isClose< double >(
-							_solver.LocateDataByID(0)->_compsSolver.GetRHS(cell,i),
-							B[ i ],
-							tolerance ),
-						error.str()
-					);
-			}
-
-//			/*
-//			 *  Forward elimination..
-//			 */
+		for(int i = 1; i<1000;i++)
+			HSC_Manager::Process(0);
+		cout <<"Cell "<<cell<<endl<<flush;
+//		tolerance = 4.0; // ratio to machine epsilon
 //
-//			// ..in solver..
-//			HP.forwardEliminate();
+//		/*
+//		 * First update terms in the equation. This involves setting up the B
+//		 * in Ax = B, using the latest voltage values. Also, the coefficients
+//		 * stored in A have to be restored to their original values, since
+//		 * the matrix is modified at the end of every pass of gaussian
+//		 * elimination.
+//		 */
 //
-//			// ..and locally..
-//			int k;
-//			for ( i = 0; i < nCompt - 1; i++ )
-//				for ( j = i + 1; j < nCompt; j++ ) {
-//					double div = matrix[ j ][ i ] / matrix[ i ][ i ];
-//					for ( k = 0; k < nCompt; k++ )
-//						matrix[ j ][ k ] -= div * matrix[ i ][ k ];
-//					B[ j ] -= div * B[ i ];
-//				}
+//		// ..locally..
+//		matrix.assign( matrixCopy.begin(), matrixCopy.end() );
 //
-//			// ..then compare A..
-//			for ( i = 0; i < nCompt; ++i )
-//				for ( j = 0; j < nCompt; ++j ) {
-//					ostringstream error;
-//					error << "Forward elimination:"
-//						  << " Pass " << pass
-//						  << " Cell# " << cell + 1
-//						  << " A(" << i << ", " << j << ")";
-//					ASSERT (
-//						isClose< double >( HP.getA( i, j ), matrix[ i ][ j ], tolerance ),
-//						error.str()
-//					);
-//				}
+//		for ( i = 0; i < nCompt; i++ )
+//		{
+//			B[ i ] = tree[ i ].Vm * tree[ i ].Cm / ( dt / 2.0 ) +
+//					tree[ i ].Em / tree[ i ].Rm;
+//		}
 //
-//			// ..and also B.
-//			for ( i = 0; i < nCompt; ++i ) {
-//				ostringstream error;
-//				error << "Forward elimination:"
-//					  << " Pass " << pass
-//					  << " Cell# " << cell + 1
-//					  << " B(" << i << ")";
-//				ASSERT (
-//					isClose< double >( HP.getB( i ), B[ i ], tolerance ),
+//		// ..and compare B.
+//		for ( i = 0; i < nCompt; ++i ) {
+//			cout << _solver.LocateDataByID(0)->_compsSolver.GetRHS(cell,i) << endl << flush;
+//			cout << B[ i ] << endl << flush;
+//			ostringstream error;
+//			error << "Updating right-hand side values:"
+//				  << " Cell# " << cell + 1
+//				  << " B(" << i << ")";
+//			ASSERT (
+//				isClose< double >(
+//						_solver.LocateDataByID(0)->_compsSolver.GetRHS(cell,i),
+//						B[ i ],
+//						tolerance ),
 //					error.str()
 //				);
-//			}
-//
-//			/*
-//			 *  Backward substitution..
-//			 */
-//
-//			// ..in solver..
-//			HP.backwardSubstitute();
-//
-//			// ..and full back-sub on local matrix equation..
-//			for ( i = nCompt - 1; i >= 0; i-- ) {
-//				VMid[ i ] = B[ i ];
-//
-//				for ( j = nCompt - 1; j > i; j-- )
-//					VMid[ i ] -= VMid[ j ] * matrix[ i ][ j ];
-//
-//				VMid[ i ] /= matrix[ i ][ i ];
-//
-//				V[ i ] = 2 * VMid[ i ] - V[ i ];
-//			}
-//
-//			// ..and then compare VMid.
-//			for ( i = nCompt - 1; i >= 0; i-- ) {
-//				ostringstream error;
-//				error << "Back substitution:"
-//					  << " Pass " << pass
-//					  << " Cell# " << cell + 1
-//					  << " VMid(" << i << ")";
-//				ASSERT (
-//					isClose< double >( HP.getVMid( i ), VMid[ i ], tolerance ),
-//					error.str()
-//				);
-//			}
-//
-//			for ( i = nCompt - 1; i >= 0; i-- ) {
-//				ostringstream error;
-//				error << "Back substitution:"
-//					  << " Pass " << pass
-//					  << " Cell# " << cell + 1
-//					  << " V(" << i << ")";
-//				ASSERT (
-//					isClose< double >( HP.getV( i ), V[ i ], tolerance ),
-//					error.str()
-//				);
-//			}
-		}
-
+//		}
 //		// cleanup
 //		shell->doDelete( n );
 	}
-
-
-
 
 	//Check Indexes
 
@@ -622,7 +521,7 @@ void testHSC_manager()
 //		delete d;
 //	}
 
-	cout << ".";
+	cout <<"..... "<<endl<<flush;
 }
 
 #endif // DO_UNIT_TESTS
