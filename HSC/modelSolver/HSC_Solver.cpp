@@ -59,7 +59,7 @@ void HSC_Solver::Process(HSC_SolverData* data, HSC_Device* d){
 	assert(!res);
 }
 
-//#ifdef DO_UNIT_TESTS
+#ifdef DO_UNIT_TESTS
 #include <cassert>
 
 using namespace std;
@@ -67,8 +67,7 @@ using namespace std;
 void testHSC_Solver()
 {
 	cout << "testHSC_Solver" << endl <<flush;
-
 }
-//#endif
+#endif
 
 

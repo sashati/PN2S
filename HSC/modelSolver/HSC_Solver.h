@@ -29,6 +29,7 @@ public:
 	double GetDt(){ return _dt;}
 	void SetDt(double dt){ _dt = dt;}
 
+
 	hscError Setup(double dt);
 	hscError PrepareSolver( vector<HSCModel> & _models);
 	HSC_SolverData* LocateDataByID(hscID_t id);

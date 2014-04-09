@@ -27,7 +27,7 @@ void HSC_Proxy::InsertCompartmentModel(Id seed, const vector< TreeNodeStruct >& 
 		neutral.compts[i].initVm = tree[i].initVm;
 		//TODO: Check it
 		neutral.compts[i].children.assign(tree[i].children.begin(), tree[i].children.end());
-		_printVector(tree[i].children.size(), &(tree[i].children[0]));
+//		_printVector(tree[i].children.size(), &(tree[i].children[0]));
 	}
 
 	HSC_Manager::InsertModel(neutral);

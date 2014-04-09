@@ -16,9 +16,9 @@ int main()
 //	setenv("LD_LIBRARY_PATH", "/src/saeed/cuda-workspace/moose/hsolveCuda/cudaLibrary", 1);
 	Py_Initialize();
 	//FILE *file = fopen("Main.py", "r+");
-	FILE *file = fopen("../../Demos/snippets/testHsolve.py", "r+");
+	FILE *file = fopen("testHsolve.py", "r+");
 	if(file != NULL) {
-	     PyRun_SimpleFile(file, "../../Demos/snippets/testHsolve.py");
+	     PyRun_SimpleFile(file, "testHsolve.py");
 	}
 
 	fclose(file);

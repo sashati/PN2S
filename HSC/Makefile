@@ -55,7 +55,7 @@ $(SUBDIR): force
 force :;
 
 test: $(TARGET) 
-	$(CXX)  HSC_Test.cpp $(TARGET) -o HSC_Test -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas $(CXXFLAGS)
+	$(CXX)  HSC_Test.cpp $(TARGET) -o HSC_Test -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -I/usr/local/cuda/include $(CXXFLAGS)
 
 clean:
 	@(for i in $(SUBDIR) ; do $(MAKE) -C $$i clean;  done)

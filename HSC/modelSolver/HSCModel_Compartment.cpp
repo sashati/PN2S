@@ -15,3 +15,10 @@ HSCModel_Compartment::HSCModel_Compartment(){
 HSCModel_Compartment::~HSCModel_Compartment(){
 
 }
+
+//Copy constractor
+HSCModel_Compartment::HSCModel_Compartment( const HSCModel_Compartment& other ) :
+		Ra(other.Ra), Rm(other.Rm), Cm(other.Cm), Em(other.Em), initVm(other.initVm), Vm(other.Vm)
+{
+	children.assign(other.children.begin(), other.children.end());
+}

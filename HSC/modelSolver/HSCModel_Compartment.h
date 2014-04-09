@@ -22,6 +22,7 @@ public:
 	double Rm;
 	double Cm;
 	double Em;
+	double Vm;
 	double initVm;
 
 	vector<HSCModel_HHChannel> hhchannels;
@@ -30,6 +31,8 @@ public:
 	HSCModel_Compartment(uint _id);
 	virtual ~HSCModel_Compartment();
 
+	//Copy constractor
+	HSCModel_Compartment( const HSCModel_Compartment& other );
 private:
 
 };

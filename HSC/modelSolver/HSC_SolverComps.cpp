@@ -21,7 +21,12 @@ do {                                                                  \
     }                                                                 \
 } while (0)
 
+//CuBLAS variables
 cublasHandle_t cublasHandle;
+
+//Thrust Variables
+//thrust::device_vector<int> d_rhs = h_vec;
+
 
 template <typename T, int arch>
 HSC_SolverComps<T,arch>::HSC_SolverComps()
@@ -32,6 +37,13 @@ HSC_SolverComps<T,arch>::HSC_SolverComps()
 	_rhs_dev = 0;
 	_Vm = 0;
 	_Vm_dev = 0;
+	_Cm = 0;
+	_Cm_dev = 0;
+	_Em = 0;
+	_Em_dev = 0;
+//	_Rm = 0;
+//	_Rm_dev = 0;
+
 }
 
 template <typename T, int arch>
@@ -40,40 +52,71 @@ HSC_SolverComps<T,arch>::~HSC_SolverComps()
 	if (_hm) free(_hm);
 	if(_rhs) free(_rhs);
 	if (_Vm) free(_Vm);
+	if (_Cm) free(_Cm);
+	if (_Em) free(_Em);
+//	if (_Rm) free(_Rm);
 	if (_hm_dev) cudaFree(_hm_dev);
 	if(_rhs_dev) cudaFree(_rhs_dev);
 	if (_Vm_dev) cudaFree(_Vm_dev);
+	if (_Cm_dev) cudaFree(_Cm_dev);
+	if (_Em_dev) cudaFree(_Em_dev);
+//	if (_Rm_dev) cudaFree(_Rm_dev);
 }
 
 template <typename T, int arch>
 hscError HSC_SolverComps<T,arch>::PrepareSolver(vector<HSCModel > &network, HSC_NetworkAnalyzer &analyzer)
 {
+	cudaError_t success;
+	cublasStatus_t stat;
+
 	nModel = analyzer.nModel;
 	nComp = analyzer.nComp;
 	uint modelSize = nComp*nComp;
-	cudaError_t success;
-	cublasStatus_t cublasSuccess;
-	//Define memory
+	uint vectorSize = nModel * nComp;
+
+	//Define memory for host
 	_hm =(T*)malloc(modelSize*nModel * sizeof(_hm[0]));
 	CUDA_SAFE_CALL(cudaMallocHost((void **) &_rhs, nComp*nModel * sizeof(_rhs[0]))); //Define pinned memories
 	CUDA_SAFE_CALL(cudaMallocHost((void **) &_Vm, nComp*nModel * sizeof(_Vm[0]))); 	//Define pinned memories
+	CUDA_SAFE_CALL(cudaMallocHost((void **) &_Cm, nComp*nModel * sizeof(_Cm[0]))); 	//Define pinned memories
+	CUDA_SAFE_CALL(cudaMallocHost((void **) &_Em, nComp*nModel * sizeof(_Em[0]))); 	//Define pinned memories
+//	CUDA_SAFE_CALL(cudaMallocHost((void **) &_Rm, nComp*nModel * sizeof(_Rm[0]))); 	//Define pinned memories
+	_Rm = new thrust::host_vector<T, thrust::cuda::experimental::pinned_allocator<T> >(vectorSize);
 
+	thrust::host_vector<float, thrust::cuda::experimental::pinned_allocator<float> > *hh = new thrust::host_vector<float, thrust::cuda::experimental::pinned_allocator<float> >(100);
+	//Define memory for device
 	CUDA_SAFE_CALL(cudaMalloc((void **) &_hm_dev, modelSize*nModel * sizeof(_hm_dev[0])));
 	CUDA_SAFE_CALL(cudaMalloc((void **) &_rhs_dev, nComp*nModel * sizeof(_rhs_dev[0])));
 	CUDA_SAFE_CALL(cudaMalloc((void **) &_Vm_dev, nComp*nModel * sizeof(_Vm_dev[0])));
+	CUDA_SAFE_CALL(cudaMalloc((void **) &_Cm_dev, nComp*nModel * sizeof(_Cm_dev[0])));
+	CUDA_SAFE_CALL(cudaMalloc((void **) &_Em_dev, nComp*nModel * sizeof(_Em_dev[0])));
+//	CUDA_SAFE_CALL(cudaMalloc((void **) &_Rm_dev, nComp*nModel * sizeof(_Rm_dev[0])));
+	_Rm_dev = new thrust::device_vector<T>(vectorSize);
 
 	//making Hines Matrices
 	for(int i=0; i< nModel;i++ )
 	{
 		makeHinesMatrix(&network[i], &_hm[i*modelSize]);
 		_printMatrix_Column(nComp,nComp, &_hm[i*modelSize]);
-		cublasSetMatrix(nComp, nComp, sizeof(_hm[0]),
+
+		stat = cublasSetMatrix(nComp, nComp, sizeof(_hm[0]),
 				&_hm[i*modelSize], nComp,
 				&_hm_dev[i*modelSize], nComp);
+
+		if (stat != CUBLAS_STATUS_SUCCESS) {
+				cerr << "CUBLAS setting Variables\n";
+				return CuBLASError;
+		}
 	}
 
-
 	cudaDeviceSynchronize();
+
+	//Create Cublas
+	stat = cublasCreate(&cublasHandle);
+	if (stat != CUBLAS_STATUS_SUCCESS) {
+		cerr << "CUBLAS initialization failed\n";
+		return CuBLASError;
+	}
 
 	//	cublasGetVector(nModel, sizeof(*_infoArray_h), _infoArray_d, 1,_infoArray_h, 1);
 
@@ -106,6 +149,46 @@ hscError HSC_SolverComps<T,arch>::Process()
 
 	cublasGetVector(nModel*nComp, sizeof(_Vm[0]),_Vm_dev, 1,_Vm, 1);
 	//_printVector(nModel*nComp, _Vm);
+
+	return NO_ERROR;
+}
+
+template <typename T, int arch>
+hscError HSC_SolverComps<T,arch>::UpdateMatrix()
+{
+	cublasSetVector(nModel*nComp, sizeof(_rhs[0]),_rhs,1 ,_rhs_dev, 1);
+	cublasSetVector(nModel*nComp, sizeof(_Vm[0]) ,_Vm, 1 ,_Vm_dev , 1);
+	cublasSetVector(nModel*nComp, sizeof(_Cm[0]) ,_Cm, 1 ,_Cm_dev , 1);
+	cublasSetVector(nModel*nComp, sizeof(_Em[0]) ,_Em, 1 ,_Em_dev , 1);
+	cublasSetVector(nModel*nComp, sizeof(_Rm[0]) ,_Rm, 1 ,_Rm_dev , 1);
+
+//	cublasSscal(cublasHandle, )
+
+//	thrust::host_vector<int> h_vec(100);
+//	thrust::host_vector<int> g_vec(100);
+//	for (int i = 0; i < 100; ++i) {
+//		h_vec[i] = 1;
+//		g_vec[i] = 2;
+//	}
+//	// transfer to device and compute sum
+//	thrust::device_vector<int> d_vec = h_vec;
+//	thrust::device_vector<int> d2_vec = g_vec;
+//	int x = thrust::transform(d_vec.begin(), d_vec.end(), d2_vec.begin(), d2_vec.end(), thrust::multiplies<int>());
+//	int x = thrust::reduce(d_vec.begin(), d_vec.end(), 0, thrust::multiplies<int>());
+//	cout << x <<flush;
+
+
+
+	cublasGetVector(nModel*nComp, sizeof(_rhs[0]),_rhs_dev,1,_rhs , 1);
+	cublasGetVector(nModel*nComp, sizeof(_Vm[0]) ,_Vm_dev, 1, _Vm , 1);
+	cublasGetVector(nModel*nComp, sizeof(_Cm[0]) ,_Cm_dev, 1, _Cm , 1);
+	cublasGetVector(nModel*nComp, sizeof(_Em[0]) ,_Em_dev, 1, _Em , 1);
+	cublasGetVector(nModel*nComp, sizeof(_Rm[0]) ,_Rm_dev, 1, _Rm , 1);
+
+
+
+//	B[ i ] =
+//		V * Cm / ( dt / 2.0 ) +	Em/Rm;
 
 	return NO_ERROR;
 }
@@ -175,5 +258,6 @@ void HSC_SolverComps<T,arch>::makeHinesMatrix(HSCModel *model, T * matrix)
 		}
 	}
 }
+
 
 template class HSC_SolverComps<double, ARCH_SM30>;

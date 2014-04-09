@@ -10,7 +10,7 @@
 #TODO: imported from main Makefile for test, after we can remove it
 BUILD=debug
 ifeq ($(BUILD),debug)
-CXXFLAGS = -g -pthread -fpermissive -fno-strict-aliasing -fPIC -fno-inline-functions -Wall -Wno-long-long -pedantic -DDO_UNIT_TESTS -DUSE_GENESIS_PARSER
+CXXFLAGS = -g -pthread -fpermissive -fno-strict-aliasing -fPIC -fno-inline-functions -Wall -Wno-long-long -pedantic -DDO_UNIT_TESTS -DUSE_GENESIS_PARSER -I/usr/local/cuda/include
 USE_GSL = 1
 endif
 ####################################################################
@@ -49,7 +49,7 @@ $(OBJS):
 	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg $< -c 
 	
 $(COBJS):
-	nvcc --compile -o  "$@" "$<" -G -O0 -Xcompiler -fPIC -g -gencode arch=compute_30,code=sm_30  -x cu   
+	nvcc --compile -o  "$@" "$<" -G -O0 -Xcompiler -fPIC -g -gencode arch=compute_30,code=sm_30  -x cu  -DDO_UNIT_TESTS
 
 .PHONY: clean
 clean:

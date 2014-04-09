@@ -19,11 +19,14 @@ extern void testHinesMatrix(); // Defined in HinesMatrix.cpp
 extern void testHSolvePassive(); // Defined in HSolvePassive.cpp
 extern void testHSolveUtils(); // Defined in HSolveUtils.cpp
 
+extern void testHSC_manager();
+
 void testHSolve()
 {
-	testHSolveUtils();
+//	testHSolveUtils();
 	testHinesMatrix();
 	testHSolvePassive();
+	testHSC_manager();
 }
 
 //////////////////////////////////////////////////////////////////////////////

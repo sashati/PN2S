@@ -32,7 +32,9 @@ using namespace std;
 
 enum hscError
 {
-	NO_ERROR = 0
+	NO_ERROR = 0,
+	CuBLASError = 1,
+	CUDA_Error = 2
 
 };
 

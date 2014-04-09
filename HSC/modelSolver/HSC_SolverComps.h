@@ -11,6 +11,9 @@
 #include "../Definitions.h"
 #include "HSCModel.h"
 #include "HSC_NetworkAnalyzer.h"
+#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
+#include <thrust/system/cuda/experimental/pinned_allocator.h>
 
 template <typename T, int arch>
 class HSC_SolverComps
@@ -20,15 +23,25 @@ private:
 	uint nModel;
 	uint nComp;
 
-
 	//CUDA variables
-	T *_hm; // A pointer to Hines Matrices
+
+	T *_hm; 	// A pointer to Hines Matrices
 	T *_hm_dev; // A pointer to Hines Matrices
-	T *_rhs; // Right hand side of the equation
-	T *_rhs_dev; // Right hand side of the equation
-	T *_Vm; // Vm of the compartments
+	T *_rhs; 	// Right hand side of the equation
+	T *_rhs_dev;// Right hand side of the equation
+
+	T *_Vm; 	// Vm of the compartments
 	T *_Vm_dev; // Vm of the compartments
 
+	T *_Cm; 	// Cm of the compartments
+	T *_Cm_dev; // Cm of the compartments
+
+	T *_Em; 	// Em of the compartments
+	T *_Em_dev; // Em of the compartments
+
+	// Rm of the compartments
+	thrust::host_vector<T, thrust::cuda::experimental::pinned_allocator<T> > * _Rm;
+	thrust::device_vector<T> * _Rm_dev;
 
 	void  makeHinesMatrix(HSCModel *model, T * matrix);// float** matrix, uint nCompt);
 
@@ -37,9 +50,12 @@ public:
 	~HSC_SolverComps();
 	hscError PrepareSolver(vector< HSCModel> &models, HSC_NetworkAnalyzer &analyzer);
 	hscError Process();
+	hscError UpdateMatrix();
 
 	double GetDt(){ return _dt;}
 	void SetDt(double dt){ _dt = dt;}
+
+	T GetA(int n,int i, int j){return _hm[n*nComp*nComp+i*nComp+j];}
 
 };
 #endif // !defined(EA_ABB95B66_E531_4681_AE2B_D1CE4B940FF6__INCLUDED_)

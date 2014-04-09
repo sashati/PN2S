@@ -21,7 +21,7 @@
 					<folderInfo id="com.nvidia.cuda.ide.toolchain.base.386540663.1594098866" name="/" resourcePath="">
 						<toolChain id="com.nvidia.cuda.ide.toolchain.base.1259849989" name="com.nvidia.cuda.ide.toolchain.base" superClass="com.nvidia.cuda.ide.toolchain.base">
 							<targetPlatform archList="all" binaryParser="com.nvidia.cuda.ide.elf;com.nvidia.cuda.ide.macho;com.nvidia.cuda.ide.cubin" id="com.nvidia.cuda.ide.targetPlatform.2088812521" isAbstract="false" name="Debug Platform" osList="linux,macosx" superClass="com.nvidia.cuda.ide.targetPlatform"/>
-							<builder autoBuildTarget="test" enableAutoBuild="false" id="com.nvidia.cuda.ide.builder.1057430672" incrementalBuildTarget="test" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="CUDA Toolkit 5.5 Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.nvidia.cuda.ide.builder"/>
+							<builder autoBuildTarget="test" enableAutoBuild="false" id="com.nvidia.cuda.ide.builder.1057430672" incrementalBuildTarget="test BUILD=debug" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="CUDA Toolkit 5.5 Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.nvidia.cuda.ide.builder"/>
 							<tool id="nvcc.compiler.base.1363063294" name="NVCC Compiler" superClass="nvcc.compiler.base">
 								<option id="nvcc.compiler.pic.859847358" name="Position Independent Code (-fPIC)" superClass="nvcc.compiler.pic"/>
 								<inputType id="nvcc.compiler.input.cu.1426858316" superClass="nvcc.compiler.input.cu"/>

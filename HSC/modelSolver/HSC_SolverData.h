@@ -25,11 +25,11 @@ public:
 	hscError Process();
 //	vector<vector<HSCModel_Base> > models; //TODO: Encapsulation
 
+	HSC_SolverComps<double,ARCH_SM30> _compsSolver; //TODO Encapsulation
 private:
 	double _dt;
 	HSC_NetworkAnalyzer _analyzer;
 	HSC_SolverChannels _channelSolver;
-	HSC_SolverComps<double,ARCH_SM30> _compsSolver;
 
 };
 #endif // !defined(A73EC9AE3_8C2D_45e3_AE47_0F3CC8B2E661__INCLUDED_)
