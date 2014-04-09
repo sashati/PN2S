@@ -1,4 +1,4 @@
-#HSC (Hines Solve Cuda)
+#HSC (Hines Solver Cuda)
 ===
 HSC is an application module for providing GPU (CUDA) computational back-end in the Moose simulator (http://moose.ncbs.res.in/). 
 
