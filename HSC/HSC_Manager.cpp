@@ -298,6 +298,7 @@ void testHSC_manager()
 	vector< double > B;
 	vector< double > VMid;
 
+
 	double dt = 1.0;
 	/*
 	 * This is the full reference matrix which will be compared to its sparse
@@ -487,23 +488,29 @@ void testHSC_manager()
 			// ..locally..
 			matrix.assign( matrixCopy.begin(), matrixCopy.end() );
 
-//			for ( i = 0; i < nCompt; i++ )
-//				B[ i ] =
-//					V[ i ] * tree[ i ].Cm / ( dt / 2.0 ) +
-//					Em[ i ] / tree[ i ].Rm;
-//
-//			// ..and compare B.
-//			for ( i = 0; i < nCompt; ++i ) {
-//				ostringstream error;
-//				error << "Updating right-hand side values:"
-//					  << " Pass " << pass
-//					  << " Cell# " << cell + 1
-//					  << " B(" << i << ")";
-//				ASSERT (
-//					isClose< double >( HP.getB( i ), B[ i ], tolerance ),
-//					error.str()
-//				);
-//			}
+			for ( i = 0; i < nCompt; i++ )
+			{
+				B[ i ] = tree[ i ].Vm * tree[ i ].Cm / ( dt / 2.0 ) +
+						tree[ i ].Em / tree[ i ].Rm;
+			}
+
+			// ..and compare B.
+			for ( i = 0; i < nCompt; ++i ) {
+				cout << _solver.LocateDataByID(0)->_compsSolver.GetRHS(cell,i) << endl << flush;
+				cout << B[ i ] << endl << flush;
+				ostringstream error;
+				error << "Updating right-hand side values:"
+					  << " Pass " << pass
+					  << " Cell# " << cell + 1
+					  << " B(" << i << ")";
+				ASSERT (
+					isClose< double >(
+							_solver.LocateDataByID(0)->_compsSolver.GetRHS(cell,i),
+							B[ i ],
+							tolerance ),
+						error.str()
+					);
+			}
 
 //			/*
 //			 *  Forward elimination..

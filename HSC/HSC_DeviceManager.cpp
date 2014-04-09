@@ -7,6 +7,7 @@
 
 #include "HSC_DeviceManager.h"
 #include <cuda.h>
+#include <cuda_runtime_api.h>
 
 HSC_DeviceManager::HSC_DeviceManager(){
 	_devices.clear();

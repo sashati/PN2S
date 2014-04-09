@@ -22,7 +22,7 @@ HSC_OutputManager::~HSC_OutputManager(){
 
 
 
-hscError_t HSC_OutputManager::SendDataToShell(HSC_TaskInfo task){
-
-	return  NULL;
-}
+//hscError_t HSC_OutputManager::SendDataToShell(HSC_TaskInfo task){
+//
+//	return  NULL;
+//}

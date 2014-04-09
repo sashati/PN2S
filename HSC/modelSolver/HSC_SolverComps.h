@@ -11,9 +11,7 @@
 #include "../Definitions.h"
 #include "HSCModel.h"
 #include "HSC_NetworkAnalyzer.h"
-#include <thrust/host_vector.h>
-#include <thrust/device_vector.h>
-#include <thrust/system/cuda/experimental/pinned_allocator.h>
+
 
 template <typename T, int arch>
 class HSC_SolverComps
@@ -57,6 +55,12 @@ public:
 	void SetDt(double dt){ _dt = dt;}
 
 	T GetA(int n,int i, int j){return _hm[n*nComp*nComp+i*nComp+j];}
+	T GetRHS(int n,int i){return _rhs[n*nComp+i];}
+	T GetVm(int n,int i){return _Vm[n*nComp+i];}
+	T GetCm(int n,int i){return _Cm[n*nComp+i];}
+	T GetRm(int n,int i){return _Rm[n*nComp+i];}
+	T GetEm(int n,int i){return _Em[n*nComp+i];}
+
 
 };
 #endif // !defined(EA_ABB95B66_E531_4681_AE2B_D1CE4B940FF6__INCLUDED_)

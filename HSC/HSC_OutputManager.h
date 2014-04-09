@@ -8,6 +8,7 @@
 #if !defined(EA_7219F77E_D358_4d9b_A477_5363274F9118__INCLUDED_)
 #define EA_7219F77E_D358_4d9b_A477_5363274F9118__INCLUDED_
 
+#include "Definitions.h"
 #include "HSC_TaskInfo.h"
 #include "HSC_OutputWriter.h"
 #include "HSC_Scheduler.h"
@@ -26,7 +27,7 @@ public:
 	HSC_OutputWriter *m_HSC_OutputWriter;
 	HSC_Scheduler *m_HSC_Scheduler;
 
-	hscError_t SendDataToShell(HSC_TaskInfo task);
+//	hscError_t SendDataToShell(HSC_TaskInfo task);
 
 };
 #endif // !defined(EA_7219F77E_D358_4d9b_A477_5363274F9118__INCLUDED_)
