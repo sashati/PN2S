@@ -1,12 +1,11 @@
-#HSC (Hines Solver Cuda)
+#PN2S (Parallel Neural Network Simulator)
 ===
-HSC is an application module for providing GPU (CUDA) computational back-end in the Moose simulator (http://moose.ncbs.res.in/). 
+PN2S is an application module for providing GPU (CUDA) computational back-end in the MOOSE simulator (http://moose.ncbs.res.in/). 
 
 ## Features:
 - Multi GPUs execution
-- Suitable for both complex neuron models and large networks of simple neurons.
 - Provide CPU+GPU simulation 
 - Modular and extensible architecture
 - Easy to install
-
+- Simulate complex neurons and large networks.
 
