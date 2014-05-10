@@ -25,8 +25,8 @@ public:
 	Id getSeed() const; 		/**< For searching for compartments:
 								 *   seed is the starting compt.     */
 	
-	void setPath( const Eref& e, const Qinfo* q, string path );
-	string getPath( const Eref& e, const Qinfo* q ) const;
+	void setPath( const Eref& e, string path );
+	string getPath( const Eref& e ) const;
 								/**< Path to the compartments */
 	
 	void setDt( double dt );
@@ -149,7 +149,7 @@ public:
 	
 private:
 	static vector< Id > children( Id obj );
-	static Id deepSearchForCompartment( Id base );
+	static Id deepSearchForCompartment(  Id base );
 	
 	void setup( Eref hsolve );
 	void zombify( Eref hsolve ) const;
@@ -162,7 +162,8 @@ private:
 	
 	double dt_;
 	string path_;
-	Id seed_;
+	vector<Id> seeds_;
+
 };
 
 #endif // _HSOLVE_H

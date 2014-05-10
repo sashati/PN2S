@@ -7,11 +7,7 @@
 ** See the file COPYING.LIB for the full notice.
 **********************************************************************/
 
-#include "header.h"
 #include "HSolveUtils.h"
-#include "../biophysics/HHGate.h"
-#include "../biophysics/ChanBase.h"
-#include "../biophysics/HHChannel.h"
 
 void HSolveUtils::initialize( Id object )
 {
@@ -81,6 +77,7 @@ int HSolveUtils::gates(
 	vector< Id >& ret,
 	bool getOriginals )
 {
+        dump("HSolveUtils::gates() is not tested with new hsolve api", "FIXME");
 	unsigned int oldSize = ret.size();
 	
 	static string gateName[] = {
@@ -94,29 +91,31 @@ int HSolveUtils::gates(
 		string( "Ypower" ),
 		string( "Zpower" )
 	};
-	
-	unsigned int nGates = 3; // Number of possible gates
-	
-	for ( unsigned int i = 0; i < nGates; i++ ) {
-		double power  = HSolveUtils::get< HHChannel, double >(
-			channel, powerField[ i ] );
-		
-		if ( power > 0.0 ) {
-			string gatePath = channel.path() + "/" + gateName[ i ];
-			
-			Id gate( gatePath );
-			assert( gate.path() == gatePath );
-			
-			if ( getOriginals ) {
-				HHGate* g = reinterpret_cast< HHGate* >( gate.eref().data() );
-				gate = g->originalGateId();
-			}
-			
-			ret.push_back( gate );
-		}
-	}
-	
-	return ret.size() - oldSize;
+
+        unsigned int nGates = 3; // Number of possible gates
+        for ( unsigned int i = 0; i < nGates; i++ ) {
+            double power  = HSolveUtils::get< HHChannel, double >(
+                    channel, powerField[ i ] );
+
+            if ( power > 0.0 ) {
+                string gatePath = moose::joinPath(channel.path(), gateName[i]);
+                Id gate( gatePath );
+
+                string gPath = moose::fixPath(gate.path());
+                errorSS.str("");
+                errorSS << "Got " << gatePath << " expected " << gPath;
+                MOOSE_ASSERT_MSG(gPath == gatePath, errorSS.str().c_str());
+
+                if ( getOriginals ) {
+                    HHGate* g = reinterpret_cast< HHGate* >( gate.eref().data() );
+                    gate = g->originalGateId();
+                }
+
+                ret.push_back( gate );
+            }
+        }
+
+        return ret.size() - oldSize;
 }
 
 int HSolveUtils::spikegens( Id compartment, vector< Id >& ret )
@@ -208,51 +207,51 @@ void HSolveUtils::rates(
 	vector< double >& A,
 	vector< double >& B )
 {
-	double min = HSolveUtils::get< HHGate, double >( gateId, "min" );
-	double max = HSolveUtils::get< HHGate, double >( gateId, "max" );
-	unsigned int divs = HSolveUtils::get< HHGate, unsigned int >(
-		gateId, "divs" );
-	
-	if ( grid == Grid( min, max, divs ) ) {
-		A = HSolveUtils::get< HHGate, vector< double > >( gateId, "tableA" );
-		B = HSolveUtils::get< HHGate, vector< double > >( gateId, "tableB" );
-		
-		return;
-	}
-	
-	A.resize( grid.size() );
-	B.resize( grid.size() );
-	
-	/*
-	 * Getting Id of original (prototype) gate, so that we can set fields on
-	 * it. Copied gates are read-only.
-	 */
-	HHGate* gate = reinterpret_cast< HHGate* >( gateId.eref().data() );
-	gateId = gate->originalGateId();
-	
-	/*
-	 * Setting interpolation flag on. Will set back to its original value once
-	 * we're done.
-	 */
-	bool useInterpolation = HSolveUtils::get< HHGate, bool >
-		( gateId, "useInterpolation" );
-	//~ HSolveUtils::set< HHGate, bool >( gateId, "useInterpolation", true );
-	Qinfo* qDummy = NULL;
-	gate->setUseInterpolation( gateId.eref(), qDummy, true );
-	
-	unsigned int igrid;
-	double* ia = &A[ 0 ];
-	double* ib = &B[ 0 ];
-	for ( igrid = 0; igrid < grid.size(); ++igrid ) {
-		gate->lookupBoth( grid.entry( igrid ), ia, ib );
-		
-		++ia, ++ib;
-	}
-	
-	// Setting interpolation flag back to its original value.
-	//~ HSolveUtils::set< HHGate, bool >
-		//~ ( gateId, "useInterpolation", useInterpolation );
-	gate->setUseInterpolation( gateId.eref(), qDummy, useInterpolation );
+    dump("HSolveUtils::rates() has not been tested yet.", "WARN");
+    double min = HSolveUtils::get< HHGate, double >( gateId, "min" );
+    double max = HSolveUtils::get< HHGate, double >( gateId, "max" );
+    unsigned int divs = HSolveUtils::get< HHGate, unsigned int >(
+            gateId, "divs" );
+
+    if ( grid == Grid( min, max, divs ) ) {
+        A = HSolveUtils::get< HHGate, vector< double > >( gateId, "tableA" );
+        B = HSolveUtils::get< HHGate, vector< double > >( gateId, "tableB" );
+
+        return;
+    }
+
+    A.resize( grid.size() );
+    B.resize( grid.size() );
+
+    /*
+     * Getting Id of original (prototype) gate, so that we can set fields on
+     * it. Copied gates are read-only.
+     */
+    HHGate* gate = reinterpret_cast< HHGate* >( gateId.eref().data() );
+    gateId = gate->originalGateId();
+
+    /*
+     * Setting interpolation flag on. Will set back to its original value once
+     * we're done.
+     */
+    bool useInterpolation = HSolveUtils::get< HHGate, bool >
+        ( gateId, "useInterpolation" );
+    //~ HSolveUtils::set< HHGate, bool >( gateId, "useInterpolation", true );
+    gate->setUseInterpolation( gateId.eref(), true );
+
+    unsigned int igrid;
+    double* ia = &A[ 0 ];
+    double* ib = &B[ 0 ];
+    for ( igrid = 0; igrid < grid.size(); ++igrid ) {
+        gate->lookupBoth( grid.entry( igrid ), ia, ib );
+
+        ++ia, ++ib;
+    }
+
+    // Setting interpolation flag back to its original value.
+    //~ HSolveUtils::set< HHGate, bool >
+    //~ ( gateId, "useInterpolation", useInterpolation );
+    gate->setUseInterpolation( gateId.eref(), useInterpolation );
 }
 
 //~ int HSolveUtils::modes( Id gate, int& AMode, int& BMode )
@@ -328,8 +327,7 @@ int HSolveUtils::targets(
 		target.insert( target.end(), all.begin(), all.end() );
 	else
 		for ( ia = all.begin(); ia != all.end(); ++ia ) {
-			string className = (*ia)()->cinfo()->name();
-			
+			string className = (*ia).element()->cinfo()->name();
 			bool hit =
 				find(
 					filter.begin(),
@@ -352,10 +350,11 @@ int HSolveUtils::targets(
 #include "../shell/Shell.h"
 void testHSolveUtils( )
 {
+        tbegin;
 	Shell* shell = reinterpret_cast< Shell* >( Id().eref().data() );
 	bool success;
 	
-	Id n = shell->doCreate( "Neutral", Id(), "n" );
+	Id n = shell->doCreate( "Neutral", Id(), "n", 1 );
 	
 	/**
 	 *  First we test the functions which return the compartments linked to a
@@ -373,24 +372,24 @@ void testHSolveUtils( )
 	 *  (c0 is the parent of c1. c1 is the parent of c2, c3, c4, c5.)
 	 */
 	Id c[ 6 ];
-	c[ 0 ] = shell->doCreate( "Compartment", n, "c0" );
-	c[ 1 ] = shell->doCreate( "Compartment", n, "c1" );
-	c[ 2 ] = shell->doCreate( "Compartment", n, "c2" );
-	c[ 3 ] = shell->doCreate( "Compartment", n, "c3" );
-	c[ 4 ] = shell->doCreate( "Compartment", n, "c4" );
-	c[ 5 ] = shell->doCreate( "Compartment", n, "c5" );
+	c[ 0 ] = shell->doCreate( "Compartment", n, "c0", 1 );
+	c[ 1 ] = shell->doCreate( "Compartment", n, "c1", 1 );
+	c[ 2 ] = shell->doCreate( "Compartment", n, "c2", 1 );
+	c[ 3 ] = shell->doCreate( "Compartment", n, "c3", 1 );
+	c[ 4 ] = shell->doCreate( "Compartment", n, "c4", 1 );
+	c[ 5 ] = shell->doCreate( "Compartment", n, "c5", 1 );
 	
-	MsgId mid;
+	ObjId mid;
 	mid = shell->doAddMsg( "Single", c[ 0 ], "axial", c[ 1 ], "raxial" );
-	ASSERT( mid != Msg::bad, "Linking compartments" );
+	ASSERT( ! mid.bad(), "Linking compartments" );
 	mid = shell->doAddMsg( "Single", c[ 1 ], "axial", c[ 2 ], "raxial" );
-	ASSERT( mid != Msg::bad, "Linking compartments" );
+	ASSERT( ! mid.bad(), "Linking compartments" );
 	mid = shell->doAddMsg( "Single", c[ 1 ], "axial", c[ 3 ], "raxial" );
-	ASSERT( mid != Msg::bad, "Linking compartments" );
+	ASSERT( ! mid.bad(), "Linking compartments" );
 	mid = shell->doAddMsg( "Single", c[ 1 ], "axial", c[ 4 ], "raxial" );
-	ASSERT( mid != Msg::bad, "Linking compartments" );
+	ASSERT( ! mid.bad(), "Linking compartments" );
 	mid = shell->doAddMsg( "Single", c[ 1 ], "axial", c[ 5 ], "raxial" );
-	ASSERT( mid != Msg::bad, "Linking compartments" );
+	ASSERT( ! mid.bad(), "Linking compartments" );
 	
 	vector< Id > found;
 	unsigned int nFound;
@@ -502,7 +501,7 @@ void testHSolveUtils( )
 	
 	// Clean up
 	shell->doDelete( n );
-	cout << "." << flush;
+        tend;
 }
 
 #endif // DO_UNIT_TESTS
