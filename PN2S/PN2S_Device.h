@@ -29,9 +29,9 @@ public:
 
 private:
 	int _queue_size;
-	void task1_prepareInput(omp_lock_t& _empty_lock,omp_lock_t& _full_lock);
-	void task2_DoProcess(omp_lock_t& _empty_lock_input,	omp_lock_t& _full_lock_input,omp_lock_t& _empty_lock_output);
-	void task3_prepareOutput(omp_lock_t& _empty_lock);
+	void task1_prepareInput(omp_lock_t& _empty_lock,omp_lock_t& _full_lock, int& state);
+	void task2_DoProcess(omp_lock_t& _empty_lock_input,	omp_lock_t& _full_lock_input,omp_lock_t& _empty_lock_output, int& state);
+	void task3_prepareOutput(omp_lock_t& _empty_lock, int& state);
 
 };
 

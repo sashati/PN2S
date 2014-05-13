@@ -26,6 +26,14 @@ PN2S_DeviceManager::~PN2S_DeviceManager(){
 
 }
 
+hscError PN2S_Device::SelectDevice(){
+	cudaDeviceProp deviceProp;
+	cudaSetDevice(id);
+	//TODO: Set configurations in device
+//	cudaGetDeviceProperties(&deviceProp, id);
+	return  NO_ERROR;
+}
+
 hscError PN2S_DeviceManager::Setup(vector<PN2SModel> &m, double dt){
 	cudaDeviceReset();
 

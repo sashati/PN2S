@@ -10,10 +10,7 @@
 
 #include "Definitions.h"
 #include "core/PN2SModel.h"
-#include "core/PN2S_Solver.h"
-#include "PN2S_Device.h"
 #include "PN2S_DeviceManager.h"
-#include "PN2S_TaskQueue.h"
 
 /**
  * This class has a thread to look at scheduler for new tasks and send them to

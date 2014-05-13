@@ -11,8 +11,8 @@
 static vector<PN2SModel> _models;
 
 static double _dt;
-static PN2S_DeviceManager _deviceManager;
 static bool _isInitialized = false;
+static PN2S_DeviceManager _deviceManager;
 
 /**
  * Initialize the manager and set main parameters

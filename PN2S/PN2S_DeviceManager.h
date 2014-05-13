@@ -24,5 +24,6 @@ public:
 	void Process();
 	vector<PN2S_Device> _devices; //TODO: Should be private
 private:
+	hscError SelectDevice();
 };
 #endif // !defined(EA_8204B80E_EF46_47df_8AB8_FC787EF1223C__INCLUDED_)

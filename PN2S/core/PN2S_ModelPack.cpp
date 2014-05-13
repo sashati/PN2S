@@ -30,6 +30,8 @@ hscError PN2S_ModelPack::PrepareSolver(vector<PN2SModel > &net){
 	return  res;
 }
 
+
+
 hscError PN2S_ModelPack::Process()
 {
 	_compsSolver.Process();
