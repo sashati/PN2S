@@ -8,11 +8,11 @@
 #if !defined(AC031FA40_9DD5_4db4_B7F5_2CE46F915EAB__INCLUDED_)
 #define AC031FA40_9DD5_4db4_B7F5_2CE46F915EAB__INCLUDED_
 
-#include "solver/PN2S_Solver.h"
+#include "core/PN2S_Solver.h"
 
 struct PN2S_TaskInfo
 {
-	PN2S_SolverData* modelPack;
+	PN2S_ModelPack* modelPack;
 	int type;
 };
 #endif // !defined(AC031FA40_9DD5_4db4_B7F5_2CE46F915EAB__INCLUDED_)
