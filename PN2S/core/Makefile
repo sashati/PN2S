@@ -20,8 +20,8 @@ TARGET = _core.o
 COBJS += PN2S_SolverChannels.o	\
 		PN2S_SolverComps.o	\
 		PN2S_ModelPack.o	\
-		PN2S_Solver.o 		\
 		solve.o			\
+#		PN2S_Solver.o 		\
 		
 		 
 OBJS += PN2S_NetworkAnalyzer.o \
@@ -36,7 +36,7 @@ default: all
 PN2SModel_HHChannel.o: PN2SModel_HHChannel.cpp PN2SModel_HHChannel.h
 PN2SModel.o: PN2SModel.cpp PN2SModel.h 
 PN2SModel_Compartment.o: PN2SModel_Compartment.cpp PN2SModel_Compartment.h
-PN2S_Solver.o: PN2S_Solver.cpp PN2S_Solver.h PN2S_ModelPack.h PN2S_ModelPack.cpp PN2S_SolverChannels.h PN2S_SolverChannels.cpp PN2S_SolverComps.h PN2S_SolverComps.cu 
+#PN2S_Solver.o: PN2S_Solver.cpp PN2S_Solver.h PN2S_ModelPack.h PN2S_ModelPack.cpp PN2S_SolverChannels.h PN2S_SolverChannels.cpp PN2S_SolverComps.h PN2S_SolverComps.cu 
 PN2S_ModelPack.o: PN2S_ModelPack.cpp PN2S_ModelPack.h PN2S_SolverChannels.cpp PN2S_SolverChannels.h PN2S_SolverComps.cu PN2S_SolverComps.h 
 PN2S_SolverChannels.o: PN2S_SolverChannels.cpp PN2S_SolverChannels.h 
 PN2S_SolverComps.o: PN2S_SolverComps.cu PN2S_SolverComps.h

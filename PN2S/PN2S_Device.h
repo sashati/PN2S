@@ -16,7 +16,8 @@ public:
 	hscError SelectDevice();
 
 	int id;
-	PN2S_Solver _solver;
+	double _dt;
+	vector<PN2S_ModelPack> _modelPacks;
 
 	PN2S_Device(int _id);
 	virtual ~PN2S_Device();

@@ -10,10 +10,9 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-PN2S_Device::PN2S_Device(int _id): id(_id){
+PN2S_Device::PN2S_Device(int _id): id(_id), _dt(1), _queue_size(1){
 	cudaDeviceReset();
-	_queue_size = 2;
-
+	_modelPacks.clear();
 }
 
 PN2S_Device::~PN2S_Device(){
@@ -30,7 +29,20 @@ hscError PN2S_Device::SelectDevice(){
 }
 
 hscError PN2S_Device::PrepareSolver(vector<PN2SModel> &m,  double dt){
-	return _solver.PrepareSolver(m,dt);
+	_dt = dt;
+
+	//TODO: Generate model packs
+	_modelPacks.resize(1);
+	_modelPacks[0].SetDt(_dt);
+
+	//Prepare solver for each modelpack
+	hscError res = _modelPacks[0].PrepareSolver(m);
+
+//	//Assign keys to modelPack, to be able to find later
+//	for(vector<PN2SModel>::iterator it = m.begin(); it != m.end(); ++it) {
+//		_modelToPackMap[it->id] = &modelPacks[0];
+//	}
+	return res;
 }
 
 /**
@@ -85,12 +97,11 @@ void PN2S_Device::Process()
 }
 
 void PN2S_Device::task1_prepareInput(omp_lock_t& _empty_lock,omp_lock_t& _full_lock) {
-	for (vector<PN2S_ModelPack>::iterator it = _solver.modelPacks.begin(); it != _solver.modelPacks.end(); ++it)
+	for (vector<PN2S_ModelPack>::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
 	{
 		if(_iq_size >= _iq_limit)
 			omp_set_lock(&_full_lock);
 
-		sleep(.1);
 		#pragma omp critical
 		{
 			_iq.push_back(*it);
@@ -114,6 +125,7 @@ void PN2S_Device::task2_DoProcess(omp_lock_t& _empty_lock_input,
 
 		PN2S_ModelPack& t= _iq[0];
 		_iq.pop_front();
+
 
 		//Do Process
 		sleep(.5);
