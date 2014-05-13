@@ -8,7 +8,7 @@
 #if !defined(AB1F38D16_FE78_4893_BC39_356BCBBCF345__INCLUDED_)
 #define AB1F38D16_FE78_4893_BC39_356BCBBCF345__INCLUDED_
 #include "Definitions.h"
-#include "PN2S_TaskInfo.h"
+#include "core/PN2S_Solver.h"
 #include <omp.h>
 class PN2S_Device
 {

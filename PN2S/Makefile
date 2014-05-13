@@ -21,7 +21,6 @@ COBJS += PN2S_Device.o \
 	PN2S_DeviceManager.o \
 		 
 OBJS += PN2S_Manager.o 
-#	PN2S_TaskQueue.o \
 
 SUBDIR = core
 	
@@ -31,8 +30,7 @@ MODULES = core/_core.o
 all: $(TARGET)
 default: all
 
-PN2S_TaskQueue.o: PN2S_TaskQueue.cpp PN2S_TaskQueue.h PN2S_TaskInfo.h
-PN2S_Manager.o: PN2S_Manager.cpp PN2S_Manager.h PN2S_TaskQueue.cpp PN2S_TaskQueue.h
+PN2S_Manager.o: PN2S_Manager.cpp PN2S_Manager.h 
 PN2S_Device.o: PN2S_Device.cpp PN2S_Device.h
 PN2S_DeviceManager.o: PN2S_DeviceManager.cpp PN2S_DeviceManager.h 
 
