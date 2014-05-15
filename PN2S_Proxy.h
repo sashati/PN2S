@@ -11,7 +11,7 @@
 /**
  * The class that use PN2S package and deal with moose constrains.
  */
-#include "PN2S/Definitions.h"
+#include "PN2S/PN2S.h"
 #include "header.h" //Moose parts
 #include "HinesMatrix.h"
 

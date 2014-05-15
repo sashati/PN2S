@@ -6,8 +6,8 @@
 ///////////////////////////////////////////////////////////
 
 #include "PN2S_Proxy.h"
-#include "PN2S/Definitions.h"
-#include "PN2S/core/PN2SModel.h"
+#include "PN2S/PN2S.h"
+#include "PN2S/core/models/PN2SModel.h"
 #include "PN2S/PN2S_Manager.h"
 #include "HSolveUtils.h"
 // #include "PN2S/modelr/PN2SModel_Compartment.h"
