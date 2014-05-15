@@ -20,8 +20,7 @@ TARGET = _core.o
 COBJS += PN2S_SolverChannels.o	\
 		PN2S_SolverComps.o	\
 		PN2S_ModelPack.o	\
-		solve.o			\
-		PN2S_HSolve.o 		\
+		solve.o			
 		
 		 
 OBJS += PN2S_NetworkAnalyzer.o \
