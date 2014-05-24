@@ -18,21 +18,15 @@ template <typename T, int arch>
 class PN2SModel_Compartment
 {
 public:
+	uint gid;
 	vector< unsigned int > children;	///< Hines indices of child compts
-	T Ra;
-	T Rm;
-	T Cm;
-	T Em;
-	T Vm;
-	T initVm;
 
 	vector<PN2SModel_HHChannel<T,arch> > hhchannels;
 
 	PN2SModel_Compartment();
-	PN2SModel_Compartment(uint _id);
 	virtual ~PN2SModel_Compartment();
 
-	//Copy constractor
+	//Copy constractor is necessary because at Vector assign, information will copy through it.
 	PN2SModel_Compartment( const PN2SModel_Compartment<T,arch>& other );
 private:
 

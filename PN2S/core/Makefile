@@ -17,7 +17,8 @@ endif
 
 TARGET = _core.o
 
-COBJS += PN2S_ModelPack.o	
+COBJS += 	PN2S_ModelPack.o	\
+
 		 
 OBJS += PN2S_NetworkAnalyzer.o 
 		

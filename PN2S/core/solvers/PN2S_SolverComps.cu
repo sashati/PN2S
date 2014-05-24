@@ -17,39 +17,6 @@
 #include <thrust/functional.h>
 #include <thrust/fill.h>
 
-// Macro to catch CUDA errors in CUDA runtime calls
-#define CUDA_SAFE_CALL(call)                                          \
-do {                                                                  \
-    cudaError_t err = call;                                           \
-    if (cudaSuccess != err) {                                         \
-        fprintf (stderr, "Cuda error in file '%s' in line %i : %s.\n",\
-                 __FILE__, __LINE__, cudaGetErrorString(err) );       \
-        exit(EXIT_FAILURE);                                           \
-    }                                                                 \
-} while (0)
-
-template <typename T>
-__inline__ hscError sendVector(uint size, T* h, T* d)
-{
-	cublasStatus_t stat = cublasSetVector(size, sizeof(h[0]),h, 1,d,1);
-	if (stat != CUBLAS_STATUS_SUCCESS) {
-		cerr << "CUBLAS setting Variables\n";
-		return CuBLASError;
-	}
-	return NO_ERROR;
-}
-
-template <typename T>
-__inline__ hscError getVector(uint size, T* h, T* d)
-{
-	cublasStatus_t stat = cublasGetVector(size, sizeof(h[0]),d, 1,h,1);
-	if (stat != CUBLAS_STATUS_SUCCESS) {
-		cerr << "CUBLAS setting Variables\n";
-		return CuBLASError;
-	}
-	return NO_ERROR;
-}
-
 //CuBLAS variables
 cublasHandle_t _handle;
 
@@ -60,18 +27,7 @@ cublasHandle_t _handle;
 template <typename T, int arch>
 PN2S_SolverComps<T,arch>::PN2S_SolverComps()
 {
-	_hm = 0;
-	_hm_dev = 0;
-	_rhs = 0;
-	_rhs_dev = 0;
-	_Vm = 0;
-	_Vm_dev = 0;
-	_Cm = 0;
-	_Cm_dev = 0;
-	_Em = 0;
-	_Em_dev = 0;
-	_Rm = 0;
-	_Rm_dev = 0;
+//	_hm.fieldType = PN2S_Field<T,arch>::TYPE_IO;
 }
 
 template <typename T, int arch>
@@ -91,10 +47,8 @@ PN2S_SolverComps<T,arch>::~PN2S_SolverComps()
 //	if (_Rm_dev) cudaFree(_Rm_dev);
 }
 
-
-
 template <typename T, int arch>
-hscError PN2S_SolverComps<T,arch>::PrepareSolver(vector<PN2SModel<T,arch> > &network, PN2S_NetworkAnalyzer<T,arch> &analyzer)
+Error_PN2S PN2S_SolverComps<T,arch>::PrepareSolver(vector<PN2SModel<T,arch> > &network, PN2S_NetworkAnalyzer<T,arch> &analyzer)
 {
 //	cudaError_t success;
 	cublasStatus_t stat;
@@ -104,80 +58,66 @@ hscError PN2S_SolverComps<T,arch>::PrepareSolver(vector<PN2SModel<T,arch> > &net
 	uint modelSize = nComp*nComp;
 	uint vectorSize = nModel * nComp;
 
-	//Define memory for host
-	CUDA_SAFE_CALL(cudaMallocHost((void **) &_hm, modelSize*nModel * sizeof(_hm[0]))); //Define pinned memories
-	CUDA_SAFE_CALL(cudaMallocHost((void **) &_rhs, vectorSize * sizeof(_rhs[0]))); //Define pinned memories
-	CUDA_SAFE_CALL(cudaMallocHost((void **) &_Vm, vectorSize * sizeof(_Vm[0]))); 	//Define pinned memories
-	CUDA_SAFE_CALL(cudaMallocHost((void **) &_Cm, vectorSize * sizeof(_Cm[0]))); 	//Define pinned memories
-	CUDA_SAFE_CALL(cudaMallocHost((void **) &_Em, vectorSize * sizeof(_Em[0]))); 	//Define pinned memories
-	CUDA_SAFE_CALL(cudaMallocHost((void **) &_Rm, vectorSize * sizeof(_Rm[0]))); 	//Define pinned memories
+	_hm.AllocateMemory(modelSize*nModel);
+	_rhs.AllocateMemory(vectorSize);
+	_Vm.AllocateMemory(vectorSize);
+	_Cm.AllocateMemory(vectorSize);
+	_Em.AllocateMemory(vectorSize);
+	_Rm.AllocateMemory(vectorSize);
 
-	//Define memory for device
-	CUDA_SAFE_CALL(cudaMalloc((void **) &_hm_dev, modelSize*nModel * sizeof(_hm_dev[0])));
-	CUDA_SAFE_CALL(cudaMalloc((void **) &_rhs_dev, vectorSize * sizeof(_rhs_dev[0])));
-	CUDA_SAFE_CALL(cudaMalloc((void **) &_Vm_dev, vectorSize * sizeof(_Vm_dev[0])));
-	CUDA_SAFE_CALL(cudaMalloc((void **) &_Cm_dev, vectorSize * sizeof(_Cm_dev[0])));
-	CUDA_SAFE_CALL(cudaMalloc((void **) &_Em_dev, vectorSize * sizeof(_Em_dev[0])));
-	CUDA_SAFE_CALL(cudaMalloc((void **) &_Rm_dev, vectorSize * sizeof(_Rm_dev[0])));
 
-	//Fill Vectors
-	for(int i=0; i< vectorSize;i++ )
-	{
-		_Vm[i] = analyzer.allCompartments[i]->initVm;
-		_Cm[i] = analyzer.allCompartments[i]->Cm;
-		_Em[i] = analyzer.allCompartments[i]->Em;
-		_Rm[i] = analyzer.allCompartments[i]->Rm;
-	}
-
-	//making Hines Matrices
+	//TODO: OpenMP
+	int idx = 0;
 	for(int i=0; i< nModel;i++ )
 	{
+		for(int n=0; n< nComp;n++)
+		{
+			//Initialize values
+			uint gid = analyzer.allCompartments[idx]->gid;
+			_Vm[idx] = GetValue_Func(gid,INIT_VM_FIELD);
+			_Cm[idx] = GetValue_Func(gid,CM_FIELD);
+			_Em[idx] = GetValue_Func(gid,EM_FIELD);
+			_Rm[idx] = GetValue_Func(gid,RM_FIELD);
+			idx++;
+		}
+		//making Hines Matrices
 		makeHinesMatrix(&network[i], &_hm[i*modelSize]);
 //		_printMatrix_Column(nComp,nComp, &_hm[i*modelSize]);
-
-		//TODO: Copy matrix from outside of this loop completely
-		//Copy Matrices
-		stat = cublasSetMatrix(nComp, nComp, sizeof(_hm[0]),
-						&_hm[i*modelSize], nComp,
-						&_hm_dev[i*modelSize], nComp);
-
-		if (stat != CUBLAS_STATUS_SUCCESS) {
-				cerr << "CUBLAS setting Variables\n";
-				return CuBLASError;
-		}
 	}
 
 	//Copy to GPU
-	sendVector<T>(vectorSize, _Vm,_Vm_dev);
-	sendVector<T>(vectorSize, _Em,_Em_dev);
-	sendVector<T>(vectorSize, _Cm,_Cm_dev);
-	sendVector<T>(vectorSize, _Rm,_Rm_dev);
+	_hm.Host2Device_Sync();
+	_rhs.Host2Device_Sync();
+	_Vm.Host2Device_Sync();
+	_Cm.Host2Device_Sync();
+	_Em.Host2Device_Sync();
+	_Rm.Host2Device_Sync();
 
 	//Create Cublas
 	if ( cublasCreate(&_handle) != CUBLAS_STATUS_SUCCESS)
 	{
-		cerr << "CUBLAS initialization failed\n";
-		return CuBLASError;
+		return Error_PN2S(Error_PN2S::CuBLASError,
+				"CUBLAS initialization failed");
 	}
 
 	cudaDeviceSynchronize();
-	return NO_ERROR;
+	return Error_PN2S::NO_ERROR;
 }
 
 template <typename T, int arch>
-hscError PN2S_SolverComps<T,arch>::Process()
+Error_PN2S PN2S_SolverComps<T,arch>::Process()
 {
 	UpdateMatrix();
 
     //Solve
-	int ret = dsolve_batch (_hm_dev, _rhs_dev, _Vm_dev, nComp, nModel);
+	int ret = dsolve_batch (_hm.device, _rhs.device, _Vm.device, nComp, nModel);
     assert(!ret);
 
-    getVector(nModel * nComp, _Vm,_Vm_dev);
+    _Vm.Device2Host_Sync();
 
     //_printVector(nModel*nComp, _Vm);
 
-	return NO_ERROR;
+	return Error_PN2S::NO_ERROR;
 }
 
 /**
@@ -206,36 +146,36 @@ struct update_rhs_functor
 };
 
 template <typename T, int arch>
-hscError PN2S_SolverComps<T,arch>::UpdateMatrix()
+Error_PN2S PN2S_SolverComps<T,arch>::UpdateMatrix()
 {
 	uint vectorSize = nModel * nComp;
 
 	//Copy to GPU
-	sendVector<T>(vectorSize, _Em,_rhs_dev); // Em -> rhs
-	sendVector<T>(vectorSize, _Rm,_Rm_dev);
-	sendVector<T>(vectorSize, _Vm,_Vm_dev);
-	sendVector<T>(vectorSize, _Cm,_Cm_dev);
-
-	thrust::device_ptr<T> th_rhs_start(_rhs_dev);
-	thrust::device_ptr<T> th_rhs_end (_rhs_dev+vectorSize);
-
-	thrust::device_ptr<T> th_Cm_start(_Cm_dev);
-	thrust::device_ptr<T> th_Cm_end (_Cm_dev+vectorSize);
-
-	thrust::device_ptr<T> th_Vm_start(_Vm_dev);
-	thrust::device_ptr<T> th_Vm_end (_Vm_dev+vectorSize);
-
-	thrust::device_ptr<T> th_Rm_start(_Rm_dev);
-	thrust::device_ptr<T> th_Rm_end (_Rm_dev+vectorSize);
+	_rhs.Send2Device(_Em); // Em -> rhs
+	_Rm.Host2Device_Sync();
+	_Vm.Host2Device_Sync();
+	_Cm.Host2Device_Sync();
 
 	thrust::for_each(
-		thrust::make_zip_iterator( thrust::make_tuple( th_rhs_start	, th_Vm_start 	,th_Cm_start, th_Rm_start) ),
-		thrust::make_zip_iterator( thrust::make_tuple( th_rhs_end	, th_Vm_end		,th_Cm_end 	, th_Rm_end) ),
-		update_rhs_functor< T >( _dt ) );
-//
-	getVector(vectorSize, _rhs,_rhs_dev); //TODO maybe is not necessary
+		thrust::make_zip_iterator(
+				thrust::make_tuple(
+						_rhs.DeviceStart(),
+						_Vm.DeviceStart(),
+						_Cm.DeviceStart(),
+						_Rm.DeviceStart())),
 
-	return NO_ERROR;
+		thrust::make_zip_iterator(
+				thrust::make_tuple(
+						_rhs.DeviceEnd(),
+						_Vm.DeviceEnd(),
+						_Cm.DeviceEnd(),
+						_Rm.DeviceEnd())),
+
+		update_rhs_functor< T >( _dt ) );
+
+//	getVector(vectorSize, _rhs,_rhs_dev); //TODO maybe is not necessary
+
+	return Error_PN2S::NO_ERROR;
 }
 
 template <typename T, int arch>
@@ -247,8 +187,11 @@ void PN2S_SolverComps<T,arch>::makeHinesMatrix(PN2SModel<T,arch> *model, T * mat
 	vector< double > CmByDt(nComp);
 	vector< double > Ga(nComp);
 	for ( unsigned int i = 0; i < nComp; i++ ) {
-		CmByDt[i] = model->compts[ i ].Cm / ( _dt / 2.0 ) ;
-		Ga[i] =  2.0 / model->compts[ i ].Ra ;
+		T cm = GetValue_Func(model->compts[ i ].gid,CM_FIELD);
+		T ra = GetValue_Func(model->compts[ i ].gid,RA_FIELD);
+
+		CmByDt[i] = cm / ( _dt / 2.0 ) ;
+		Ga[i] =  2.0 / ra ;
 	}
 
 	/* Each entry in 'coupled' is a list of electrically coupled compartments.
@@ -264,7 +207,10 @@ void PN2S_SolverComps<T,arch>::makeHinesMatrix(PN2SModel<T,arch> *model, T * mat
 
 	// Setting diagonal elements
 	for ( unsigned int i = 0; i < nComp; i++ )
-		matrix[ i * nComp + i ] = (T)(CmByDt[ i ] + 1.0 / model->compts[ i ].Rm);
+	{
+		T rm = GetValue_Func(model->compts[ i ].gid,RM_FIELD);
+		matrix[ i * nComp + i ] = (T)(CmByDt[ i ] + 1.0 / rm);
+	}
 
 
 	double gi;
@@ -303,6 +249,9 @@ void PN2S_SolverComps<T,arch>::makeHinesMatrix(PN2SModel<T,arch> *model, T * mat
 		}
 	}
 }
+
+template <typename T, int arch>
+T (*PN2S_SolverComps<T,arch>::GetValue_Func) (uint id, PN2S_SolverComps<T,arch>::Fields field);
 
 
 template class PN2S_SolverComps<double, ARCH_SM30>;

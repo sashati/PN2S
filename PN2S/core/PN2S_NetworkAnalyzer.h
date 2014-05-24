@@ -20,13 +20,13 @@ public:
 	uint nModel;
 	PN2S_NetworkAnalyzer();
 	virtual ~PN2S_NetworkAnalyzer();
-	hscError ImportNetwork(vector<PN2SModel <T,arch> > &network);
+	Error_PN2S ImportNetwork(vector<PN2SModel <T,arch> > &network);
 
 	vector<PN2SModel_Compartment<T,arch> *> allCompartments;
 	vector<PN2SModel_HHChannel<T,arch> *> allHHChannels;
 private:
-	hscError importCompts(vector<PN2SModel_Compartment<T,arch> > &cmpts);
-	hscError importHHChannels(vector<PN2SModel_HHChannel<T,arch> > &chs);
+	Error_PN2S importCompts(vector<PN2SModel_Compartment<T,arch> > &cmpts);
+	Error_PN2S importHHChannels(vector<PN2SModel_HHChannel<T,arch> > &chs);
 
 };
 #endif // !defined(AA2911C45_CDD0_4e09_A1A2_A5363E6EF36B__INCLUDED_)

@@ -233,6 +233,7 @@ void HSolve::setup( Eref hsolve )
 		PN2S_Proxy::Setup(dt_);
 		//Setup Master HSolve for each model
 		int n_models = seeds_.size();
+
 		for (int i=0; i<n_models; i++) {
 			PN2S_Proxy::InsertCompartmentModel(hsolve, seeds_[i]);
 		}

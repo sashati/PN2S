@@ -23,7 +23,7 @@ PN2S_SolverChannels<T,arch>::~PN2S_SolverChannels() {
 }
 
 template <typename T, int arch>
-hscError PN2S_SolverChannels<T,arch>::PrepareSolver(vector<PN2SModel<T,arch> > &network, PN2S_NetworkAnalyzer<T,arch> &analyzer) {
+Error_PN2S PN2S_SolverChannels<T,arch>::PrepareSolver(vector<PN2SModel<T,arch> > &network, PN2S_NetworkAnalyzer<T,arch> &analyzer) {
 
 //	uint hhSize = 0;
 //	uint networkSize = network.size();
@@ -59,7 +59,7 @@ hscError PN2S_SolverChannels<T,arch>::PrepareSolver(vector<PN2SModel<T,arch> > &
 //	free(hostMemory);
 
 
-	return NO_ERROR;
+	return Error_PN2S::NO_ERROR;
 }
 
 template class PN2S_SolverChannels<double, ARCH_SM30>;

@@ -14,7 +14,7 @@
 class PN2S_Device
 {
 public:
-	hscError SelectDevice();
+	Error_PN2S SelectDevice();
 
 	int id;
 	double _dt;
@@ -23,9 +23,9 @@ public:
 	PN2S_Device(int _id);
 	virtual ~PN2S_Device();
 
-	hscError PrepareSolver(vector<PN2SModel<CURRENT_TYPE,CURRENT_ARCH> > &m,  double dt);
+	Error_PN2S Reinit(vector<PN2SModel<CURRENT_TYPE,CURRENT_ARCH> > &m,  double dt);
 	void Process();
-	hscError Setup();
+	Error_PN2S Setup();
 
 
 private:

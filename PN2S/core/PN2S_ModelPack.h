@@ -11,13 +11,6 @@
 #include "solvers/PN2S_SolverComps.h"
 #include "PN2S_NetworkAnalyzer.h"
 
-//template <typename T, int arch>
-struct PN2S_Field
-{
-	enum {TYPE_NULL, TYPE_INPUT, TYPE_OUTPUT} type;
-	PN2S_Field() : type(TYPE_NULL) {}
-};
-
 template <typename T, int arch>
 class PN2S_ModelPack
 {
@@ -28,10 +21,11 @@ public:
 	double GetDt(){ return _dt;}
 	void SetDt(double dt){ _dt = dt; _compsSolver.SetDt(dt); }
 
-	hscError PrepareSolver(vector<PN2SModel<T,arch> > &models);
+	Error_PN2S Reinit(vector<PN2SModel<T,arch> > &models);
 
-	hscError Process();
-	hscError AddOutput();
+	Error_PN2S Process();
+	Error_PN2S Output();
+	Error_PN2S Input();
 //	vector<vector<PN2SModel_Base> > models; //TODO: Encapsulation
 
 	PN2S_SolverComps<CURRENT_TYPE,CURRENT_ARCH> _compsSolver; //TODO Encapsulation

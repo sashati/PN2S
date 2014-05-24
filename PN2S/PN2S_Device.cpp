@@ -19,7 +19,7 @@ PN2S_Device::~PN2S_Device(){
 	cudaDeviceReset();
 }
 
-hscError PN2S_Device::PrepareSolver(vector<PN2SModel<CURRENT_TYPE,CURRENT_ARCH> > &m,  double dt){
+Error_PN2S PN2S_Device::Reinit(vector<PN2SModel<CURRENT_TYPE,CURRENT_ARCH> > &m,  double dt){
 	_dt = dt;
 
 	//TODO: Generate model packs
@@ -27,7 +27,7 @@ hscError PN2S_Device::PrepareSolver(vector<PN2SModel<CURRENT_TYPE,CURRENT_ARCH> 
 	_modelPacks[0].SetDt(_dt);
 
 	//Prepare solver for each modelpack
-	hscError res = _modelPacks[0].PrepareSolver(m);
+	Error_PN2S res = _modelPacks[0].Reinit(m);
 
 //	//Assign keys to modelPack, to be able to find later
 //	for(vector<PN2SModel>::iterator it = m.begin(); it != m.end(); ++it) {
@@ -100,6 +100,7 @@ void PN2S_Device::task1_prepareInput(omp_lock_t& _empty_lock,omp_lock_t& _full_l
 			omp_set_lock(&_full_lock);
 
 		//Prepare Input
+		it->Input();
 
 		//Add to the ready task list
 		_iq.push_back(*it);
@@ -156,11 +157,11 @@ void PN2S_Device::task3_prepareOutput(omp_lock_t& _empty_lock, int& state) {
 			omp_set_lock(&_empty_lock);
 
 		sleep(1);
-		PN2S_ModelPack<CURRENT_TYPE,CURRENT_ARCH>* res= &_oq[0];
+		PN2S_ModelPack<CURRENT_TYPE,CURRENT_ARCH>* t= &_oq[0];
 		_oq.pop_front();
 
 		//Output routins
-		sleep(.5);
+		t->Output();
 
 		#pragma omp critical
 		{

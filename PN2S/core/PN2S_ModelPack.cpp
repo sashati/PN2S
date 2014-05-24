@@ -20,32 +20,37 @@ PN2S_ModelPack<T,arch>::~PN2S_ModelPack(){
 }
 
 template <typename T, int arch>
-hscError PN2S_ModelPack<T,arch>::PrepareSolver(vector<PN2SModel<T,arch> > &net){
-	hscError res = NO_ERROR;
+Error_PN2S PN2S_ModelPack<T,arch>::Reinit(vector<PN2SModel<T,arch> > &net){
+	Error_PN2S res = Error_PN2S::NO_ERROR;
 
 	_analyzer.ImportNetwork(net);
 
 	res = _compsSolver.PrepareSolver(net, _analyzer);
-	assert(res==NO_ERROR);
+	assert(res==Error_PN2S::NO_ERROR);
 	res = _channelSolver.PrepareSolver(net, _analyzer);
-	assert(res==NO_ERROR);
+	assert(res==Error_PN2S::NO_ERROR);
 	return  res;
 }
 
 
 template <typename T, int arch>
-hscError PN2S_ModelPack<T,arch>::Process()
+Error_PN2S PN2S_ModelPack<T,arch>::Process()
 {
 	//For each model in the pack, executes the Process()
 	_compsSolver.Process();
-	return NO_ERROR;
+	return Error_PN2S::NO_ERROR;
 }
 
 template <typename T, int arch>
-hscError PN2S_ModelPack<T,arch>::AddOutput()
+Error_PN2S PN2S_ModelPack<T,arch>::Output()
 {
+	return Error_PN2S::NO_ERROR;
+}
 
-	return NO_ERROR;
+template <typename T, int arch>
+Error_PN2S PN2S_ModelPack<T,arch>::Input()
+{
+	return Error_PN2S::NO_ERROR;
 }
 
 template class PN2S_ModelPack<double, ARCH_SM30>;

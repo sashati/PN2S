@@ -12,6 +12,33 @@
 #include "HSolveUtils.h"
 // #include "PN2S/modelr/PN2SModel_Compartment.h"
 #include "../biophysics/Compartment.h" //For get info from Shell
+
+#include "PN2S/core/solvers/PN2S_SolverComps.h"
+
+//Static objects
+static map< uint, Id > _objects;
+
+//Getter and Setter
+CURRENT_TYPE _getValue(uint id, PN2S_SolverComps<CURRENT_TYPE,CURRENT_ARCH>::Fields field)
+{
+	switch(field)
+	{
+		case PN2S_SolverComps<CURRENT_TYPE,CURRENT_ARCH>::CM_FIELD:
+			return HSolveUtils::get< Compartment, double >( _objects[ id ], "Cm" );
+		case PN2S_SolverComps<CURRENT_TYPE,CURRENT_ARCH>::EM_FIELD:
+			return HSolveUtils::get< Compartment, double >( _objects[ id ], "Em" );
+		case PN2S_SolverComps<CURRENT_TYPE,CURRENT_ARCH>::RM_FIELD:
+			return HSolveUtils::get< Compartment, double >( _objects[ id ], "Rm" );
+		case PN2S_SolverComps<CURRENT_TYPE,CURRENT_ARCH>::RA_FIELD:
+			return HSolveUtils::get< Compartment, double >( _objects[ id ], "Ra" );
+		case PN2S_SolverComps<CURRENT_TYPE,CURRENT_ARCH>::VM_FIELD:
+			return HSolveUtils::get< Compartment, double >( _objects[ id ], "Vm" );
+		case PN2S_SolverComps<CURRENT_TYPE,CURRENT_ARCH>::INIT_VM_FIELD:
+			return HSolveUtils::get< Compartment, double >( _objects[ id ], "initVm" );
+	}
+	return 0;
+}
+
 /**
  * This method is responsible to create model and get pertinent information from
  * the Shell and send it to Manager
@@ -20,7 +47,12 @@
 void PN2S_Proxy::Setup(double dt)
 {
 	PN2S_Manager::Setup(dt);
+	_objects.clear();
+
+	//Register Setter and Getter
+	PN2S_SolverComps<CURRENT_TYPE,CURRENT_ARCH>::GetValue_Func = &_getValue;
 }
+
 
 void PN2S_Proxy::InsertCompartmentModel(Eref master_hsolve, Id seed){
 
@@ -38,25 +70,28 @@ void PN2S_Proxy::InsertCompartmentModel(Eref master_hsolve, Id seed){
 
 	// A map from the MOOSE Id to Hines' index.
 	map< Id, unsigned int > hinesIndex;
-	for ( unsigned int i = 0; i < nCompt; ++i )
+	for ( int i = 0; i < nCompt; ++i )
+	{
 		hinesIndex[ compartmentIds[ i ] ] = i;
+		_objects[compartmentIds[ i ].value()] = compartmentIds[ i ];
+	}
 
 	vector< Id > childId;
 	vector< Id >::iterator child;
 
 	neutral.compts.resize(nCompt);
-	for (uint i = 0; i < nCompt; ++i) {
-		neutral.compts[i].Ra = HSolveUtils::get< Compartment, double >( compartmentIds[ i ], "Ra" );
-		neutral.compts[i].Rm = HSolveUtils::get< Compartment, double >( compartmentIds[ i ], "Rm" );
-		neutral.compts[i].Cm = HSolveUtils::get< Compartment, double >( compartmentIds[ i ], "Cm" );
-		neutral.compts[i].Em = HSolveUtils::get< Compartment, double >( compartmentIds[ i ], "Em" );
-		neutral.compts[i].initVm = HSolveUtils::get< Compartment, double >( compartmentIds[ i ], "initVm" );
+
+	for (int i = 0; i < nCompt; ++i) {
+		//Assign a general ID to each compartment
+		neutral.compts[i].gid = compartmentIds[ i ].value();
 
 		//Find Children
 		childId.clear();
 		HSolveUtils::children( compartmentIds[ i ], childId );
 		for ( child = childId.begin(); child != childId.end(); ++child )
+		{
 			neutral.compts[i].children.push_back( hinesIndex[ *child ] );
+		}
 
 //		_printVector(tree[i].children.size(), &(tree[i].children[0]));
 	}

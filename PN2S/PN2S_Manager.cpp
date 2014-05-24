@@ -17,18 +17,18 @@ static PN2S_DeviceManager _deviceManager;
 /**
  * Initialize the manager and set main parameters
  */
-hscError PN2S_Manager::Setup(double dt){
+Error_PN2S PN2S_Manager::Setup(double dt){
 	_dt = dt;
 	_models.clear();
-	return  NO_ERROR;
+	return  Error_PN2S::NO_ERROR;
 }
 
 
-hscError PN2S_Manager::Reinit(){
+Error_PN2S PN2S_Manager::Reinit(){
 	if (!_isInitialized)
 		_isInitialized = true;
 	PrepareSolver();
-	return  NO_ERROR;
+	return  Error_PN2S::NO_ERROR;
 }
 
 bool PN2S_Manager::IsInitialized(){
@@ -40,8 +40,8 @@ void PN2S_Manager::InsertModel(PN2SModel<CURRENT_TYPE, CURRENT_ARCH> &neutral){
 }
 
 
-hscError PN2S_Manager::PrepareSolver(){
-	hscError res = _deviceManager.Setup(_models,_dt);
+Error_PN2S PN2S_Manager::PrepareSolver(){
+	Error_PN2S res = _deviceManager.Reinit(_models,_dt);
 
 //	if( res == NO_ERROR)
 //		models.clear();
@@ -73,11 +73,11 @@ hscError PN2S_Manager::PrepareSolver(){
  */
 
 
-hscError PN2S_Manager::Process(){
+Error_PN2S PN2S_Manager::Process(){
 	//Process for all devices
 	_deviceManager.Process();
 
-	return  NO_ERROR;
+	return  Error_PN2S::NO_ERROR;
 }
 
 

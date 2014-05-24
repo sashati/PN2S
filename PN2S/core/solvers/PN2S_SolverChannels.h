@@ -22,6 +22,6 @@ public:
 	PN2S_SolverChannels();
 	virtual ~PN2S_SolverChannels();
 
-	hscError PrepareSolver(vector<PN2SModel<T,arch> > &models, PN2S_NetworkAnalyzer<T,arch> &analyzer);
+	Error_PN2S PrepareSolver(vector<PN2SModel<T,arch> > &models, PN2S_NetworkAnalyzer<T,arch> &analyzer);
 };
 #endif // !defined(A8661C97F_679E_4bb9_84D8_5EEB3718169D__INCLUDED_)

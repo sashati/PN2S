@@ -8,7 +8,7 @@
 #include "PN2SModel_Compartment.h"
 
 template <typename T, int arch>
-PN2SModel_Compartment<T,arch>::PN2SModel_Compartment(){
+PN2SModel_Compartment<T,arch>::PN2SModel_Compartment(): gid(-1){
 }
 
 template <typename T, int arch>
@@ -18,10 +18,10 @@ PN2SModel_Compartment<T,arch>::~PN2SModel_Compartment(){
 
 //Copy constractor
 template <typename T, int arch>
-PN2SModel_Compartment<T,arch>::PN2SModel_Compartment( const PN2SModel_Compartment& other ) :
-		Ra(other.Ra), Rm(other.Rm), Cm(other.Cm), Em(other.Em), initVm(other.initVm), Vm(other.Vm)
+PN2SModel_Compartment<T,arch>::PN2SModel_Compartment( const PN2SModel_Compartment& other )
 {
 	children.assign(other.children.begin(), other.children.end());
+	gid = other.gid;
 }
 
 template class PN2SModel_Compartment<double, ARCH_SM30>;

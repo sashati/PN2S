@@ -11,7 +11,7 @@
 #include "../../PN2S.h"
 #include "../models/PN2SModel.h"
 #include "../PN2S_NetworkAnalyzer.h"
-
+#include "PN2S_Field.h"
 
 template <typename T, int arch>
 class PN2S_SolverComps
@@ -20,36 +20,24 @@ private:
 	double _dt;
 	uint nModel;
 	uint nComp;
+	vector<uint> _ids;
 
-	//CUDA variables
-
-	//CUDA variables
-
-		T *_hm; 	// A pointer to Hines Matrices
-		T *_hm_dev; // A pointer to Hines Matrices
-		T *_rhs; 	// Right hand side of the equation
-		T *_rhs_dev;// Right hand side of the equation
-
-		T *_Vm; 	// Vm of the compartments
-		T *_Vm_dev; // Vm of the compartments
-
-		T *_Cm; 	// Cm of the compartments
-		T *_Cm_dev; // Cm of the compartments
-
-		T *_Em; 	// Em of the compartments
-		T *_Em_dev; // Em of the compartments
-
-		T *_Rm; 	// Rm of the compartments
-		T *_Rm_dev; // Rm of the compartments
+	//Connection Fields
+	PN2S_Field<T, arch>  _hm;	// Hines Matrices
+	PN2S_Field<T, arch>  _rhs;	// Right hand side of the equation
+	PN2S_Field<T, arch>  _Vm;	// Vm of the compartments
+	PN2S_Field<T, arch>  _Cm;	// Cm of the compartments
+	PN2S_Field<T, arch>  _Em;	// Em of the compartments
+	PN2S_Field<T, arch>  _Rm;	// Rm of the compartments
 
 	void  makeHinesMatrix(PN2SModel<T,arch> *model, T * matrix);// float** matrix, uint nCompt);
-
+	void getValues();
 public:
 	PN2S_SolverComps();
 	~PN2S_SolverComps();
-	hscError PrepareSolver(vector< PN2SModel<T,arch> > &models, PN2S_NetworkAnalyzer<T,arch> &analyzer);
-	hscError Process();
-	hscError UpdateMatrix();
+	Error_PN2S PrepareSolver(vector< PN2SModel<T,arch> > &models, PN2S_NetworkAnalyzer<T,arch> &analyzer);
+	Error_PN2S Process();
+	Error_PN2S UpdateMatrix();
 
 	double GetDt(){ return _dt;}
 	void SetDt(double dt){ _dt = dt;}
@@ -61,6 +49,9 @@ public:
 	T GetRm(int n,int i){return _Rm[n*nComp+i];}
 	T GetEm(int n,int i){return _Em[n*nComp+i];}
 
+	//Setter and Getter
+	enum Fields {CM_FIELD, EM_FIELD, RM_FIELD, RA_FIELD,INIT_VM_FIELD, VM_FIELD};
 
+	static T (*GetValue_Func) (uint id, Fields field);
 };
 #endif // !defined(EA_ABB95B66_E531_4681_AE2B_D1CE4B940FF6__INCLUDED_)

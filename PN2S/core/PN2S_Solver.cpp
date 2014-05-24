@@ -23,7 +23,7 @@ PN2S_Solver<T,arch>::~PN2S_Solver()
 }
 
 template <typename T, int arch>
-hscError PN2S_Solver<T,arch>::PrepareSolver(vector<PN2SModel<T,arch> > &m,  double dt){
+Error_PN2S PN2S_Solver<T,arch>::PrepareSolver(vector<PN2SModel<T,arch> > &m,  double dt){
 	_dt = dt;
 
 	//TODO: Generate model packs
@@ -31,7 +31,7 @@ hscError PN2S_Solver<T,arch>::PrepareSolver(vector<PN2SModel<T,arch> > &m,  doub
 	modelPacks[0].SetDt(_dt);
 
 	//Prepare solver for each modelpack
-	hscError res = modelPacks[0].PrepareSolver(m);
+	ErrorType_PN2S res = modelPacks[0].PrepareSolver(m);
 
 	//Assign keys to modelPack, to be able to find later
 	for(vector<PN2SModel<T,arch> >::iterator it = m.begin(); it != m.end(); ++it) {
@@ -55,7 +55,7 @@ PN2S_ModelPack<T,arch>* PN2S_Solver<T,arch>::FindModelPack(hscID_t id){
  */
 template <typename T, int arch>
 void PN2S_Solver<T,arch>::Process(PN2S_ModelPack<T,arch>* data){
-	hscError res = data->Process();
+	ErrorType_PN2S res = data->Process();
 	assert(!res);
 }
 

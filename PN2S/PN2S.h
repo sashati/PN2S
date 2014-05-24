@@ -30,14 +30,6 @@
 //#include <cstdlib> // Required for g++ 4.3.2
 using namespace std;
 
-enum hscError
-{
-	NO_ERROR = 0,
-	CuBLASError = 1,
-	CUDA_Error = 2
-
-};
-
 //	Architectures
 #define ARCH_SM13       (0)
 #define ARCH_SM20       (1)

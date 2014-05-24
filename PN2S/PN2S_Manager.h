@@ -19,13 +19,13 @@
 class PN2S_Manager
 {
 public:
-	static hscError Setup(double dt);
-	static hscError Reinit();
+	static Error_PN2S Setup(double dt);
+	static Error_PN2S Reinit();
 	static bool IsInitialized();
 	static void InsertModel(PN2SModel<CURRENT_TYPE, CURRENT_ARCH> &m);
-	static hscError PrepareSolver();
-	static hscError Process();
-	static hscError AddInputTask(uint id);
+	static Error_PN2S PrepareSolver();
+	static Error_PN2S Process();
+	static Error_PN2S AddInputTask(uint id);
 
 private:
 

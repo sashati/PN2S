@@ -30,8 +30,8 @@ public:
 	void SetDt(double dt){ _dt = dt;}
 
 
-	hscError Setup(double dt);
-	hscError PrepareSolver( vector<PN2SModel<T,arch> > & _models,  double dt);
+	Error_PN2S Setup(double dt);
+	Error_PN2S PrepareSolver( vector<PN2SModel<T,arch> > & _models,  double dt);
 	PN2S_ModelPack<T,arch>* FindModelPack(hscID_t id);
 	void Process(PN2S_ModelPack<T,arch>* data);
 };

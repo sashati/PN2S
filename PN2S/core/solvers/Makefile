@@ -19,8 +19,8 @@ TARGET = _solvers.o
 
 COBJS += PN2S_SolverChannels.o	\
 		PN2S_SolverComps.o	\
-		solve.o			
-		
+		solve.o	\
+		PN2S_Field.o		
 		 
 #OBJS += 
 
@@ -28,6 +28,7 @@ COBJS += PN2S_SolverChannels.o	\
 all: $(TARGET)
 default: all
 
+PN2S_Field.o: PN2S_Field.cpp PN2S_Field.h
 PN2S_SolverChannels.o: PN2S_SolverChannels.cpp PN2S_SolverChannels.h 
 PN2S_SolverComps.o: PN2S_SolverComps.cu PN2S_SolverComps.h
 solve.o: solve.cu solve.h operations.h

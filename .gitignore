@@ -17,3 +17,6 @@ HSC/HSC_Test
 .svn/
 */.svn
 Debug/
+
+#Profiling
+*.prof

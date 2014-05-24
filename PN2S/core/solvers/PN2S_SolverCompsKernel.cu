@@ -22,7 +22,7 @@ UpdateRHS(const float *A, const float *B, float *rhs, int numElements)
 }
 
 // C Wrapper
-hscError UpdateRHS (double *A, double *b, double *x, int n, int batch)
+Error_PN2S UpdateRHS (double *A, double *b, double *x, int n, int batch)
 {
 //    dim3 dimBlock(dimX[n], n+1);
 //    dim3 dimGrid;

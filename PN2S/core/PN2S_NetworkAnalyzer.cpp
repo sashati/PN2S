@@ -21,8 +21,8 @@ PN2S_NetworkAnalyzer<T,arch>::~PN2S_NetworkAnalyzer(){
 }
 
 template <typename T, int arch>
-hscError PN2S_NetworkAnalyzer<T,arch>::ImportNetwork(vector<PN2SModel<T,arch> > &network){
-	hscError res;
+Error_PN2S PN2S_NetworkAnalyzer<T,arch>::ImportNetwork(vector<PN2SModel<T,arch> > &network){
+	Error_PN2S res;
 	nModel = network.size();
 	if( nModel >0)
 		nComp = network[0].compts.size();
@@ -30,15 +30,15 @@ hscError PN2S_NetworkAnalyzer<T,arch>::ImportNetwork(vector<PN2SModel<T,arch> > 
 	typename vector<PN2SModel<T,arch> >::iterator n;
 	for( n = network.begin(); n != network.end(); ++n) {
 		res = importCompts(n->compts);
-		assert(res==NO_ERROR);
+		assert(res==Error_PN2S::NO_ERROR);
 		res = importHHChannels(n->hhChannels);
-		assert(res==NO_ERROR);
+		assert(res==Error_PN2S::NO_ERROR);
 	}
-	return NO_ERROR;
+	return Error_PN2S::NO_ERROR;
 }
 
 template <typename T, int arch>
-hscError PN2S_NetworkAnalyzer<T,arch>::importCompts(vector<PN2SModel_Compartment<T,arch> > &cmpts)
+Error_PN2S PN2S_NetworkAnalyzer<T,arch>::importCompts(vector<PN2SModel_Compartment<T,arch> > &cmpts)
 {
 	typename vector<PN2SModel_Compartment<T,arch> >::iterator n;
 
@@ -46,11 +46,11 @@ hscError PN2S_NetworkAnalyzer<T,arch>::importCompts(vector<PN2SModel_Compartment
 		allCompartments.push_back(n.base());
 		importHHChannels(n->hhchannels);
 	}
-	return NO_ERROR;
+	return Error_PN2S::NO_ERROR;
 }
 
 template <typename T, int arch>
-hscError PN2S_NetworkAnalyzer<T,arch>::importHHChannels(vector<PN2SModel_HHChannel<T,arch> > &chs)
+Error_PN2S PN2S_NetworkAnalyzer<T,arch>::importHHChannels(vector<PN2SModel_HHChannel<T,arch> > &chs)
 {
 	if(chs.size() > 0)
 	{
@@ -59,7 +59,7 @@ hscError PN2S_NetworkAnalyzer<T,arch>::importHHChannels(vector<PN2SModel_HHChann
 			allHHChannels.push_back(n.base());
 		}
 	}
-	return NO_ERROR;
+	return Error_PN2S::NO_ERROR;
 }
 
 template class PN2S_NetworkAnalyzer<double, ARCH_SM30>;
