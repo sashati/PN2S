@@ -56,8 +56,8 @@ test: $(TARGET)
 	$(CXX)  Test.cpp $(TARGET) -o Test -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -I/usr/local/cuda/include $(CXXFLAGS)
 
 benchmark: $(TARGET) 
-	$(CXX) -fopenmp $(CXXFLAGS) $(TARGET) -o Benchmark -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -I/usr/local/cuda/include Benchmark.cpp  
+	$(CXX) -fopenmp $(CXXFLAGS) $(TARGET) -o benchmark -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -I/usr/local/cuda/include Benchmark.cpp  
 
 clean:
 	@(for i in $(SUBDIR) ; do $(MAKE) -C $$i clean;  done)
-	rm -rf $(OBJS) $(COBJS) $(TARGET) Test
+	rm -rf $(OBJS) $(COBJS) $(TARGET) Test benchmark
