@@ -26,7 +26,7 @@ public:
 	Device(int _id);
 	virtual ~Device();
 
-	Error_PN2S Reinit(vector<models::Model<CURRENT_TYPE,CURRENT_ARCH> > &m,  double dt);
+	Error_PN2S Reinit(vector<models::Model<CURRENT_TYPE> > &m,  double dt);
 	void Process();
 	Error_PN2S Setup();
 

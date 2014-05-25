@@ -35,12 +35,12 @@ private:
 	Field<T, arch>  _Em;	// Em of the compartments
 	Field<T, arch>  _Rm;	// Rm of the compartments
 
-	void  makeHinesMatrix(models::Model<T,arch> *model, T * matrix);// float** matrix, uint nCompt);
+	void  makeHinesMatrix(models::Model<T> *model, T * matrix);// float** matrix, uint nCompt);
 	void getValues();
 public:
 	SolverComps();
 	~SolverComps();
-	Error_PN2S PrepareSolver(vector< models::Model<T,arch> > &models, NetworkAnalyzer<T,arch> &analyzer);
+	Error_PN2S PrepareSolver(vector< models::Model<T> > &models, NetworkAnalyzer<T,arch> &analyzer);
 	Error_PN2S Process();
 	Error_PN2S UpdateMatrix();
 

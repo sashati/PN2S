@@ -21,7 +21,7 @@ ModelPack<T,arch>::~ModelPack(){
 }
 
 template <typename T, int arch>
-Error_PN2S ModelPack<T,arch>::Reinit(vector<models::Model<T,arch> > &net){
+Error_PN2S ModelPack<T,arch>::Reinit(vector<models::Model<T> > &net){
 	Error_PN2S res = Error_PN2S::NO_ERROR;
 
 	_analyzer.ImportNetwork(net);

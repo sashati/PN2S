@@ -34,7 +34,7 @@ public:
 
 
 	Error_PN2S Setup(double dt);
-	Error_PN2S PrepareSolver( vector<models::Model<T,arch> > & _models,  double dt);
+	Error_PN2S PrepareSolver( vector<models::Model<T> > & _models,  double dt);
 	ModelPack<T,arch>* FindModelPack(hscID_t id);
 	void Process(ModelPack<T,arch>* data);
 };

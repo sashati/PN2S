@@ -13,17 +13,17 @@
 
 using namespace pn2s::models;
 
-template <typename T, int arch>
-Model<T,arch>::Model(uint _id) :
+template <typename T>
+Model<T>::Model(uint _id) :
 		id(_id) {
 
 	compts.clear();
 	hhChannels.clear();
 }
 
-template <typename T, int arch>
-Model<T,arch>::~Model() {
+template <typename T>
+Model<T>::~Model() {
 
 }
 
-template class Model<double, ARCH_SM30>;
+template class Model<double>;

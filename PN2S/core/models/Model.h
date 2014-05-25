@@ -11,20 +11,23 @@
 #include "../../headers.h"
 #include "HHChannel.h"
 #include "Compartment.h"
+#include "Matrix.h"
 
 namespace pn2s
 {
 namespace models
 {
 
-template <typename T, int arch>
+template <typename T>
 class Model
 {
 public:
 	uint id;
 
-	vector<HHChannel<T,arch> > hhChannels;
-	vector<Compartment<T,arch> > compts;
+	vector<HHChannel<T> > hhChannels;
+	vector<Compartment<T> > compts;
+
+	vector<Matrix<T> > matrices;
 
 	Model(uint _id);
 	virtual ~Model();

@@ -23,13 +23,13 @@ public:
 	uint nModel;
 	NetworkAnalyzer();
 	virtual ~NetworkAnalyzer();
-	Error_PN2S ImportNetwork(vector<models::Model <T,arch> > &network);
+	Error_PN2S ImportNetwork(vector<models::Model <T> > &network);
 
-	vector<models::Compartment<T,arch> *> allCompartments;
-	vector<models::HHChannel<T,arch> *> allHHChannels;
+	vector<models::Compartment<T> *> allCompartments;
+	vector<models::HHChannel<T> *> allHHChannels;
 private:
-	Error_PN2S importCompts(vector<models::Compartment<T,arch> > &cmpts);
-	Error_PN2S importHHChannels(vector<models::HHChannel<T,arch> > &chs);
+	Error_PN2S importCompts(vector<models::Compartment<T> > &cmpts);
+	Error_PN2S importHHChannels(vector<models::HHChannel<T> > &chs);
 
 };
 }

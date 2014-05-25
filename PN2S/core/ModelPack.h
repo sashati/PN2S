@@ -24,7 +24,7 @@ public:
 	double GetDt(){ return _dt;}
 	void SetDt(double dt){ _dt = dt; _compsSolver.SetDt(dt); }
 
-	Error_PN2S Reinit(vector<models::Model<T,arch> > &models);
+	Error_PN2S Reinit(vector<models::Model<T> > &models);
 
 	Error_PN2S Process();
 	Error_PN2S Output();

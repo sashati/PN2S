@@ -21,7 +21,7 @@ Device::~Device(){
 	cudaDeviceReset();
 }
 
-Error_PN2S Device::Reinit(vector<models::Model<CURRENT_TYPE,CURRENT_ARCH> > &m,  double dt){
+Error_PN2S Device::Reinit(vector<models::Model<CURRENT_TYPE> > &m,  double dt){
 	_dt = dt;
 
 	//TODO: Generate model packs

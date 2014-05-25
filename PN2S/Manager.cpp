@@ -9,7 +9,7 @@
 #include "Manager.h"
 
 using namespace pn2s;
-static vector<models::Model<CURRENT_TYPE, CURRENT_ARCH> > _models;
+static vector<models::Model<CURRENT_TYPE> > _models;
 
 static double _dt;
 static bool _isInitialized = false;
@@ -36,7 +36,7 @@ bool Manager::IsInitialized(){
 	return  _isInitialized;
 }
 
-void Manager::InsertModel(models::Model<CURRENT_TYPE, CURRENT_ARCH> &neutral){
+void Manager::InsertModel(models::Model<CURRENT_TYPE> &neutral){
 	_models.push_back(neutral);
 }
 

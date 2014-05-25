@@ -9,21 +9,21 @@
 
 using namespace pn2s::models;
 
-template <typename T, int arch>
-Compartment<T,arch>::Compartment(): gid(-1){
+template <typename T>
+Compartment<T>::Compartment(): gid(-1){
 }
 
-template <typename T, int arch>
-Compartment<T,arch>::~Compartment(){
+template <typename T>
+Compartment<T>::~Compartment(){
 
 }
 
 //Copy constractor
-template <typename T, int arch>
-Compartment<T,arch>::Compartment( const Compartment& other )
+template <typename T>
+Compartment<T>::Compartment( const Compartment& other )
 {
 	children.assign(other.children.begin(), other.children.end());
 	gid = other.gid;
 }
 
-template class Compartment<double, ARCH_SM30>;
+template class Compartment<double>;

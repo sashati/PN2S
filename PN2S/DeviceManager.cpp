@@ -35,7 +35,7 @@ Error_PN2S DeviceManager::SelectDevice(int id){
 	return  Error_PN2S::NO_ERROR;
 }
 
-Error_PN2S DeviceManager::Reinit(vector<models::Model<CURRENT_TYPE, CURRENT_ARCH> > &m, double dt){
+Error_PN2S DeviceManager::Reinit(vector<models::Model<CURRENT_TYPE> > &m, double dt){
 	cudaDeviceReset();
 
 	//TODO: Test Multidevice

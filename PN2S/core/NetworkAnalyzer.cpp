@@ -23,13 +23,13 @@ NetworkAnalyzer<T,arch>::~NetworkAnalyzer(){
 }
 
 template <typename T, int arch>
-Error_PN2S NetworkAnalyzer<T,arch>::ImportNetwork(vector<models::Model<T,arch> > &network){
+Error_PN2S NetworkAnalyzer<T,arch>::ImportNetwork(vector<models::Model<T> > &network){
 	Error_PN2S res;
 	nModel = network.size();
 	if( nModel >0)
 		nComp = network[0].compts.size();
 
-	typename vector<models::Model<T,arch> >::iterator n;
+	typename vector<models::Model<T> >::iterator n;
 	for( n = network.begin(); n != network.end(); ++n) {
 		res = importCompts(n->compts);
 		assert(res==Error_PN2S::NO_ERROR);
@@ -40,9 +40,9 @@ Error_PN2S NetworkAnalyzer<T,arch>::ImportNetwork(vector<models::Model<T,arch> >
 }
 
 template <typename T, int arch>
-Error_PN2S NetworkAnalyzer<T,arch>::importCompts(vector<models::Compartment<T,arch> > &cmpts)
+Error_PN2S NetworkAnalyzer<T,arch>::importCompts(vector<models::Compartment<T> > &cmpts)
 {
-	typename vector<models::Compartment<T,arch> >::iterator n;
+	typename vector<models::Compartment<T> >::iterator n;
 
 	for(n = cmpts.begin(); n != cmpts.end(); ++n) {
 		allCompartments.push_back(n.base());
@@ -52,11 +52,11 @@ Error_PN2S NetworkAnalyzer<T,arch>::importCompts(vector<models::Compartment<T,ar
 }
 
 template <typename T, int arch>
-Error_PN2S NetworkAnalyzer<T,arch>::importHHChannels(vector<models::HHChannel<T,arch> > &chs)
+Error_PN2S NetworkAnalyzer<T,arch>::importHHChannels(vector<models::HHChannel<T> > &chs)
 {
 	if(chs.size() > 0)
 	{
-		typename vector<models::HHChannel<T,arch> >::iterator n;
+		typename vector<models::HHChannel<T> >::iterator n;
 		for(n = chs.begin(); n != chs.end(); ++n) {
 			allHHChannels.push_back(n.base());
 		}

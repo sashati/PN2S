@@ -19,8 +19,10 @@ TARGET = _models.o
 
 		 
 OBJS +=		HHChannel.o \
-		Model.o \
-		Compartment.o 
+			Model.o \
+			Compartment.o \
+			Matrix.o
+			 
 
 .PHONY: all
 all: $(TARGET)
@@ -29,6 +31,7 @@ default: all
 HHChannel.o: HHChannel.cpp HHChannel.h
 Model.o: Model.cpp Model.h 
 Compartment.o: Compartment.cpp Compartment.h
+Matrix.o: Matrix.cpp Matrix.h
 
 $(TARGET): $(OBJS) $(COBJS)
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) 

@@ -19,20 +19,20 @@ namespace pn2s
 namespace models
 {
 
-template <typename T, int arch>
+template <typename T>
 class Compartment
 {
 public:
 	uint gid;
 	vector< unsigned int > children;	///< Hines indices of child compts
 
-	vector<HHChannel<T,arch> > hhchannels;
+	vector<HHChannel<T> > hhchannels;
 
 	Compartment();
 	virtual ~Compartment();
 
 	//Copy constractor is necessary because at Vector assign, information will copy through it.
-	Compartment( const Compartment<T,arch>& other );
+	Compartment( const Compartment<T>& other );
 private:
 
 };

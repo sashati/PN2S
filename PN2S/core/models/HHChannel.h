@@ -13,18 +13,18 @@ namespace pn2s
 namespace models
 {
 
-template <typename T, int arch>
+template <typename T>
 class HHChannel
 {
 public:
 	HHChannel();
 	virtual ~HHChannel();
 
-	double Gbar;
-	double Ek;
-	double Gk;
-	double Ik;
-	double Vm;
+	T Gbar;
+	T Ek;
+	T Gk;
+	T Ik;
+	T Vm;
 };
 
 }

@@ -10,12 +10,12 @@
 
 using namespace pn2s::models;
 
-template <typename T, int arch>
-HHChannel<T,arch>::HHChannel(){
+template <typename T>
+HHChannel<T>::HHChannel(){
 }
 
-template <typename T, int arch>
-HHChannel<T,arch>::~HHChannel(){
+template <typename T>
+HHChannel<T>::~HHChannel(){
 }
 
-template class HHChannel<double, ARCH_SM30>;
+template class HHChannel<double>;
