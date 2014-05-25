@@ -24,7 +24,6 @@ cublasHandle_t _handle;
 //Thrust Variables
 //thrust::device_vector<int> d_rhs = h_vec;
 
-
 template <typename T, int arch>
 SolverComps<T,arch>::SolverComps()
 {

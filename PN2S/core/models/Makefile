@@ -16,27 +16,27 @@ endif
 ####################################################################
 
 TARGET = _models.o
-
+HEADERS = ../../headers.h
 		 
 OBJS +=		HHChannel.o \
 			Model.o \
 			Compartment.o \
-			Matrix.o
+#			Matrix.o
 			 
 
 .PHONY: all
 all: $(TARGET)
 default: all
 
-HHChannel.o: HHChannel.cpp HHChannel.h
-Model.o: Model.cpp Model.h 
-Compartment.o: Compartment.cpp Compartment.h
-Matrix.o: Matrix.cpp Matrix.h
+Model.o: Model.cpp Model.h HHChannel.cpp HHChannel.h Compartment.cpp Compartment.h $(HEADERS)
+HHChannel.o: HHChannel.cpp HHChannel.h $(HEADERS)
+Compartment.o: Compartment.cpp Compartment.h $(HEADERS)
+Matrix.o: Matrix.cpp Matrix.h $(HEADERS)
 
 $(TARGET): $(OBJS) $(COBJS)
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) 
 $(OBJS):
-	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg $< -c 
+	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg -I../../extra $< -c 
 	
 .PHONY: clean
 clean:

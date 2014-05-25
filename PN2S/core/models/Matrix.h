@@ -18,13 +18,18 @@ namespace models
 template <typename T>
 class Matrix
 {
-	std::vector< std::vector<T> > _data;
 	int _n;
 	int _m;
 public:
+	std::vector< std::vector<T> > _data;
+	unsigned int gid;
+
 	Matrix();
 	Matrix(int n, int m);
 	virtual ~Matrix();
+
+//	Matrix( const Matrix<T>& other );
+	Matrix<T>& operator=(Matrix<T> rhs);
 
 	std::vector<T> operator [](int i) const {return _data[i];}
 	std::vector<T> & operator [](int i) {return _data[i];}

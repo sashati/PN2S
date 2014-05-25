@@ -25,7 +25,7 @@ Solver<T,arch>::~Solver()
 }
 
 template <typename T, int arch>
-Error_PN2S Solver<T,arch>::PrepareSolver(vector<models<T> > &m,  double dt){
+Error_PN2S Solver<T,arch>::PrepareSolver(vector<models::Model<T> > &m,  double dt){
 	_dt = dt;
 
 	//TODO: Generate model packs

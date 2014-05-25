@@ -13,12 +13,20 @@
 
 using namespace pn2s::models;
 
+
 template <typename T>
 Model<T>::Model(uint _id) :
 		id(_id) {
 
 	compts.clear();
 	hhChannels.clear();
+}
+
+template <typename T>
+Model<T>::Model(Eigen::MatrixXd m,uint _id)
+{
+	id = _id ;
+	matrix = m;
 }
 
 template <typename T>

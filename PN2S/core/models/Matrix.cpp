@@ -18,7 +18,7 @@ Matrix<T>::Matrix():
 
 template <typename T>
 Matrix<T>::Matrix(int n, int m):
-	_n(n), _m(m)
+	_n(n), _m(m), gid(-1)
 {
 	_data.resize(n);
 	for (int var = 0; var < m; ++var) {
@@ -28,6 +28,24 @@ Matrix<T>::Matrix(int n, int m):
 
 template <typename T>
 Matrix<T>::~Matrix(){
+}
+
+////Copy constractor
+//template <typename T>
+//Matrix<T>::Matrix( const Matrix<T>& other )
+//{
+//	Matrix(other._n, other._m);
+//	_data.assign(other._data.begin(), other._data.end());
+//	gid = other.gid;
+//}
+
+template <typename T>
+Matrix<T>& Matrix<T>::operator=(Matrix<T> rhs)
+{
+	Matrix(rhs._n, rhs._m);
+	_data.assign(rhs._data.begin(), rhs._data.end());
+	gid = rhs.gid;
+	return *this;
 }
 
 template class Matrix<double>;
