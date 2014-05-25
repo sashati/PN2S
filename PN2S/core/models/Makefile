@@ -9,7 +9,7 @@
 
 #TODO: imported from main Makefile for test, after we can remove it
 ifndef CXXFLAGS 
-	CXXFLAGS = -g -fpermissive -fno-strict-aliasing -fPIC -fno-inline-functions \
+	CXXFLAGS =  -g -fpermissive -fno-strict-aliasing -fPIC -fno-inline-functions \
 	-Wall -Wno-long-long -pedantic -DDO_UNIT_TESTS -DUSE_GENESIS_PARSER -DSVN_REVISION=\"5340M\" \
 	-DLINUX -DUSE_GSL -DUSE_HDF5  -DH5_NO_DEPRECATED_SYMBOLS -I/usr/local/hdf5/include 
 endif

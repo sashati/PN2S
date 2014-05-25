@@ -17,6 +17,7 @@ HSC/HSC_Test
 .svn/
 */.svn
 Debug/
+PN2S/benchmark
 
 #Profiling
 *.prof

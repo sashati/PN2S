@@ -28,7 +28,7 @@ MODULES = core/_core.o
 
 .PHONY: all
 all: $(TARGET)
-default: all
+default: benchmark 
 
 Manager.o: Manager.cpp Manager.h 
 Device.o: Device.cpp Device.h
@@ -55,7 +55,7 @@ force :;
 test: $(TARGET) 
 	$(CXX)  Test.cpp $(TARGET) -o Test -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -I/usr/local/cuda/include $(CXXFLAGS)
 
-benchmark: $(TARGET) 
+benchmark: $(TARGET) force
 	$(CXX) -fopenmp $(CXXFLAGS) $(TARGET) -o benchmark -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -I/usr/local/cuda/include Benchmark.cpp  
 
 clean:
