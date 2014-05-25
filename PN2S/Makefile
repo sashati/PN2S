@@ -17,10 +17,10 @@ endif
 
 TARGET = _pn2s.o
 
-COBJS += PN2S_Device.o \
-	PN2S_DeviceManager.o \
+COBJS += Device.o \
+	DeviceManager.o \
 		 
-OBJS += PN2S_Manager.o 
+OBJS += Manager.o 
 
 SUBDIR = core
 	
@@ -30,9 +30,9 @@ MODULES = core/_core.o
 all: $(TARGET)
 default: all
 
-PN2S_Manager.o: PN2S_Manager.cpp PN2S_Manager.h 
-PN2S_Device.o: PN2S_Device.cpp PN2S_Device.h
-PN2S_DeviceManager.o: PN2S_DeviceManager.cpp PN2S_DeviceManager.h 
+Manager.o: Manager.cpp Manager.h 
+Device.o: Device.cpp Device.h
+DeviceManager.o: DeviceManager.cpp DeviceManager.h 
 
 $(TARGET): $(OBJS) $(COBJS) $(SUBDIR) 
 #	@(for i in $(SUBDIR) ; do $(MAKE) -C $$i; done)
@@ -51,9 +51,13 @@ $(SUBDIR): force
 .PHONY: force
 force :;
 
+#TODO: Remove test
 test: $(TARGET) 
-	$(CXX)  PN2S_Test.cpp $(TARGET) -o PN2S_Test -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -I/usr/local/cuda/include $(CXXFLAGS)
+	$(CXX)  Test.cpp $(TARGET) -o Test -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -I/usr/local/cuda/include $(CXXFLAGS)
+
+benchmark: $(TARGET) 
+	$(CXX) -fopenmp $(CXXFLAGS) $(TARGET) -o Benchmark -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -I/usr/local/cuda/include Benchmark.cpp  
 
 clean:
 	@(for i in $(SUBDIR) ; do $(MAKE) -C $$i clean;  done)
-	rm -rf $(OBJS) $(COBJS) $(TARGET) PN2S_Test
+	rm -rf $(OBJS) $(COBJS) $(TARGET) Test

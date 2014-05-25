@@ -17,10 +17,10 @@ endif
 
 TARGET = _core.o
 
-COBJS += 	PN2S_ModelPack.o	\
+COBJS += 	ModelPack.o	\
 
 		 
-OBJS += PN2S_NetworkAnalyzer.o 
+OBJS += NetworkAnalyzer.o 
 		
 SUBDIR = 	models \
 			solvers
@@ -32,8 +32,8 @@ MODULES = 	models/_models.o \
 all: $(TARGET)
 default: all
 
-PN2S_ModelPack.o: PN2S_ModelPack.cpp PN2S_ModelPack.h solvers/PN2S_SolverChannels.cpp solvers/PN2S_SolverChannels.h solvers/PN2S_SolverComps.cu solvers/PN2S_SolverComps.h 
-PN2S_NetworkAnalyzer.o: PN2S_NetworkAnalyzer.cpp PN2S_NetworkAnalyzer.h
+ModelPack.o: ModelPack.cpp ModelPack.h solvers/SolverChannels.cpp solvers/SolverChannels.h solvers/SolverComps.cu solvers/SolverComps.h 
+NetworkAnalyzer.o: NetworkAnalyzer.cpp NetworkAnalyzer.h
 
 $(TARGET): $(OBJS) $(COBJS) $(SUBDIR) 
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) $(MODULES)

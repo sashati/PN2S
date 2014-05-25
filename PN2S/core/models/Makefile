@@ -18,17 +18,17 @@ endif
 TARGET = _models.o
 
 		 
-OBJS +=		PN2SModel_HHChannel.o \
-		PN2SModel.o \
-		PN2SModel_Compartment.o 
+OBJS +=		HHChannel.o \
+		Model.o \
+		Compartment.o 
 
 .PHONY: all
 all: $(TARGET)
 default: all
 
-PN2SModel_HHChannel.o: PN2SModel_HHChannel.cpp PN2SModel_HHChannel.h
-PN2SModel.o: PN2SModel.cpp PN2SModel.h 
-PN2SModel_Compartment.o: PN2SModel_Compartment.cpp PN2SModel_Compartment.h
+HHChannel.o: HHChannel.cpp HHChannel.h
+Model.o: Model.cpp Model.h 
+Compartment.o: Compartment.cpp Compartment.h
 
 $(TARGET): $(OBJS) $(COBJS)
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) 
