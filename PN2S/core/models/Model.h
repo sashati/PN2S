@@ -11,14 +11,7 @@
 #include "../../headers.h"
 #include "HHChannel.h"
 #include "Compartment.h"
-
-// workaround issue between gcc >= 4.6 and cuda 6.0
-#if (defined __GNUC__) && (__GNUC__>4 || __GNUC_MINOR__>=6)
-  #undef _GLIBCXX_ATOMIC_BUILTINS
-  #undef _GLIBCXX_USE_INT128
-#endif
-
-#include <Eigen/Core>
+#include "Matrix.h"
 
 namespace pn2s
 {
@@ -34,10 +27,10 @@ public:
 	vector<HHChannel<T> > hhChannels;
 	vector<Compartment<T> > compts;
 
-	Eigen::MatrixXd matrix;
+	Matrix matrix;
 
 	Model(uint _id);
-	Model(Eigen::MatrixXd m, uint _id);
+	Model(Matrix m, uint _id);
 	virtual ~Model();
 };
 

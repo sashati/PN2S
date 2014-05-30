@@ -23,7 +23,7 @@ Model<T>::Model(uint _id) :
 }
 
 template <typename T>
-Model<T>::Model(Eigen::MatrixXd m,uint _id)
+Model<T>::Model(Matrix m,uint _id)
 {
 	id = _id ;
 	matrix = m;

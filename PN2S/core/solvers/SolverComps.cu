@@ -52,6 +52,8 @@ Error_PN2S SolverComps<T,arch>::PrepareSolver(vector< models::Model<T> > &networ
 {
 //	cudaError_t success;
 	cublasStatus_t stat;
+	if(analyzer.allCompartments.size() == 0)
+		return Error_PN2S::NO_ERROR;
 
 	nModel = analyzer.nModel;
 	nComp = analyzer.nComp;

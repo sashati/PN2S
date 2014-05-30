@@ -21,14 +21,14 @@ HEADERS = ../../headers.h
 OBJS +=		HHChannel.o \
 			Model.o \
 			Compartment.o \
-#			Matrix.o
+			Matrix.o
 			 
 
 .PHONY: all
 all: $(TARGET)
 default: all
 
-Model.o: Model.cpp Model.h HHChannel.cpp HHChannel.h Compartment.cpp Compartment.h $(HEADERS)
+Model.o: Model.cpp Model.h HHChannel.cpp HHChannel.h Compartment.cpp Compartment.h Matrix.cpp Matrix.h $(HEADERS)
 HHChannel.o: HHChannel.cpp HHChannel.h $(HEADERS)
 Compartment.o: Compartment.cpp Compartment.h $(HEADERS)
 Matrix.o: Matrix.cpp Matrix.h $(HEADERS)

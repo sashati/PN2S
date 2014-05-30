@@ -10,30 +10,40 @@
 
 #include <vector>
 
+// workaround issue between gcc >= 4.6 and cuda 6.0
+#if (defined __GNUC__) && (__GNUC__>4 || __GNUC_MINOR__>=6)
+  #undef _GLIBCXX_ATOMIC_BUILTINS
+  #undef _GLIBCXX_USE_INT128
+#endif
+
+#include <Eigen/Core>
+
 namespace pn2s
 {
 namespace models
 {
 
-template <typename T>
-class Matrix
-{
-	int _n;
-	int _m;
-public:
-	std::vector< std::vector<T> > _data;
-	unsigned int gid;
+typedef Eigen::MatrixXd Matrix;
 
-	Matrix();
-	Matrix(int n, int m);
-	virtual ~Matrix();
-
-//	Matrix( const Matrix<T>& other );
-	Matrix<T>& operator=(Matrix<T> rhs);
-
-	std::vector<T> operator [](int i) const {return _data[i];}
-	std::vector<T> & operator [](int i) {return _data[i];}
-};
+//template <typename T>
+//class Matrix : public Ei
+//{
+//	int _n;
+//	int _m;
+//public:
+//	std::vector< std::vector<T> > _data;
+//	unsigned int gid;
+//
+//	Matrix();
+//	Matrix(int n, int m);
+//	virtual ~Matrix();
+//
+////	Matrix( const Matrix<T>& other );
+//	Matrix<T>& operator=(Matrix<T> rhs);
+//
+//	std::vector<T> operator [](int i) const {return _data[i];}
+//	std::vector<T> & operator [](int i) {return _data[i];}
+//};
 
 }
 }

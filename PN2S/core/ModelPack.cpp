@@ -28,8 +28,9 @@ Error_PN2S ModelPack<T,arch>::Reinit(vector<models::Model<T> > &net){
 
 	res = _compsSolver.PrepareSolver(net, _analyzer);
 	assert(res==Error_PN2S::NO_ERROR);
-	res = _channelsSolver.PrepareSolver(net, _analyzer);
-	assert(res==Error_PN2S::NO_ERROR);
+//	res = _channelsSolver.PrepareSolver(net, _analyzer);
+//	assert(res==Error_PN2S::NO_ERROR);
+
 	return  res;
 }
 

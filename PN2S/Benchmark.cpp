@@ -16,7 +16,10 @@ int main(int argc, char **argv) {
 	int matrix_size = 3;
 	int batch_size = 10;
 
+	int tMax = 1;
 	double dt = 1;
+
+
 	Manager::Setup(dt);
 
 	MatrixXd mx (matrix_size,matrix_size);
@@ -32,9 +35,14 @@ int main(int argc, char **argv) {
 		models::Model<CURRENT_TYPE> neutral(mx, idx_batch);
 
 		Manager::InsertModel(neutral);
+	}
 
-		std::cout << neutral.matrix << std::endl;
+	//Sync with devices
+	Manager::Reinit();
 
+	//Process simulation
+	for (int t = 0; t < tMax; ++t) {
+		Manager::Process();
 	}
 
 	return 0;

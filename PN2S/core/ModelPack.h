@@ -32,7 +32,7 @@ public:
 //	vector<vector<models::Base> > models; //TODO: Encapsulation
 
 	solvers::SolverComps<CURRENT_TYPE,CURRENT_ARCH> _compsSolver; //TODO Encapsulation
-	solvers::SolverComps<CURRENT_TYPE,CURRENT_ARCH> _channelsSolver; //TODO Encapsulation
+	solvers::SolverChannels<CURRENT_TYPE,CURRENT_ARCH> _channelsSolver; //TODO Encapsulation
 private:
 	double _dt;
 	NetworkAnalyzer<T,arch> _analyzer;
