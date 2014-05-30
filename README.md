@@ -6,6 +6,5 @@ PN2S is a framwork to simulate neural models in parallel systems.
 - Provide simulation for systems with multiple CPU, GPU and XeonPhi
 - Supports models of complex neurons and large networks.
 - Modular and extensible architecture
-- Supported simulators:
-  - MOOSE (http://moose.ncbs.res.in)
+- Supporting MOOSE (http://moose.ncbs.res.in) simulator
 
