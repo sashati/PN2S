@@ -154,6 +154,7 @@ Error_PN2S SolverComps<T,arch>::UpdateMatrix()
 
 	//Copy to GPU
 	_rhs.Send2Device(_Em); // Em -> rhs
+
 	_Rm.Host2Device_Sync();
 	_Vm.Host2Device_Sync();
 	_Cm.Host2Device_Sync();

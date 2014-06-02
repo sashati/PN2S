@@ -69,7 +69,7 @@ void Device::Process()
 	omp_set_lock(&_full_lock_input);
 	omp_set_lock(&_empty_lock_output);
 
-	//TODO: Replace omp with pthread
+	//TODO: Replace omp with TBB
 	_iq_limit = _queue_size;
 	#pragma omp parallel \
 		shared(_iq, _iq_size, state) \

@@ -40,7 +40,6 @@ os.environ['NUMPTHREADS'] = '1'
 import math
 
 import moose
-import yep
 
 EREST_ACT = -70e-3
 
@@ -203,13 +202,13 @@ def add_plot( objpath, field, plot ):
     moose.connect( tab, 'requestOut', obj, field )
     return tab
 
-def make_elec_plots():
+def make_elec_plots(cellpath):
     graphs = moose.Neutral( '/graphs' )
     elec = moose.Neutral( '/graphs/elec' )
-    add_plot( '/n/compt', 'getVm', 'elec/dendVm' )
-    add_plot( '/n/head0', 'getVm', 'elec/head0Vm' )
-    add_plot( '/n/head2', 'getVm', 'elec/head2Vm' )
-    add_plot( '/n/head2/ca', 'getCa', 'elec/head2Ca' )
+    add_plot( cellpath+'/compt', 'getVm', 'elec/dendVm' )
+    add_plot( cellpath+'/head0', 'getVm', 'elec/head0Vm' )
+    add_plot( cellpath+'/head2', 'getVm', 'elec/head2Vm' )
+    add_plot( cellpath+'/head2/ca', 'getCa', 'elec/head2Ca' )
 
 def dump_plots( fname ):
     if ( os.path.exists( fname ) ):
@@ -271,9 +270,9 @@ def test_elec_alone(sim_time=1):
     eeDt = 2e-6
     hSolveDt = 2e-5
 
-    createCells(100)
+    createCells(4)
  
-#     make_elec_plots()
+    make_elec_plots("/n/cell0")
 #     head2 = moose.element( '/n/cell0/head2' )
     dt = 1e-6
     moose.setClock( 0, dt )
@@ -283,23 +282,29 @@ def test_elec_alone(sim_time=1):
     moose.useClock( 0, '/n/##[ISA=Compartment]', 'init' )
     moose.useClock( 1, '/n/##[ISA=Compartment]', 'process' )
     moose.useClock( 2, '/n/##[ISA=ChanBase],/n/##[ISA=SynBase],/n/##[ISA=CaConc],/n/##[ISA=SpikeGen]','process')
- 
-    # make Hsolver and rerun
-    hsolve = moose.HSolve( '/n/hsolve' )
-    moose.useClock( 1, '/n/hsolve', 'process' )
-      
-    moose.setClock( 0, dt )
-    moose.setClock( 1, dt )
-    moose.setClock( 2, dt )
-    hsolve.dt = dt
-    yep.start()
-    hsolve.target = '/n/#/compt'
-    moose.reinit()
+    moose.useClock( 8, '/graphs/elec/#', 'process' )
     
+#     Non-hsolve solver
+    moose.reinit()
     moose.start( sim_time )
-    yep.stop()
-#         dump_plots( 'h_instab' + str( dt ) + '.plot' )
+    dump_plots( 'instab.plot' )
+    
+    
+#     # make Hsolver and rerun
+#     hsolve = moose.HSolve( '/n/hsolve' )
+#     moose.useClock( 1, '/n/hsolve', 'process' )
+#       
+#     moose.setClock( 0, dt )
+#     moose.setClock( 1, dt )
+#     moose.setClock( 2, dt )
+#     hsolve.dt = dt
+#     hsolve.target = '/n/#/compt'
+#     moose.reinit()
+#     
+#     moose.start( sim_time )
+# #         dump_plots( 'h_instab' + str( dt ) + '.plot' )
 
+    
 def main():
     test_elec_alone(1e-6)
 

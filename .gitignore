@@ -18,6 +18,8 @@ HSC/HSC_Test
 */.svn
 Debug/
 PN2S/benchmark
+PN2S_Moose_Test/PN2S_Moose_Test
 
 #Profiling
 *.prof
+
