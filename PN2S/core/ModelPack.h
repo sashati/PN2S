@@ -33,6 +33,13 @@ public:
 
 	solvers::SolverComps<CURRENT_TYPE,CURRENT_ARCH> _compsSolver; //TODO Encapsulation
 	solvers::SolverChannels<CURRENT_TYPE,CURRENT_ARCH> _channelsSolver; //TODO Encapsulation
+
+//	friend ostream& operator<<(ostream& out, ModelPack<T,arch>& dt)
+//	{
+//	    out << "ModelPakc";
+//	    return out;
+//	}
+
 private:
 	double _dt;
 	NetworkAnalyzer<T,arch> _analyzer;

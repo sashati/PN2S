@@ -62,6 +62,7 @@ Error_PN2S DeviceManager::Reinit(vector<models::Model<CURRENT_TYPE> > &m, double
 
 void DeviceManager::Process()
 {
+	//TODO: Each device should get its own pack
 	for(vector<Device>::iterator device = _devices.begin(); device != _devices.end(); ++device)
 	{
 		device->Process();

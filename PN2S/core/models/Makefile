@@ -36,7 +36,7 @@ Matrix.o: Matrix.cpp Matrix.h $(HEADERS)
 $(TARGET): $(OBJS) $(COBJS)
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) 
 $(OBJS):
-	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg -I../../extra $< -c 
+	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg -I../../libs $< -c 
 	
 .PHONY: clean
 clean:

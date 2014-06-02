@@ -39,10 +39,10 @@ $(TARGET): $(OBJS) $(COBJS) $(SUBDIR)
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) $(MODULES)
 	 
 $(OBJS):
-	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg -I../extra $< -c 
+	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg -I../libs $< -c 
 	
 $(COBJS):
-	nvcc --compile -o  "$@" "$<" -G -O0 -Xcompiler -fopenmp -Xcompiler -fPIC -g -gencode arch=compute_30,code=sm_30  -x cu  -I../extra   
+	nvcc --compile -o  "$@" "$<" -G -O0 -Xcompiler -fopenmp -Xcompiler -fPIC -g -gencode arch=compute_30,code=sm_30  -x cu  -I../libs   
 
 .PHONY: clean
 $(SUBDIR): force
