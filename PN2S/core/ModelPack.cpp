@@ -35,10 +35,18 @@ Error_PN2S ModelPack<T,arch>::Reinit(vector<models::Model<T> > &net){
 }
 
 
+
+template <typename T, int arch>
+Error_PN2S ModelPack<T,arch>::Input()
+{
+	//For each model in the pack, executes the Process()
+	_compsSolver.Input();
+	return Error_PN2S::NO_ERROR;
+}
+
 template <typename T, int arch>
 Error_PN2S ModelPack<T,arch>::Process()
 {
-	//For each model in the pack, executes the Process()
 	_compsSolver.Process();
 	return Error_PN2S::NO_ERROR;
 }
@@ -46,12 +54,7 @@ Error_PN2S ModelPack<T,arch>::Process()
 template <typename T, int arch>
 Error_PN2S ModelPack<T,arch>::Output()
 {
-	return Error_PN2S::NO_ERROR;
-}
-
-template <typename T, int arch>
-Error_PN2S ModelPack<T,arch>::Input()
-{
+	_compsSolver.Output();
 	return Error_PN2S::NO_ERROR;
 }
 

@@ -14,8 +14,6 @@
 #include "tbb/atomic.h"
 #include "tbb/tick_count.h"
 
-#include "Scheduler.h"
-
 using namespace pn2s;
 using namespace std;
 using namespace tbb;
@@ -53,28 +51,29 @@ Error_PN2S Device::Reinit(vector<models::Model<CURRENT_TYPE> > &m,  double dt){
  * Multithread tasks section
  */
 
+
+//#ifdef PN2S_DEBUG
+
 struct input_body {
 	ModelPack<CURRENT_TYPE,CURRENT_ARCH>* operator()( ModelPack<CURRENT_TYPE,CURRENT_ARCH> *m ) {
-
-		std::cout<< "Input" << m<<endl<<flush;
+		_D(std::cout<< "Input" << m<<endl<<flush);
 		m->Input();
-
         return m;
     }
 };
 
 struct process_body{
 	ModelPack<CURRENT_TYPE,CURRENT_ARCH>* operator()( ModelPack<CURRENT_TYPE,CURRENT_ARCH>* m) {
-
-		std::cout<< "Process" << m<<endl<<flush;
-
+		_D(std::cout<< "Process" << m<<endl<<flush);
+		m->Process();
         return m;
     }
 };
 
 struct output_body{
 	ModelPack<CURRENT_TYPE,CURRENT_ARCH>* operator()( ModelPack<CURRENT_TYPE,CURRENT_ARCH>* m ) {
-        std::cout<< "Output" << m<<endl<<flush;
+		_D(std::cout<< "Output" << m<<endl<<flush);
+		m->Output();
         return m;
     }
 };
@@ -105,115 +104,4 @@ void Device::Process()
 		broadcast.try_put(&(*it));
 	}
 	scheduler.wait_for_all();
-
-//	//State variable for three threads
-//	int state=0;	//Start:0, task1 done: 1, task2 done: 2, Stop: 3
-//
-//
-//	//TODO: Replace omp with TBB
-//	_iq_limit = _queue_size;
-//	#pragma omp parallel \
-//		shared(_iq, _iq_size, state) \
-//		firstprivate(_iq_limit) \
-//		num_threads(3)
-//	{
-//		int tid = omp_get_thread_num();
-//		if(tid%3 == 0)
-//		{
-////			task1_prepareInput(_empty_lock_input,_full_lock_input, state);
-//		}
-//		else if(tid%3==1)
-//		{
-////			task2_doProcess(_empty_lock_input,_full_lock_input,_empty_lock_output,  state);
-//		}
-//		else if(tid%3==2)
-//		{
-////			task3_prepareOutput(_empty_lock_output,  state);
-//		}
-//	}
-
-//	omp_destroy_lock(&_empty_lock_input);
-
 }
-
-//void Device::task1_prepareInput(omp_lock_t& _empty_lock,omp_lock_t& _full_lock, int& state) {
-//	for (vector<ModelPack<CURRENT_TYPE,CURRENT_ARCH> >::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
-//	{
-//		if(_iq_size >= _iq_limit)
-//			omp_set_lock(&_full_lock);
-//
-//		//Prepare Input
-//		it->Input();
-//
-//		//Add to the ready task list
-//		_iq.push_back(*it);
-//
-//		#pragma omp critical
-//		{
-//			_iq_size++;
-//			#pragma omp flush(_iq_size)
-//			cout<<"Thread = "<< omp_get_thread_num()<<"Limit "<<_iq_limit<<" Add"<<"  QSize="<<_iq.size()<<"size="<<_iq_size<<endl<<flush;
-//		}
-//		omp_unset_lock(&_empty_lock);
-//	}
-//	state = 1;
-//	#pragma omp flush(state)
-//}
-//
-//void Device::task2_doProcess(omp_lock_t& _empty_lock_input,
-//		omp_lock_t& _full_lock_input,
-//		omp_lock_t& _empty_lock_output,
-//		int& state)
-//{
-//	do {
-//		if(_iq.size() == 0)
-//			omp_set_lock(&_empty_lock_input);
-//
-//		ModelPack<CURRENT_TYPE,CURRENT_ARCH>& t= _iq[0];
-//		_iq.pop_front();
-//
-//		//Do Process
-//		t.Process();
-//
-//		//Add task to output
-//		_oq.push_back(t);
-//
-//		#pragma omp critical
-//		{
-//			_iq_size--;
-//			_oq_size++;
-//			cout<<"Thread = "<< omp_get_thread_num()<<"Limit "<<_iq_limit<<" Process "<<"  QSize="<<_iq.size() <<"size="<<_iq_size<<endl<<flush;
-//		}
-//
-//		omp_unset_lock(&_full_lock_input);
-//		omp_unset_lock(&_empty_lock_output);
-//
-//	} while (state < 1);
-//
-//	state = 2;
-//	#pragma omp flush(state)
-//}
-//
-//void Device::task3_prepareOutput(omp_lock_t& _empty_lock, int& state) {
-//	do {
-//		if(_oq.size() == 0)
-//			omp_set_lock(&_empty_lock);
-//
-//		sleep(1);
-//		ModelPack<CURRENT_TYPE,CURRENT_ARCH>* t= &_oq[0];
-//		_oq.pop_front();
-//
-//		//Output routins
-//		t->Output();
-//
-//		#pragma omp critical
-//		{
-//			_oq_size--;
-//			cout<<"Thread = "<< omp_get_thread_num()<<" Output "<<"  QSize="<<_oq.size() <<"size="<<_oq_size<<endl<<flush;
-//		}
-//	} while(state < 2);
-//
-//	state = 3;
-//	#pragma omp flush(state)
-//}
-

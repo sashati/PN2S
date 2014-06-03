@@ -42,6 +42,26 @@ CURRENT_TYPE _getValue(uint id, SolverComps<CURRENT_TYPE,CURRENT_ARCH>::Fields f
 	}
 	return 0;
 }
+//Getter and Setter
+void _setValue(uint id, SolverComps<CURRENT_TYPE,CURRENT_ARCH>::Fields field, CURRENT_TYPE value)
+{
+	switch(field)
+	{
+		case SolverComps<CURRENT_TYPE,CURRENT_ARCH>::CM_FIELD:
+			break;
+		case SolverComps<CURRENT_TYPE,CURRENT_ARCH>::EM_FIELD:
+			break;
+		case SolverComps<CURRENT_TYPE,CURRENT_ARCH>::RM_FIELD:
+			break;
+		case SolverComps<CURRENT_TYPE,CURRENT_ARCH>::RA_FIELD:
+			break;
+		case SolverComps<CURRENT_TYPE,CURRENT_ARCH>::VM_FIELD:
+			moose::Compartment::VmOut()->send( _objects[ id ].eref(), value );
+			break;
+		case SolverComps<CURRENT_TYPE,CURRENT_ARCH>::INIT_VM_FIELD:
+			break;
+	}
+}
 
 /**
  * This method is responsible to create model and get pertinent information from
@@ -55,6 +75,7 @@ void PN2S_Proxy::Setup(double dt)
 
 	//Register Setter and Getter
 	SolverComps<CURRENT_TYPE,CURRENT_ARCH>::GetValue_Func = &_getValue;
+	SolverComps<CURRENT_TYPE,CURRENT_ARCH>::SetValue_Func = &_setValue;
 }
 
 

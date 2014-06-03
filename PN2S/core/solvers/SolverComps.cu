@@ -60,6 +60,7 @@ Error_PN2S SolverComps<T,arch>::PrepareSolver(vector< models::Model<T> > &networ
 	uint modelSize = nComp*nComp;
 	uint vectorSize = nModel * nComp;
 
+	_ids.resize(vectorSize);
 	_hm.AllocateMemory(modelSize*nModel);
 	_rhs.AllocateMemory(vectorSize);
 	_Vm.AllocateMemory(vectorSize);
@@ -76,6 +77,7 @@ Error_PN2S SolverComps<T,arch>::PrepareSolver(vector< models::Model<T> > &networ
 		{
 			//Initialize values
 			uint gid = analyzer.allCompartments[idx]->gid;
+			_ids[idx] = gid;
 			_Vm[idx] = GetValue_Func(gid,INIT_VM_FIELD);
 			_Cm[idx] = GetValue_Func(gid,CM_FIELD);
 			_Em[idx] = GetValue_Func(gid,EM_FIELD);
@@ -105,7 +107,17 @@ Error_PN2S SolverComps<T,arch>::PrepareSolver(vector< models::Model<T> > &networ
 	cudaDeviceSynchronize();
 	return Error_PN2S::NO_ERROR;
 }
+template <typename T, int arch>
+Error_PN2S SolverComps<T,arch>::Input()
+{
+	//Copy to GPU
+	_rhs.Send2Device(_Em); // Em -> rhs
+	_Rm.Host2Device_Sync();
+	_Vm.Host2Device_Sync();
+	_Cm.Host2Device_Sync();
 
+	return Error_PN2S::NO_ERROR;
+}
 template <typename T, int arch>
 Error_PN2S SolverComps<T,arch>::Process()
 {
@@ -114,12 +126,24 @@ Error_PN2S SolverComps<T,arch>::Process()
     //Solve
 	int ret = dsolve_batch (_hm.device, _rhs.device, _Vm.device, nComp, nModel);
     assert(!ret);
-
-    _Vm.Device2Host_Sync();
-
+	return Error_PN2S::NO_ERROR;
     //_printVector(nModel*nComp, _Vm);
+}
+
+template <typename T, int arch>
+Error_PN2S SolverComps<T,arch>::Output()
+{
+	_Vm.Device2Host_Sync();
+
+	for(int i=0; i< _ids.size();i++ )
+	{
+		uint gid = _ids[i];
+//		SetValue_Func(gid,VM_FIELD, _Vm[i]);
+		SetValue_Func(gid,VM_FIELD, 10);
+	}
 
 	return Error_PN2S::NO_ERROR;
+	//_printVector(nModel*nComp, _Vm);
 }
 
 /**
@@ -151,13 +175,6 @@ template <typename T, int arch>
 Error_PN2S SolverComps<T,arch>::UpdateMatrix()
 {
 	uint vectorSize = nModel * nComp;
-
-	//Copy to GPU
-	_rhs.Send2Device(_Em); // Em -> rhs
-
-	_Rm.Host2Device_Sync();
-	_Vm.Host2Device_Sync();
-	_Cm.Host2Device_Sync();
 
 	thrust::for_each(
 		thrust::make_zip_iterator(
@@ -255,6 +272,9 @@ void SolverComps<T,arch>::makeHinesMatrix(models::Model<T> *model, T * matrix)
 
 template <typename T, int arch>
 T (*SolverComps<T,arch>::GetValue_Func) (uint id, SolverComps<T,arch>::Fields field);
+
+template <typename T, int arch>
+void (*SolverComps<T,arch>::SetValue_Func) (uint id, SolverComps<T,arch>::Fields field, T value);
 
 
 template class SolverComps<double, ARCH_SM30>;

@@ -199,9 +199,9 @@ HSolve::HSolve()
 void HSolve::process( const Eref& hsolve, ProcPtr p )
 {
     if( isMasterHSolve() )
-	PN2S_Proxy::Process(p);
+    	PN2S_Proxy::Process(p);
     else
-	this->HSolveActive::step( p );
+    	this->HSolveActive::step( p );
 }
 
 void HSolve::reinit( const Eref& hsolve, ProcPtr p )

@@ -40,8 +40,10 @@ private:
 public:
 	SolverComps();
 	~SolverComps();
+	Error_PN2S Input();
 	Error_PN2S PrepareSolver(vector< models::Model<T> > &models, NetworkAnalyzer<T,arch> &analyzer);
 	Error_PN2S Process();
+	Error_PN2S Output();
 	Error_PN2S UpdateMatrix();
 
 	double GetDt(){ return _dt;}
@@ -58,6 +60,7 @@ public:
 	enum Fields {CM_FIELD, EM_FIELD, RM_FIELD, RA_FIELD,INIT_VM_FIELD, VM_FIELD};
 
 	static T (*GetValue_Func) (uint id, Fields field);
+	static void (*SetValue_Func) (uint id, Fields field, T value);
 };
 
 }
