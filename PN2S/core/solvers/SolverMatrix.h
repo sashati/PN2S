@@ -54,7 +54,7 @@ public:
 	//Setter and Getter
 	enum Fields {CM_FIELD, EM_FIELD, RM_FIELD, RA_FIELD,INIT_VM_FIELD, VM_FIELD};
 
-	static T (*GetValue_Func) (uint id, Fields field);
+	static T (*Fetch_Func) (uint id, Fields field);
 };
 
 }

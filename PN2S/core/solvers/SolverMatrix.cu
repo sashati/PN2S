@@ -76,10 +76,10 @@ Error_PN2S SolverComps<T,arch>::PrepareSolver(vector< models::Model<T> > &networ
 		{
 			//Initialize values
 			uint gid = analyzer.allCompartments[idx]->gid;
-			_Vm[idx] = GetValue_Func(gid,INIT_VM_FIELD);
-			_Cm[idx] = GetValue_Func(gid,CM_FIELD);
-			_Em[idx] = GetValue_Func(gid,EM_FIELD);
-			_Rm[idx] = GetValue_Func(gid,RM_FIELD);
+			_Vm[idx] = Fetch_Func(gid,INIT_VM_FIELD);
+			_Cm[idx] = Fetch_Func(gid,CM_FIELD);
+			_Em[idx] = Fetch_Func(gid,EM_FIELD);
+			_Rm[idx] = Fetch_Func(gid,RM_FIELD);
 			idx++;
 		}
 		//making Hines Matrices
@@ -189,8 +189,8 @@ void SolverComps<T,arch>::makeHinesMatrix(models::Model<T> *model, T * matrix)
 	vector< double > CmByDt(nComp);
 	vector< double > Ga(nComp);
 	for ( unsigned int i = 0; i < nComp; i++ ) {
-		T cm = GetValue_Func(model->compts[ i ].gid,CM_FIELD);
-		T ra = GetValue_Func(model->compts[ i ].gid,RA_FIELD);
+		T cm = Fetch_Func(model->compts[ i ].gid,CM_FIELD);
+		T ra = Fetch_Func(model->compts[ i ].gid,RA_FIELD);
 
 		CmByDt[i] = cm / ( _dt / 2.0 ) ;
 		Ga[i] =  2.0 / ra ;
@@ -210,7 +210,7 @@ void SolverComps<T,arch>::makeHinesMatrix(models::Model<T> *model, T * matrix)
 	// Setting diagonal elements
 	for ( unsigned int i = 0; i < nComp; i++ )
 	{
-		T rm = GetValue_Func(model->compts[ i ].gid,RM_FIELD);
+		T rm = Fetch_Func(model->compts[ i ].gid,RM_FIELD);
 		matrix[ i * nComp + i ] = (T)(CmByDt[ i ] + 1.0 / rm);
 	}
 
@@ -253,7 +253,7 @@ void SolverComps<T,arch>::makeHinesMatrix(models::Model<T> *model, T * matrix)
 }
 
 template <typename T, int arch>
-T (*SolverComps<T,arch>::GetValue_Func) (uint id, SolverComps<T,arch>::Fields field);
+T (*SolverComps<T,arch>::Fetch_Func) (uint id, SolverComps<T,arch>::Fields field);
 
 
 template class SolverComps<double, ARCH_SM30>;

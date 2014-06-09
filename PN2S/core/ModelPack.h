@@ -14,7 +14,6 @@
 namespace pn2s
 {
 
-template <typename T, int arch>
 class ModelPack
 {
 public:
@@ -22,17 +21,19 @@ public:
 	virtual ~ModelPack();
 
 	double GetDt(){ return _dt;}
-	void SetDt(double dt){ _dt = dt; _compsSolver.SetDt(dt); }
+	void SetDt(double dt){ _dt = dt;
+//	_compsSolver.SetDt(dt);
+	}
 
-	Error_PN2S Reinit(vector<models::Model<T> > &models);
+	Error_PN2S Reinit(vector<models::Model > &models);
 
 	Error_PN2S Process();
 	Error_PN2S Output();
 	Error_PN2S Input();
 //	vector<vector<models::Base> > models; //TODO: Encapsulation
 
-	solvers::SolverComps<CURRENT_TYPE,CURRENT_ARCH> _compsSolver; //TODO Encapsulation
-	solvers::SolverChannels<CURRENT_TYPE,CURRENT_ARCH> _channelsSolver; //TODO Encapsulation
+//	solvers::SolverComps<TYPE_,CURRENT_ARCH> _compsSolver; //TODO Encapsulation
+//	solvers::SolverChannels<TYPE_,CURRENT_ARCH> _channelsSolver; //TODO Encapsulation
 
 //	friend ostream& operator<<(ostream& out, ModelPack<T,arch>& dt)
 //	{
@@ -42,7 +43,7 @@ public:
 
 private:
 	double _dt;
-	NetworkAnalyzer<T,arch> _analyzer;
+	NetworkAnalyzer _analyzer;
 
 };
 

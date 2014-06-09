@@ -30,7 +30,7 @@ Device::~Device(){
 	cudaDeviceReset();
 }
 
-Error_PN2S Device::Reinit(vector<models::Model<CURRENT_TYPE> > &m,  double dt){
+Error_PN2S Device::Reinit(vector<models::Model> &m,  double dt){
 	_dt = dt;
 
 	//TODO: Generate model packs
@@ -55,7 +55,7 @@ Error_PN2S Device::Reinit(vector<models::Model<CURRENT_TYPE> > &m,  double dt){
 //#ifdef PN2S_DEBUG
 
 struct input_body {
-	ModelPack<CURRENT_TYPE,CURRENT_ARCH>* operator()( ModelPack<CURRENT_TYPE,CURRENT_ARCH> *m ) {
+	ModelPack* operator()( ModelPack *m ) {
 		_D(std::cout<< "Input" << m<<endl<<flush);
 		m->Input();
         return m;
@@ -63,7 +63,7 @@ struct input_body {
 };
 
 struct process_body{
-	ModelPack<CURRENT_TYPE,CURRENT_ARCH>* operator()( ModelPack<CURRENT_TYPE,CURRENT_ARCH>* m) {
+	ModelPack* operator()( ModelPack* m) {
 		_D(std::cout<< "Process" << m<<endl<<flush);
 		m->Process();
         return m;
@@ -71,7 +71,7 @@ struct process_body{
 };
 
 struct output_body{
-	ModelPack<CURRENT_TYPE,CURRENT_ARCH>* operator()( ModelPack<CURRENT_TYPE,CURRENT_ARCH>* m ) {
+	ModelPack* operator()( ModelPack* m ) {
 		_D(std::cout<< "Output" << m<<endl<<flush);
 		m->Output();
         return m;
@@ -86,12 +86,12 @@ void Device::Process()
 
 	graph scheduler;
 
-	broadcast_node<ModelPack<CURRENT_TYPE,CURRENT_ARCH>*> broadcast(scheduler);
-	function_node< ModelPack<CURRENT_TYPE,CURRENT_ARCH>*,ModelPack<CURRENT_TYPE,CURRENT_ARCH>* > input_node(scheduler, 1, input_body());
-	function_node< ModelPack<CURRENT_TYPE,CURRENT_ARCH>*, ModelPack<CURRENT_TYPE,CURRENT_ARCH>* > process_node(scheduler, 1, process_body() );
-	function_node< ModelPack<CURRENT_TYPE,CURRENT_ARCH>*, ModelPack<CURRENT_TYPE,CURRENT_ARCH>* > output_node(scheduler, 1, output_body() );
-	queue_node< ModelPack<CURRENT_TYPE,CURRENT_ARCH>* > iq_node(scheduler);
-	queue_node< ModelPack<CURRENT_TYPE,CURRENT_ARCH>* > oq_node(scheduler);
+	broadcast_node<ModelPack*> broadcast(scheduler);
+	function_node< ModelPack*, ModelPack* > input_node(scheduler, 1, input_body());
+	function_node< ModelPack*, ModelPack* > process_node(scheduler, 1, process_body() );
+	function_node< ModelPack*, ModelPack* > output_node(scheduler, 1, output_body() );
+	queue_node< ModelPack* > iq_node(scheduler);
+	queue_node< ModelPack* > oq_node(scheduler);
 	make_edge( broadcast, input_node );
 	make_edge( input_node, iq_node);
 	make_edge( iq_node, process_node);
@@ -99,7 +99,7 @@ void Device::Process()
 	make_edge( oq_node, output_node);
 
 
-	for (vector<ModelPack<CURRENT_TYPE,CURRENT_ARCH> >::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
+	for (vector<ModelPack >::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
 	{
 		broadcast.try_put(&(*it));
 	}

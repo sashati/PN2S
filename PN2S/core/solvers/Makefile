@@ -19,8 +19,8 @@ TARGET = _solvers.o
 
 COBJS += SolverChannels.o	\
 		SolverComps.o	\
-		solve.o	\
 		Field.o		
+#		solve.o	\
 		 
 #OBJS += 
 

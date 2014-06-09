@@ -18,7 +18,6 @@ namespace pn2s
 namespace solvers
 {
 
-template <typename T, int arch>
 class SolverComps
 {
 private:
@@ -27,21 +26,21 @@ private:
 	uint nComp;
 	vector<uint> _ids;
 
-	//Connection Fields
-	Field<T, arch>  _hm;	// Hines Matrices
-	Field<T, arch>  _rhs;	// Right hand side of the equation
-	Field<T, arch>  _Vm;	// Vm of the compartments
-	Field<T, arch>  _Cm;	// Cm of the compartments
-	Field<T, arch>  _Em;	// Em of the compartments
-	Field<T, arch>  _Rm;	// Rm of the compartments
-
-	void  makeHinesMatrix(models::Model<T> *model, T * matrix);// float** matrix, uint nCompt);
+//	//Connection Fields
+//	Field<T, arch>  _hm;	// Hines Matrices
+//	Field<T, arch>  _rhs;	// Right hand side of the equation
+//	Field<T, arch>  _Vm;	// Vm of the compartments
+//	Field<TYPE_, arch>  _Cm;	// Cm of the compartments
+//	Field<TYPE_, arch>  _Em;	// Em of the compartments
+//	Field<TYPE_, arch>  _Rm;	// Rm of the compartments
+//
+	void  makeHinesMatrix(models::Model *model, TYPE_ * matrix);// float** matrix, uint nCompt);
 	void getValues();
 public:
 	SolverComps();
 	~SolverComps();
 	Error_PN2S Input();
-	Error_PN2S PrepareSolver(vector< models::Model<T> > &models, NetworkAnalyzer<T,arch> &analyzer);
+	Error_PN2S PrepareSolver(vector< models::Model > &models, NetworkAnalyzer &analyzer);
 	Error_PN2S Process();
 	Error_PN2S Output();
 	Error_PN2S UpdateMatrix();
@@ -49,18 +48,18 @@ public:
 	double GetDt(){ return _dt;}
 	void SetDt(double dt){ _dt = dt;}
 
-	T GetA(int n,int i, int j){return _hm[n*nComp*nComp+i*nComp+j];}
-	T GetRHS(int n,int i){return _rhs[n*nComp+i];}
-	T GetVm(int n,int i){return _Vm[n*nComp+i];}
-	T GetCm(int n,int i){return _Cm[n*nComp+i];}
-	T GetRm(int n,int i){return _Rm[n*nComp+i];}
-	T GetEm(int n,int i){return _Em[n*nComp+i];}
+//	TYPE_ GetA(int n,int i, int j){return _hm[n*nComp*nComp+i*nComp+j];}
+//	TYPE_ GetRHS(int n,int i){return _rhs[n*nComp+i];}
+//	TYPE_ GetVm(int n,int i){return _Vm[n*nComp+i];}
+//	TYPE_ GetCm(int n,int i){return _Cm[n*nComp+i];}
+//	TYPE_ GetRm(int n,int i){return _Rm[n*nComp+i];}
+//	TYPE_ GetEm(int n,int i){return _Em[n*nComp+i];}
 
 	//Setter and Getter
 	enum Fields {CM_FIELD, EM_FIELD, RM_FIELD, RA_FIELD,INIT_VM_FIELD, VM_FIELD};
 
-	static T (*GetValue_Func) (uint id, Fields field);
-	static void (*SetValue_Func) (uint id, Fields field, T value);
+	static TYPE_ (*Fetch_Func) (uint id, Fields field);
+
 };
 
 }

@@ -18,7 +18,7 @@ endif
 TARGET = _core.o
 
 COBJS += 	ModelPack.o	\
-
+			Network.o	\
 		 
 OBJS += NetworkAnalyzer.o 
 		
@@ -34,6 +34,7 @@ default: all
 
 ModelPack.o: ModelPack.cpp ModelPack.h solvers/SolverChannels.cpp solvers/SolverChannels.h solvers/SolverComps.cu solvers/SolverComps.h 
 NetworkAnalyzer.o: NetworkAnalyzer.cpp NetworkAnalyzer.h
+Network.o: Network.cpp Network.h 
 
 $(TARGET): $(OBJS) $(COBJS) $(SUBDIR) 
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) $(MODULES)
