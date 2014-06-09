@@ -22,17 +22,16 @@ COBJS += 	ModelPack.o	\
 		 
 OBJS += NetworkAnalyzer.o 
 		
-SUBDIR = 	models \
-			solvers
+SUBDIR = 	models 
 	
-MODULES = 	models/_models.o \
-			solvers/_solvers.o 
+MODULES = 	models/_models.o 
+			 
 		
 .PHONY: all
 all: $(TARGET)
 default: all
 
-ModelPack.o: ModelPack.cpp ModelPack.h solvers/SolverChannels.cpp solvers/SolverChannels.h solvers/SolverComps.cu solvers/SolverComps.h 
+ModelPack.o: ModelPack.cpp ModelPack.h models/SolverChannels.cpp models/SolverChannels.h models/SolverComps.cu models/SolverComps.h 
 NetworkAnalyzer.o: NetworkAnalyzer.cpp NetworkAnalyzer.h
 Network.o: Network.cpp Network.h 
 

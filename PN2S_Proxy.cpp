@@ -10,7 +10,7 @@
 #include "PN2S/core/models/Model.h"
 #include "PN2S/core/Network.h"
 #include "PN2S/Manager.h"
-#include "PN2S/core/solvers/SolverComps.h"
+#include "PN2S/core/models/SolverComps.h"
 #include "HSolveUtils.h"
 
 //For get info from Shell

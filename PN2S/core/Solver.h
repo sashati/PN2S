@@ -10,8 +10,8 @@
 
 #include "../headers.h"
 #include "ModelPack.h"
-#include "solvers/SolverChannels.h"
-#include "solvers/SolverComps.h"
+#include "models/SolverChannels.h"
+#include "models/SolverComps.h"
 #include "models/Model.h"
 
 namespace pn2s

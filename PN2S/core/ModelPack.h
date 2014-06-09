@@ -7,8 +7,8 @@
 
 #if !defined(A73EC9AE3_8C2D_45e3_AE47_0F3CC8B2E661__INCLUDED_)
 #define A73EC9AE3_8C2D_45e3_AE47_0F3CC8B2E661__INCLUDED_
-#include "solvers/SolverChannels.h"
-#include "solvers/SolverComps.h"
+#include "models/SolverChannels.h"
+#include "models/SolverComps.h"
 #include "NetworkAnalyzer.h"
 
 namespace pn2s

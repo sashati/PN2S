@@ -24,6 +24,11 @@ OBJS +=		HHChannel.o \
 			Matrix.o	\
 			Neuron.o	\
 
+COBJS += SolverChannels.o	\
+		SolverComps.o	\
+		Field.o		
+#		solve.o	\
+
 .PHONY: all
 all: $(TARGET)
 default: all
@@ -33,12 +38,19 @@ HHChannel.o: HHChannel.cpp HHChannel.h $(HEADERS)
 Compartment.o: Compartment.cpp Compartment.h $(HEADERS)
 Matrix.o: Matrix.cpp Matrix.h $(HEADERS)
 Neuron.o: Neuron.cpp Neuron.h
+Field.o: Field.cpp Field.h
+SolverChannels.o: SolverChannels.cpp SolverChannels.h 
+SolverComps.o: SolverComps.cu SolverComps.h
+solve.o: solve.cu solve.h operations.h
+
 
 $(TARGET): $(OBJS) $(COBJS)
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) 
 $(OBJS):
-	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg -I../../libs $< -c 
+	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg -I../../libs $< -c 	
+$(COBJS):
+	nvcc --compile -o  "$@" "$<" -G -O0 -Xcompiler -fPIC -g -gencode arch=compute_30,code=sm_30 -gencode arch=compute_20,code=sm_20 -x cu -DDO_UNIT_TESTS -I../../libs
 	
 .PHONY: clean
 clean:
-	rm -rf $(OBJS) $(COBJS) $(TARGET)
+	rm -rf $(OBJS) $(COBJS) $(TARGET)	
