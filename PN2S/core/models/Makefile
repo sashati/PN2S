@@ -22,9 +22,7 @@ OBJS +=		HHChannel.o \
 			Model.o \
 			Compartment.o \
 			Matrix.o	\
-			Neuron.o	\
-			NeuronVector.o \
-			CompartmentVector.o \
+			
 
 COBJS += SolverChannels.o	\
 		SolverComps.o	\

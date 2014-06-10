@@ -29,7 +29,7 @@ Error_PN2S Manager::Reinit(){
 	if (!_isInitialized)
 		_isInitialized = true;
 
-	_deviceManager.Reinit(_models,_dt);
+	_deviceManager.Distribute(_models,_dt);
 	return  Error_PN2S::NO_ERROR;
 }
 
@@ -37,7 +37,7 @@ bool Manager::IsInitialized(){
 	return  _isInitialized;
 }
 
-void Manager::InsertModel(models::Model &neutral){
+void Manager::InsertModelShape(models::Model &neutral){
 	_models.push_back(neutral);
 }
 

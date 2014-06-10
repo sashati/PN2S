@@ -7,8 +7,6 @@
 
 #include "PN2S_Proxy.h"
 #include "PN2S/headers.h"
-#include "PN2S/core/models/NeuronVector.h"
-#include "PN2S/core/Network.h"
 #include "PN2S/Manager.h"
 #include "PN2S/core/models/SolverComps.h"
 #include "HSolveUtils.h"
@@ -31,9 +29,6 @@ static map< uint, Id > _objectMap;
 
 using namespace pn2s;
 
-
-
-models::NeuronVector neurons;
 
 //Getter and Setter
 //TYPE_ _getValue(uint id, SolverComps::Fields field)
@@ -63,14 +58,18 @@ models::NeuronVector neurons;
 
 void PN2S_Proxy::Setup(double dt)
 {
-	cout << "Size: " << sizeof(PN2S_Proxy) << flush;
 	Manager::Setup(dt);
 	_objectMap.clear();
 
 	//Register Setter and Getter
 //	SolverComps::Fetch_Func = &_getValue;
+
 }
 
+
+/**
+ * Create Compartmental Model
+ */
 
 void PN2S_Proxy::CreateCompartmentModel(Eref hsolve, Id seed){
 
@@ -80,7 +79,10 @@ void PN2S_Proxy::CreateCompartmentModel(Eref hsolve, Id seed){
 
 	int nCompt = compartmentIds.size();
 
-	// A map from the MOOSE Id to Hines' index. It will remove after this method
+	models::Model neutral(seed.value());
+
+
+	// A map from the MOOSE Id to Hines' index.
 	map< Id, unsigned int > hinesIndex;
 	for ( int i = 0; i < nCompt; ++i )
 	{
@@ -94,22 +96,19 @@ void PN2S_Proxy::CreateCompartmentModel(Eref hsolve, Id seed){
 	vector< Id > childId;
 	vector< Id >::iterator child;
 
-	models::Neuron* n = neurons.Create(seed.value());
-
 	for (int i = 0; i < nCompt; ++i) {
 		//Assign a general ID to each compartment
-		models::Compartment* c = n->compt().Create(compartmentIds[ i ].value());
+		models::Compartment c(compartmentIds[ i ].value());
 
 		//Find Children
 		childId.clear();
 		HSolveUtils::children( compartmentIds[ i ], childId );
 		for ( child = childId.begin(); child != childId.end(); ++child )
 		{
-			c->children.push_back( hinesIndex[ *child ] );
+			c.children.push_back( hinesIndex[ *child ] );
 		}
-//		_printVector(tree[i].children.size(), &(tree[i].children[0]));
+		neutral.compts.push_back(c);
 	}
-
 
 	/**
 	 * Zumbify
@@ -142,7 +141,7 @@ void PN2S_Proxy::CreateCompartmentModel(Eref hsolve, Id seed){
 	/**
 	 * Now model is ready to import into the PN2S
 	 */
-//	Manager::InsertModel(neutral);
+	Manager::InsertModelShape(neutral);
 }
 
 void PN2S_Proxy::walkTree( Id seed, vector<Id> &compartmentIds )

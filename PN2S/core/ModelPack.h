@@ -25,7 +25,7 @@ public:
 //	_compsSolver.SetDt(dt);
 	}
 
-	Error_PN2S Reinit(vector<models::Model > &models);
+	Error_PN2S Allocate(vector<models::Model > &models);
 
 	Error_PN2S Process();
 	Error_PN2S Output();

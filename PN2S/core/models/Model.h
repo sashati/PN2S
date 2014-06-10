@@ -31,6 +31,8 @@ public:
 	Model(uint _id);
 	Model(Matrix m, uint _id);
 	virtual ~Model();
+
+	static void AllocateMemory(std::vector<Model> &net);
 };
 
 }

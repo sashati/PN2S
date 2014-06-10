@@ -11,7 +11,7 @@
 #include "../../headers.h"
 //#include "CaChannel.h"
 //#include "CustomChannel.h"
-//#include "HHChannel.h"
+#include "HHChannel.h"
 //#include "SynapticChannel.h"
 
 namespace pn2s
@@ -21,22 +21,21 @@ namespace models
 
 class Compartment
 {
+private:
+	int _index;
 public:
-	typedef typename std::vector<Compartment>::iterator itr;
 
-	unsigned int gid;
-//	ChannelVec& compt;
+	int gid;
 	vector< unsigned int > children;	///< Hines indices of child compts
 
-	Compartment(unsigned int _gid): gid(_gid){
-		children.resize(2);
-	}
-	virtual ~Compartment(){}
+//	vector<HHChannel > hhchannels;
+
+	Compartment(int);
+	virtual ~Compartment();
 
 	//Copy constractor is necessary because at Vector assign, information will copy through it.
 	Compartment( const Compartment& other );
-	Compartment& operator=(Compartment arg){}
-
+private:
 };
 
 }

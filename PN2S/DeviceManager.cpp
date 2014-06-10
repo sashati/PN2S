@@ -35,11 +35,16 @@ Error_PN2S DeviceManager::SelectDevice(int id){
 	return  Error_PN2S::NO_ERROR;
 }
 
-Error_PN2S DeviceManager::Reinit(vector<models::Model > &m, double dt){
+/**
+ * This function, assign the model shapes into devices
+ * and assign memory for PFields
+ */
+
+Error_PN2S DeviceManager::Distribute(vector<models::Model > &m, double dt){
 	cudaDeviceReset();
 
 	//TODO: Add Multidevice
-	_devices[0].Reinit(m, dt);
+	_devices[0].GenerateModelPacks(m, dt);
 //	int numDevice = _devices.size();
 //	int numModel  = m.size();
 //

@@ -18,9 +18,13 @@ ModelPack::~ModelPack(){
 
 }
 
-Error_PN2S ModelPack::Reinit(vector<models::Model > &net){
+Error_PN2S ModelPack::Allocate(vector<models::Model > &net){
 	Error_PN2S res = Error_PN2S::NO_ERROR;
 
+	//Allocate Memory for each PField
+
+
+	//Get network statistics
 	_analyzer.ImportNetwork(net);
 
 //	res = _compsSolver.PrepareSolver(net, _analyzer);

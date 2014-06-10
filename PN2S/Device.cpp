@@ -30,7 +30,7 @@ Device::~Device(){
 	cudaDeviceReset();
 }
 
-Error_PN2S Device::Reinit(vector<models::Model> &m,  double dt){
+Error_PN2S Device::GenerateModelPacks(vector<models::Model> &m,  double dt){
 	_dt = dt;
 
 	//TODO: Generate model packs
@@ -38,7 +38,7 @@ Error_PN2S Device::Reinit(vector<models::Model> &m,  double dt){
 	_modelPacks[0].SetDt(_dt);
 
 	//Prepare solver for each modelpack
-	Error_PN2S res = _modelPacks[0].Reinit(m);
+	Error_PN2S res = _modelPacks[0].Allocate(m);
 
 //	//Assign keys to modelPack, to be able to find later
 //	for(vector<models>::iterator it = m.begin(); it != m.end(); ++it) {
