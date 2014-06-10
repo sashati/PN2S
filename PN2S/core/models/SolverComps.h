@@ -11,7 +11,7 @@
 #include "../../headers.h"
 #include "../models/Model.h"
 #include "../NetworkAnalyzer.h"
-#include "Field.h"
+#include "PField.h"
 
 namespace pn2s
 {

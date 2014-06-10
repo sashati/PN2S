@@ -1,13 +1,12 @@
 #pragma once
 
 #include "../headers.h"
-#include "models/Neuron.h"
+#include "models/NeuronVector.h"
 #include "models/Compartment.h"
 //#include "ModelPack.h"
 //#include "solvers/SolverChannels.h"
 //#include "solvers/SolverComps.h"
 //#include "models/Model.h"
-using namespace pn2s::models;
 
 namespace pn2s
 {
@@ -23,10 +22,11 @@ public:
 	Network();
 	virtual ~Network();
 
-	vector<Neuron >* _neurons;
-	vector<Compartment >* _comps;
+	models::NeuronVector& neuron();
+//	vector<Neuron >* _neurons;
+//	vector<Compartment >* _comps;
 
-	typename Neuron::itr 		RegisterNeuron(int gid);
+//	typename Neuron::itr 		RegisterNeuron(int gid);
 //	typename Compartment<T>::itr 	RegisterCompartment(int gid);
 //	double GetDt(){ return _dt;}
 //	void SetDt(double dt){ _dt = dt;}

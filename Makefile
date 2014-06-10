@@ -53,7 +53,7 @@ HSolve.o:	../biophysics/Compartment.h ZombieCompartment.h ../biophysics/CaConc.h
 ZombieCompartment.o:	../biophysics/CompartmentBase.h ZombieCompartment.h ../randnum/randnum.h ../biophysics/Compartment.h HSolve.h HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrix.h HSolveStruct.h ../basecode/ElementValueFinfo.h
 ZombieCaConc.o:	ZombieCaConc.h ../biophysics/CaConc.h HSolve.h HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrix.h HSolveStruct.h ../basecode/ElementValueFinfo.h
 ZombieHHChannel.o:	ZombieHHChannel.h ../biophysics/HHChannel.h ../biophysics/ChanBase.h ../biophysics/HHGate.h HSolve.h HSolveActive.h RateLookup.h HSolvePassive.h HinesMatrix.h HSolveStruct.h ../basecode/ElementValueFinfo.h
-PN2S_Proxy.o:	PN2S_Proxy.cpp	PN2S_Proxy.h
+PN2S_Proxy.o:	PN2S_Proxy.cpp	PN2S_Proxy.h 
 
 .cpp.o:
 	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I. -I../basecode -I../msg -I./PN2S/libs $< -c -I/usr/local/cuda/include

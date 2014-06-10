@@ -3,11 +3,12 @@
 
 using namespace pn2s;
 
+models::NeuronVector neuron_vec;
 Network::Network()
 {
 	_dt = 1; //1ms
-	_neurons = new vector<Neuron >();
-	_comps = new vector<Compartment >();
+//	_neurons = new vector<Neuron >();
+//	_comps = new vector<Compartment >();
 }
 
 Network::~Network()
@@ -15,13 +16,18 @@ Network::~Network()
 
 }
 
-typename Neuron::itr Network::RegisterNeuron(int gid)
+models::NeuronVector& Network::neuron()
 {
-	int size = _comps->size();
-	Neuron n(gid, _comps, size-1);
-	_neurons->push_back(n);
-	return _neurons->end();
+	return neuron_vec;
 }
+
+//typename Neuron::itr Network::RegisterNeuron(int gid)
+//{
+//	int size = _comps->size();
+//	Neuron n(gid, _comps, size-1);
+//	_neurons->push_back(n);
+//	return _neurons->end();
+//}
 
 //template <typename T, int arch>
 //typename Compartment<T>::itr Network<T, arch>::RegisterCompartment(int gid)

@@ -23,32 +23,37 @@ OBJS +=		HHChannel.o \
 			Compartment.o \
 			Matrix.o	\
 			Neuron.o	\
+			NeuronVector.o \
+			CompartmentVector.o \
 
 COBJS += SolverChannels.o	\
 		SolverComps.o	\
-		Field.o		
+		PField.o		
 #		solve.o	\
 
 .PHONY: all
 all: $(TARGET)
 default: all
 
-Model.o: Model.cpp Model.h HHChannel.cpp HHChannel.h Compartment.cpp Compartment.h Matrix.cpp Matrix.h $(HEADERS)
-HHChannel.o: HHChannel.cpp HHChannel.h $(HEADERS)
-Compartment.o: Compartment.cpp Compartment.h $(HEADERS)
-Matrix.o: Matrix.cpp Matrix.h $(HEADERS)
-Neuron.o: Neuron.cpp Neuron.h
-Field.o: Field.cpp Field.h
+Model.o: Model.cpp Model.h HHChannel.cpp HHChannel.h Compartment.cpp Compartment.h Matrix.cpp Matrix.h 
+HHChannel.o: HHChannel.cpp HHChannel.h $
+Compartment.o: Compartment.cpp Compartment.h 
+CompartmentVector.o: CompartmentVector.cpp CompartmentVector.h 
+Matrix.o: Matrix.cpp Matrix.h 
+Neuron.o: Neuron.cpp Neuron.h Compartment.o
+NeuronVector.o: NeuronVector.cpp NeuronVector.h
+PField.o: PField.cpp PField.h
 SolverChannels.o: SolverChannels.cpp SolverChannels.h 
 SolverComps.o: SolverComps.cu SolverComps.h
 solve.o: solve.cu solve.h operations.h
 
 
-$(TARGET): $(OBJS) $(COBJS)
+
+$(TARGET): $(OBJS) $(COBJS) 
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) 
-$(OBJS):
+$(OBJS): 
 	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg -I../../libs $< -c 	
-$(COBJS):
+$(COBJS): 
 	nvcc --compile -o  "$@" "$<" -G -O0 -Xcompiler -fPIC -g -gencode arch=compute_30,code=sm_30 -gencode arch=compute_20,code=sm_20 -x cu -DDO_UNIT_TESTS -I../../libs
 	
 .PHONY: clean

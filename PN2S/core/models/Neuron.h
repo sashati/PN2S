@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../headers.h"
-#include "Compartment.h"
+#include "CompartmentVector.h"
 //#include "HHChannel.h"
 //#include "Compartment.h"
 //#include "Matrix.h"
@@ -11,23 +11,24 @@ namespace pn2s
 namespace models
 {
 
+
 class Neuron
 {
-	vector<Compartment > * _compt;
 	int _compt_base;
 	int _compt_size;
 
 public:
+	typedef typename std::vector<Neuron>::iterator itr;
+
 	unsigned int gid;
 
-	typedef std::vector<Neuron> Vec;
-	typedef typename Vec::iterator itr;
+	CompartmentVector& compt();
 
-	Neuron(unsigned int _gid, vector<Compartment> *, int idx);
+	Neuron(unsigned int _gid, int idx);
+	virtual ~Neuron(){}
+
 	Neuron( const Neuron& other );
-	virtual ~Neuron();
-
-	typename Compartment::itr RegisterCompartment(int gid);
+	Neuron& operator=(Neuron arg);
 };
 
 }

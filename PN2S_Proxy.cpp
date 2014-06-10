@@ -7,7 +7,7 @@
 
 #include "PN2S_Proxy.h"
 #include "PN2S/headers.h"
-#include "PN2S/core/models/Model.h"
+#include "PN2S/core/models/NeuronVector.h"
 #include "PN2S/core/Network.h"
 #include "PN2S/Manager.h"
 #include "PN2S/core/models/SolverComps.h"
@@ -30,30 +30,31 @@
 static map< uint, Id > _objectMap;
 
 using namespace pn2s;
-using namespace pn2s::solvers;
 
-Network network;
+
+
+models::NeuronVector neurons;
 
 //Getter and Setter
-TYPE_ _getValue(uint id, SolverComps::Fields field)
-{
-	switch(field)
-	{
-		case SolverComps::CM_FIELD:
-			return ::Field< double >::get( _objectMap[ id ], "Cm" );
-		case SolverComps::EM_FIELD:
-			return ::Field< double >::get( _objectMap[ id ], "Em" );
-		case SolverComps::RM_FIELD:
-			return ::Field< double >::get( _objectMap[ id ], "Rm" );
-		case SolverComps::RA_FIELD:
-			return ::Field< double >::get( _objectMap[ id ], "Ra" );
-		case SolverComps::VM_FIELD:
-			return ::Field< double >::get( _objectMap[ id ], "Vm" );
-		case SolverComps::INIT_VM_FIELD:
-			return ::Field< double >::get( _objectMap[ id ], "initVm" );
-	}
-	return 0;
-}
+//TYPE_ _getValue(uint id, SolverComps::Fields field)
+//{
+//	switch(field)
+//	{
+//		case SolverComps::CM_FIELD:
+//			return ::Field< double >::get( _objectMap[ id ], "Cm" );
+//		case SolverComps::EM_FIELD:
+//			return ::Field< double >::get( _objectMap[ id ], "Em" );
+//		case SolverComps::RM_FIELD:
+//			return ::Field< double >::get( _objectMap[ id ], "Rm" );
+//		case SolverComps::RA_FIELD:
+//			return ::Field< double >::get( _objectMap[ id ], "Ra" );
+//		case SolverComps::VM_FIELD:
+//			return ::Field< double >::get( _objectMap[ id ], "Vm" );
+//		case SolverComps::INIT_VM_FIELD:
+//			return ::Field< double >::get( _objectMap[ id ], "initVm" );
+//	}
+//	return 0;
+//}
 
 /**
  * This method is responsible to create model and get pertinent information from
@@ -67,7 +68,7 @@ void PN2S_Proxy::Setup(double dt)
 	_objectMap.clear();
 
 	//Register Setter and Getter
-	SolverComps::Fetch_Func = &_getValue;
+//	SolverComps::Fetch_Func = &_getValue;
 }
 
 
@@ -93,11 +94,11 @@ void PN2S_Proxy::CreateCompartmentModel(Eref hsolve, Id seed){
 	vector< Id > childId;
 	vector< Id >::iterator child;
 
-	models::Neuron::itr n = network.RegisterNeuron(seed.value());
+	models::Neuron* n = neurons.Create(seed.value());
 
 	for (int i = 0; i < nCompt; ++i) {
 		//Assign a general ID to each compartment
-		models::Compartment::itr c = n->RegisterCompartment(compartmentIds[ i ].value());
+		models::Compartment* c = n->compt().Create(compartmentIds[ i ].value());
 
 		//Find Children
 		childId.clear();
@@ -204,7 +205,7 @@ void PN2S_Proxy::walkTree( Id seed, vector<Id> &compartmentIds )
 
 
 void PN2S_Proxy::Reinit(){
-//	Manager::Reinit();
+	Manager::Reinit();
 }
 
 /**

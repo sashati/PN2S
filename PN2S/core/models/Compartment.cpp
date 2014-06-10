@@ -6,17 +6,9 @@
 ///////////////////////////////////////////////////////////
 
 #include "Compartment.h"
+#include "PField.h"
 
 using namespace pn2s::models;
-
-Compartment::Compartment(unsigned int _gid):
-	gid(_gid)
-{
-}
-
-Compartment::~Compartment(){
-
-}
 
 //Copy constractor
 Compartment::Compartment( const Compartment& other )
