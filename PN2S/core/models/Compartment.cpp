@@ -10,7 +10,7 @@
 
 using namespace pn2s::models;
 
-Compartment::Compartment(int _gid): gid(_gid), index(-1){
+Compartment::Compartment(int _gid): gid(_gid){
 
 }
 
@@ -23,5 +23,5 @@ Compartment::Compartment( const Compartment& other )
 {
 	children.assign(other.children.begin(), other.children.end());
 	gid = other.gid;
-	loc = other.loc;
+	location = other.location;
 }

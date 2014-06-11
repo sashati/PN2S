@@ -46,9 +46,9 @@ Error_PN2S Device::GenerateModelPacks(double dt, models::Model *m, size_t start,
 		assert(m_start[i].compts.size() == nCompt);
 		for (int c = 0; c < nCompt; ++c) {
 			//Assign address for each compartment
-			m_start[i].compts[c].address = address;
+			m_start[i].compts[c].location.address = address;
 			//Assign index of each object in a modelPack
-			m_start[i].compts[c].index = idx++;
+			m_start[i].compts[c].location.index = idx++;
 		}
 	}
 	//Check network structure

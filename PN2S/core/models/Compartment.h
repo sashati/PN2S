@@ -22,7 +22,7 @@ namespace models
 class Compartment
 {
 public:
-	Location loc;
+	Location location;
 	int gid;
 
 	vector< unsigned int > children;	///< Hines indices of child compts

@@ -156,7 +156,7 @@ void PN2S_Proxy::Reinit(Eref hsolve){
 	//Create model structures and Allocate memory
 	Manager::Allocate();
 
-	//Copy data values and Initialize values
+	//create a map from Id to Location
 	typename vector<Device>::iterator dev;
 	typename vector<ModelPack>::iterator mp;
 	for( dev = DeviceManager::_device.begin(); dev != DeviceManager::_device.end(); ++dev) {
@@ -165,22 +165,14 @@ void PN2S_Proxy::Reinit(Eref hsolve){
 				models::Model& model = mp->models[m];
 				for (size_t c = 0; c < mp->stat.nCompts; ++c) {
 					models::Compartment* cmp = &(model.compts[c]);
-//					mp->_compsSolver.SetValue(cmp,pn2s::FIELD::VM,
-//							::Field< double >::get( _idMap[ cmp->gid ], "Vm" ));
-//					mp->_compsSolver.SetValue(cmp,pn2s::FIELD::CM,
-//							::Field< double >::get( _idMap[ cmp->gid ], "Cm" ));
-//					mp->_compsSolver.SetValue(cmp,pn2s::FIELD::EM,
-//							::Field< double >::get( _idMap[ cmp->gid ], "Em" ));
-//					mp->_compsSolver.SetValue(cmp,pn2s::FIELD::RM,
-//							::Field< double >::get( _idMap[ cmp->gid ], "Rm" ));
-//					_compartmentMap[cmp->gid] = cmp->address;
+					_compartmentMap[cmp->gid] = cmp->location;
 				}
 			}
 		}
 	}
 
 	/**
-	 * Zumbify
+	 * Zumbify and Copy data values
 	 */
     vector< Id >::const_iterator i;
 	vector< ObjId > temp;
@@ -222,8 +214,8 @@ void PN2S_Proxy::Process(ProcPtr info){
  */
 void PN2S_Proxy::setValue( Id id, TYPE_ value , FIELD::TYPE n)
 {
-//	int address = _compartmentMap[id.value()];
-//	DeviceManager::_device[0]._modelPacks[0]._compsSolver.SetValue(address,n,value);
+	Location l = _compartmentMap[id.value()];
+	DeviceManager::_device[0]._modelPacks[l.address]._compsSolver.SetValue(l.index,n,value);
 }
 
 TYPE_ PN2S_Proxy::getValue( Id id, FIELD::TYPE n)

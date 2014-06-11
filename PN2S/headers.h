@@ -49,12 +49,15 @@ struct FIELD{
 	enum  TYPE {CM, EM, RM, RA,INIT_VM, VM, INJECT};
 };
 
-union Location{
-  int64_t full;
-  struct {
-    int32_t address;
-    int32_t index;
-  };
+struct Location{
+	union {
+	  int64_t full;
+	  struct {
+		int32_t index;
+		int32_t address;
+	  };
+	};
+	Location():full(-1){}
 };
 
 }
