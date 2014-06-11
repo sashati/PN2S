@@ -25,11 +25,18 @@ Error_PN2S Manager::Setup(double dt){
 }
 
 
-Error_PN2S Manager::Reinit(){
+Error_PN2S Manager::Allocate(){
 	if (!_isInitialized)
 		_isInitialized = true;
 
-	_deviceManager.Distribute(_models,_dt);
+	DeviceManager::Allocate(_models,_dt);
+	return  Error_PN2S::NO_ERROR;
+}
+
+Error_PN2S Manager::PrepareSolvers(){
+	if (!_isInitialized)
+		return Error_PN2S::NOT_INITIALIZED_Error;
+	DeviceManager::PrepareSolvers();
 	return  Error_PN2S::NO_ERROR;
 }
 

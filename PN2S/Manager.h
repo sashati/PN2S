@@ -24,7 +24,8 @@ class Manager
 {
 public:
 	static Error_PN2S Setup(double dt);
-	static Error_PN2S Reinit();
+	static Error_PN2S Allocate(); //Allocate model into system and get memory
+	static Error_PN2S PrepareSolvers();
 	static bool IsInitialized();
 	static void InsertModelShape(models::Model &m);
 	static Error_PN2S Process();

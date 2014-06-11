@@ -31,7 +31,4 @@ Model::~Model() {
 
 }
 
-void Model::AllocateMemory(vector<models::Model > &net){
-
-}
 

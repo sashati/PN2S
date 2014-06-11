@@ -12,7 +12,6 @@
 #include "HHChannel.h"
 #include "Compartment.h"
 #include "Matrix.h"
-
 namespace pn2s
 {
 namespace models
@@ -32,7 +31,6 @@ public:
 	Model(Matrix m, uint _id);
 	virtual ~Model();
 
-	static void AllocateMemory(std::vector<Model> &net);
 };
 
 }

@@ -19,7 +19,7 @@ TARGET = _core.o
 
 COBJS += 	ModelPack.o	\
 		 
-OBJS += NetworkAnalyzer.o 
+#OBJS += NetworkAnalyzer.o 
 		
 SUBDIR = 	models 
 	

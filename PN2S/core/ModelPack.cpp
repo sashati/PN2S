@@ -18,23 +18,27 @@ ModelPack::~ModelPack(){
 
 }
 
-Error_PN2S ModelPack::Allocate(vector<models::Model > &net){
+Error_PN2S ModelPack::Allocate(models::Model *m, models::ModelStatistic s){
+	stat = s;
+	models = m;
+
+	Error_PN2S res = Error_PN2S::NO_ERROR;
+	res = _compsSolver.AllocateMemory(models,stat);
+	assert(res==Error_PN2S::NO_ERROR);
+
+	return res;
+}
+
+Error_PN2S ModelPack::PrepareSolvers(){
 	Error_PN2S res = Error_PN2S::NO_ERROR;
 
-	//Allocate Memory for each PField
-
-
-	//Get network statistics
-	_analyzer.ImportNetwork(net);
-
-//	res = _compsSolver.PrepareSolver(net, _analyzer);
-//	assert(res==Error_PN2S::NO_ERROR);
+	res = _compsSolver.PrepareSolver();
+	assert(res==Error_PN2S::NO_ERROR);
 //	res = _channelsSolver.PrepareSolver(net, _analyzer);
 //	assert(res==Error_PN2S::NO_ERROR);
 
 	return  res;
 }
-
 
 
 Error_PN2S ModelPack::Input()

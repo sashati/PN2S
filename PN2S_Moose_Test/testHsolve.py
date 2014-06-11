@@ -34,7 +34,7 @@
 # Code:
 
 import sys
-sys.path.append('/src/saeed/cuda-workspace/async_gpu/python')
+sys.path.append('../../python')
 import os
 os.environ['NUMPTHREADS'] = '1'
 import pylab
@@ -227,7 +227,7 @@ def dump_plots( fname ):
 def make_spiny_compt(root_path, number,synInput):
     comptLength = 100e-6
     comptDia = 4e-6
-    numSpines = 10
+    numSpines = 1
     cell = moose.Neutral (root_path+"/cell"+str(number))
     
     compt = create_squid(cell)
@@ -280,7 +280,7 @@ def test_elec_alone(sim_time=1):
     hSolveDt = 2e-5
     dt = 1e-6
 
-    createCells(100)
+    createCells(2)
  
     make_elec_plots("/n/cell0")
 

@@ -10,29 +10,19 @@
 #include <cuda_runtime_api.h>
 
 using namespace pn2s;
-DeviceManager::DeviceManager(){
-	_devices.clear();
 
+vector<Device> DeviceManager::_device;
+int DeviceManager::CkeckAvailableDevices(){
+	_device.clear();
 	int device_count = 0;
 	cudaGetDeviceCount(&device_count);
 
 	for(int i =0; i<device_count; i++)
 	{
 		Device d(i);
-		_devices.push_back(d);
+		_device.push_back(d);
 	}
-}
-
-DeviceManager::~DeviceManager(){
-
-}
-
-Error_PN2S DeviceManager::SelectDevice(int id){
-	cudaDeviceProp deviceProp;
-	cudaSetDevice(id);
-	//TODO: Set configurations in device
-//	cudaGetDeviceProperties(&deviceProp, id);
-	return  Error_PN2S::NO_ERROR;
+	return device_count;
 }
 
 /**
@@ -40,11 +30,12 @@ Error_PN2S DeviceManager::SelectDevice(int id){
  * and assign memory for PFields
  */
 
-Error_PN2S DeviceManager::Distribute(vector<models::Model > &m, double dt){
+Error_PN2S DeviceManager::Allocate(vector<models::Model > &m, double dt){
 	cudaDeviceReset();
 
 	//TODO: Add Multidevice
-	_devices[0].GenerateModelPacks(m, dt);
+	int32_t address = 0;
+	_device[0].GenerateModelPacks(dt, &m[0],(size_t)0,(size_t)m.size(),address);
 //	int numDevice = _devices.size();
 //	int numModel  = m.size();
 //
@@ -60,15 +51,21 @@ Error_PN2S DeviceManager::Distribute(vector<models::Model > &m, double dt){
 //
 //		it += numModel/numDevice+1;
 //	}
-
-
 	return Error_PN2S::NO_ERROR;
+}
+
+void DeviceManager::PrepareSolvers()
+{
+	for(vector<Device>::iterator device = _device.begin(); device != _device.end(); ++device)
+	{
+		device->PrepareSolvers();
+	}
 }
 
 void DeviceManager::Process()
 {
 	//TODO: Each device should get its own pack
-	for(vector<Device>::iterator device = _devices.begin(); device != _devices.end(); ++device)
+	for(vector<Device>::iterator device = _device.begin(); device != _device.end(); ++device)
 	{
 		device->Process();
 	}

@@ -21,11 +21,12 @@ namespace models
 
 class Compartment
 {
-private:
+	friend class SolverComps;
 	int _index;
 public:
-
+	int address;
 	int gid;
+
 	vector< unsigned int > children;	///< Hines indices of child compts
 
 //	vector<HHChannel > hhchannels;
@@ -35,7 +36,7 @@ public:
 
 	//Copy constractor is necessary because at Vector assign, information will copy through it.
 	Compartment( const Compartment& other );
-private:
+
 };
 
 }
