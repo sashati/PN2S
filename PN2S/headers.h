@@ -43,11 +43,21 @@ using namespace std;
 //#define hsc_uint uint
 #define hscID_t uint
 
-
+namespace pn2s{
 //Setter and Getter functions
 struct FIELD{
-	enum  TYPE {CM_FIELD, EM_FIELD, RM_FIELD, RA_FIELD,INIT_VM_FIELD, VM_FIELD, INJECT_FIELD};
+	enum  TYPE {CM, EM, RM, RA,INIT_VM, VM, INJECT};
 };
+
+union Location{
+  int64_t full;
+  struct {
+    int32_t address;
+    int32_t index;
+  };
+};
+
+}
 
 
 #endif // !defined(A412A01E5_7D8D_4c56_A915_73B69DCFE454__INCLUDED_)
