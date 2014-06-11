@@ -193,70 +193,70 @@ void SolverComps::makeHinesMatrix(models::Model *model, TYPE_ * matrix)
 	/*
 	 * Some convenience variables
 	 */
-//	vector< double > CmByDt(_stat.nCompts);
-//	vector< double > Ga(_stat.nCompts);
-//	for ( unsigned int i = 0; i < _stat.nCompts; i++ ) {
-//		TYPE_ cm = Fetch_Func(model->compts[ i ].gid,CM_FIELD);
-//		TYPE_ ra = Fetch_Func(model->compts[ i ].gid,RA_FIELD);
-//
-//		CmByDt[i] = cm / ( _stat.dt / 2.0 ) ;
-//		Ga[i] =  2.0 / ra ;
-//	}
-//
-//	/* Each entry in 'coupled' is a list of electrically coupled compartments.
-//	 * These compartments could be linked at junctions, or even in linear segments
-//	 * of the cell.
-//	 */
-//	vector< vector< unsigned int > > coupled;
-//	for ( unsigned int i = 0; i < _stat.nCompts; i++ )
-//		if ( model->compts[ i ].children.size() >= 1 ) {
-//			coupled.push_back( model->compts[ i ].children );
-//			coupled.back().push_back( i );
-//		}
-//
-//	// Setting diagonal elements
-//	for ( unsigned int i = 0; i < _stat.nCompts; i++ )
-//	{
-//		TYPE_ rm = Fetch_Func(model->compts[ i ].gid,RM_FIELD);
-//		matrix[ i * _stat.nCompts + i ] = (TYPE_)(CmByDt[ i ] + 1.0 / rm);
-//	}
-//
-//
-//	double gi;
-//	vector< vector< unsigned int > >::iterator group;
-//	vector< unsigned int >::iterator ic;
-//	for ( group = coupled.begin(); group != coupled.end(); ++group ) {
-//		double gsum = 0.0;
-//
-//		for ( ic = group->begin(); ic != group->end(); ++ic )
-//			gsum += Ga[ *ic ];
-//
-//		for ( ic = group->begin(); ic != group->end(); ++ic ) {
-//			gi = Ga[ *ic ];
-//
-//			matrix[ *ic * _stat.nCompts + *ic ] += (TYPE_) (gi * ( 1.0 - gi / gsum ));
-//		}
-//	}
-//
-//
-//	// Setting off-diagonal elements
-//	double gij;
-//	vector< unsigned int >::iterator jc;
-//	for ( group = coupled.begin(); group != coupled.end(); ++group ) {
-//		double gsum = 0.0;
-//
-//		for ( ic = group->begin(); ic != group->end(); ++ic )
-//			gsum += Ga[ *ic ];
-//
-//		for ( ic = group->begin(); ic != group->end() - 1; ++ic ) {
-//			for ( jc = ic + 1; jc != group->end(); ++jc ) {
-//				gij = Ga[ *ic ] * Ga[ *jc ] / gsum;
-//
-//				matrix[ *ic * _stat.nCompts + *jc ] = (TYPE_)(-gij);
-//				matrix[ *jc * _stat.nCompts + *ic ] = (TYPE_)(-gij);
-//			}
-//		}
-//	}
+	vector< double > CmByDt(_stat.nCompts);
+	vector< double > Ga(_stat.nCompts);
+	for ( unsigned int i = 0; i < _stat.nCompts; i++ ) {
+		TYPE_ cm = GetValue(model->compts[ i ].location.index, FIELD::CM);
+		TYPE_ ra = GetValue(model->compts[ i ].location.index, FIELD::RA);
+
+		CmByDt[i] = cm / ( _stat.dt / 2.0 ) ;
+		Ga[i] =  2.0 / ra ;
+	}
+
+	/* Each entry in 'coupled' is a list of electrically coupled compartments.
+	 * These compartments could be linked at junctions, or even in linear segments
+	 * of the cell.
+	 */
+	vector< vector< unsigned int > > coupled;
+	for ( unsigned int i = 0; i < _stat.nCompts; i++ )
+		if ( model->compts[ i ].children.size() >= 1 ) {
+			coupled.push_back( model->compts[ i ].children );
+			coupled.back().push_back( i );
+		}
+
+	// Setting diagonal elements
+	for ( unsigned int i = 0; i < _stat.nCompts; i++ )
+	{
+		TYPE_ rm = GetValue(model->compts[ i ].location.index, FIELD::RM);
+		matrix[ i * _stat.nCompts + i ] = (TYPE_)(CmByDt[ i ] + 1.0 / rm);
+	}
+
+
+	double gi;
+	vector< vector< unsigned int > >::iterator group;
+	vector< unsigned int >::iterator ic;
+	for ( group = coupled.begin(); group != coupled.end(); ++group ) {
+		double gsum = 0.0;
+
+		for ( ic = group->begin(); ic != group->end(); ++ic )
+			gsum += Ga[ *ic ];
+
+		for ( ic = group->begin(); ic != group->end(); ++ic ) {
+			gi = Ga[ *ic ];
+
+			matrix[ *ic * _stat.nCompts + *ic ] += (TYPE_) (gi * ( 1.0 - gi / gsum ));
+		}
+	}
+
+
+	// Setting off-diagonal elements
+	double gij;
+	vector< unsigned int >::iterator jc;
+	for ( group = coupled.begin(); group != coupled.end(); ++group ) {
+		double gsum = 0.0;
+
+		for ( ic = group->begin(); ic != group->end(); ++ic )
+			gsum += Ga[ *ic ];
+
+		for ( ic = group->begin(); ic != group->end() - 1; ++ic ) {
+			for ( jc = ic + 1; jc != group->end(); ++jc ) {
+				gij = Ga[ *ic ] * Ga[ *jc ] / gsum;
+
+				matrix[ *ic * _stat.nCompts + *jc ] = (TYPE_)(-gij);
+				matrix[ *jc * _stat.nCompts + *ic ] = (TYPE_)(-gij);
+			}
+		}
+	}
 }
 
 void SolverComps::SetValue(int index, FIELD::TYPE field, TYPE_ value)

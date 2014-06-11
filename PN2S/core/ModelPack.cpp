@@ -44,19 +44,19 @@ Error_PN2S ModelPack::PrepareSolvers(){
 Error_PN2S ModelPack::Input()
 {
 	//For each model in the pack, executes the Process()
-//	_compsSolver.Input();
+	_compsSolver.Input();
 	return Error_PN2S::NO_ERROR;
 }
 
 Error_PN2S ModelPack::Process()
 {
-//	_compsSolver.Process();
+	_compsSolver.Process();
 	return Error_PN2S::NO_ERROR;
 }
 
 Error_PN2S ModelPack::Output()
 {
-//	_compsSolver.Output();
+	_compsSolver.Output();
 	return Error_PN2S::NO_ERROR;
 }
 

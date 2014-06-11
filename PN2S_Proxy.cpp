@@ -124,7 +124,6 @@ void PN2S_Proxy::walkTree( Id seed, vector<Id> &compartmentIds )
     {
     	vector< Id >& top = cstack.back();
 
-
         if ( top.empty() )
         {
             cstack.pop_back();
@@ -143,9 +142,7 @@ void PN2S_Proxy::walkTree( Id seed, vector<Id> &compartmentIds )
             HSolveUtils::adjacent( current, above, cstack.back() );
         }
     }
-    for (int var = 0; var < compartmentIds.size(); ++var) {
-        	    	   	cout << compartmentIds[var] << " " << flush;
-        	    	}
+
     // Compartments get ordered according to their hines' indices once this
     // list is reversed.
     reverse( compartmentIds.begin(), compartmentIds.end() );
@@ -220,7 +217,6 @@ void PN2S_Proxy::setValue( Id id, TYPE_ value , FIELD::TYPE n)
 
 TYPE_ PN2S_Proxy::getValue( Id id, FIELD::TYPE n)
 {
-//    models::Compartment* c = _compartmentMap[id.value()];
-//    return DeviceManager::_device[0]._modelPacks[0]._compsSolver.GetValue(c,n);
-	return 11;
+	Location l = _compartmentMap[id.value()];
+	return DeviceManager::_device[0]._modelPacks[l.address]._compsSolver.GetValue(l.index,n);
 }

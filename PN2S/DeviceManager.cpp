@@ -14,7 +14,9 @@ using namespace pn2s;
 vector<Device> DeviceManager::_device;
 int DeviceManager::CkeckAvailableDevices(){
 	_device.clear();
-	int device_count = 0;
+
+	int device_count = 0; //TODO: get value from device
+	cudaDeviceReset();
 	cudaGetDeviceCount(&device_count);
 
 	for(int i =0; i<device_count; i++)
@@ -31,7 +33,6 @@ int DeviceManager::CkeckAvailableDevices(){
  */
 
 Error_PN2S DeviceManager::Allocate(vector<models::Model > &m, double dt){
-	cudaDeviceReset();
 
 	//TODO: Add Multidevice
 	int32_t address = 0;

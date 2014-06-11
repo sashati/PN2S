@@ -24,16 +24,16 @@ using namespace tbb::flow;
 using namespace pn2s::models;
 
 Device::Device(int _id): id(_id), _dt(1), _queue_size(1){
-	cudaDeviceReset();
 	_modelPacks.clear();
 }
 
 Device::~Device(){
-	cudaDeviceReset();
+
 }
 
 Error_PN2S Device::GenerateModelPacks(double dt, models::Model *m, size_t start, size_t end, int32_t address){
 	_dt = dt;
+	int packNumber = 2;
 
 	//Assign part of array to packs which is for them
 	models::Model *m_start = &m[start];
@@ -43,6 +43,10 @@ Error_PN2S Device::GenerateModelPacks(double dt, models::Model *m, size_t start,
 	//Check nComp for each compartments and update it's fields
 	size_t nCompt = m_start->compts.size();
 	for (int i = 0; i < nModel; ++i) {
+		if(i== nModel/packNumber){
+			address++;
+			idx = 0;
+		}
 		assert(m_start[i].compts.size() == nCompt);
 		for (int c = 0; c < nCompt; ++c) {
 			//Assign address for each compartment
@@ -52,23 +56,22 @@ Error_PN2S Device::GenerateModelPacks(double dt, models::Model *m, size_t start,
 		}
 	}
 	//Check network structure
-	ModelStatistic stat(dt, nModel, nCompt);
+	ModelStatistic stat(dt, nModel/packNumber, nCompt);
 
 	//TODO: Generate model packs
-	_modelPacks.resize(1);
+	_modelPacks.resize(packNumber);
 
 	//Prepare solver for each modelpack
 //	address = address + 0;
-	Error_PN2S res = _modelPacks[0].Allocate(m_start, stat);
+	for (int var = 0; var < packNumber; ++var) {
+		_modelPacks[var].Allocate(m_start, stat);
+		m_start += nModel/packNumber;
+	}
 
-	//Update Data
-//	for(vector<models>::iterator it = m.begin(); it != m.end(); ++it) {
-//		_modelToPackMap[it->id] = &modelPacks[0];
-//	}
-	return res;
+	return Error_PN2S::NO_ERROR;
 }
 
-Error_PN2S Device::PrepareSolvers(){
+void Device::PrepareSolvers(){
 	for(vector<ModelPack>::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it) {
 		it->PrepareSolvers();
 	}

@@ -30,7 +30,7 @@ public:
 			models::Model *m,
 			size_t start, size_t end,
 			int32_t address); //Address: 2 byte(Machine+Device) + 2 byte(ModelPack)
-	Error_PN2S PrepareSolvers();
+	void PrepareSolvers();
 
 	void Process();
 	Error_PN2S Setup();
