@@ -30,9 +30,9 @@ MODULES = core/_core.o
 all: $(TARGET)
 default: benchmark 
 
-Manager.o: Manager.cpp Manager.h 
-Device.o: Device.cpp Device.h 
-DeviceManager.o: DeviceManager.cpp DeviceManager.h 
+Manager.o: Manager.cpp Manager.h headers.h
+Device.o: Device.cpp Device.h headers.h
+DeviceManager.o: DeviceManager.cpp DeviceManager.h headers.h 
 
 $(TARGET): $(OBJS) $(COBJS) $(SUBDIR) 
 #	@(for i in $(SUBDIR) ; do $(MAKE) -C $$i; done)

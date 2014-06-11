@@ -33,41 +33,33 @@ Device::~Device(){
 
 Error_PN2S Device::GenerateModelPacks(double dt, models::Model *m, size_t start, size_t end, int32_t address){
 	_dt = dt;
-	int packNumber = 2;
 
 	//Assign part of array to packs which is for them
 	models::Model *m_start = &m[start];
-
 	size_t nModel = end - start;
-	int idx = 0;
-	//Check nComp for each compartments and update it's fields
-	size_t nCompt = m_start->compts.size();
-	for (int i = 0; i < nModel; ++i) {
-		if(i== nModel/packNumber){
-			address++;
-			idx = 0;
+	size_t nModel_pack = nModel/PACK_NUMBER;
+
+	_modelPacks.resize(PACK_NUMBER);
+
+	for (int pack = 0; pack < PACK_NUMBER; ++pack) {
+		int idx = 0;
+		//Check nComp for each compartments and update it's fields
+		size_t nCompt = m_start->compts.size();
+		for (int i = 0; i < nModel_pack; ++i) {
+			assert(m_start[i].compts.size() == nCompt);
+			for (int c = 0; c < nCompt; ++c) {
+				//Assign address for each compartment
+				m_start[i].compts[c].location.address = pack;
+				//Assign index of each object in a modelPack
+				m_start[i].compts[c].location.index = idx++;
+			}
 		}
-		assert(m_start[i].compts.size() == nCompt);
-		for (int c = 0; c < nCompt; ++c) {
-			//Assign address for each compartment
-			m_start[i].compts[c].location.address = address;
-			//Assign index of each object in a modelPack
-			m_start[i].compts[c].location.index = idx++;
-		}
+
+		// Allocate memory at modelpack
+		ModelStatistic stat(dt, nModel_pack, nCompt);
+		_modelPacks[pack].Allocate(m_start, stat);
+		m_start += nModel_pack;
 	}
-	//Check network structure
-	ModelStatistic stat(dt, nModel/packNumber, nCompt);
-
-	//TODO: Generate model packs
-	_modelPacks.resize(packNumber);
-
-	//Prepare solver for each modelpack
-//	address = address + 0;
-	for (int var = 0; var < packNumber; ++var) {
-		_modelPacks[var].Allocate(m_start, stat);
-		m_start += nModel/packNumber;
-	}
-
 	return Error_PN2S::NO_ERROR;
 }
 

@@ -280,7 +280,7 @@ def test_elec_alone(sim_time=1):
     hSolveDt = 1e-4
     dt = 1e-6
 
-    createCells(1000)
+    createCells(20)
  
     make_elec_plots("/n/cell0")
 
@@ -304,7 +304,7 @@ def test_elec_alone(sim_time=1):
     moose.useClock( 1, '/n/hsolve', 'process' )
     hsolve.target = '/n/#/compt'
     moose.reinit()    
-    moose.start( hSolveDt*1000 )
+    moose.start( hSolveDt*5 )
 #     dump_plots( 'h_instab.plot' )
 
 def main():

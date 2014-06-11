@@ -57,20 +57,9 @@ PField<T,arch>::PField():
 
 }
 
-//template <typename T, int arch>
-//Field<T,arch>::Field(FieldType t):
-//	fieldType(t),
-//	host(0),
-//	device(0),
-//	host_inc(1),
-//	device_inc(1)
-//{
-//
-//}
-
 template <typename T, int arch>
 PField<T,arch>::~PField(){
-	//TODO: Remove!
+	//Driver shutting down, so not necessary to release memory
 }
 
 

@@ -38,6 +38,7 @@ using namespace std;
 
 #define ARCH_ 	ARCH_SM30
 #define TYPE_	double
+#define PACK_NUMBER 4
 //#define checkCudaErrors(val)    ( (val), #val, __FILE__, __LINE__ )
 
 //#define hsc_uint uint
