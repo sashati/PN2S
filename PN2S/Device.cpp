@@ -23,26 +23,40 @@ using namespace tbb::flow;
 
 using namespace pn2s::models;
 
-Device::Device(int _id): id(_id), _dt(1), _queue_size(1){
+//Create streams
+//cudaStream_t streams[STREAM_NUMBER];
+
+Device::Device(int _id): id(_id), _dt(1){
 	_modelPacks.clear();
+	//Create Streams
+//	for (int i = 0; i < STREAM_NUMBER; ++i) {
+//		cudaStreamCreate(&streams[i]);
+//	}
 }
 
 Device::~Device(){
+//	if(_modelPacks.size())
+//		cudaDeviceReset();
+}
 
+void Device::Reset(){
+//	for (int i = 0; i < STREAM_NUMBER; ++i) {
+//		if(streams[i])
+//			cudaStreamDestroy(streams[i]);
+//	}
+//	cudaDeviceReset();
 }
 
 Error_PN2S Device::GenerateModelPacks(double dt, models::Model *m, size_t start, size_t end, int32_t address){
 	_dt = dt;
+	//TODO: Create packs according to number of input neurons
 
-	//Assign part of array to packs which is for them
+	//Assign part of models into packs
 	models::Model *m_start = &m[start];
 	size_t nModel = end - start;
-	size_t nModel_pack = nModel/PACK_NUMBER;
-
-	_modelPacks.resize(PACK_NUMBER);
-
-	for (int pack = 0; pack < PACK_NUMBER; ++pack) {
-		int idx = 0;
+	size_t nModel_pack = nModel/STREAM_NUMBER;
+	_modelPacks.resize(STREAM_NUMBER);
+	for (int pack = 0; pack < STREAM_NUMBER; ++pack) {
 		//Check nComp for each compartments and update it's fields
 		size_t nCompt = m_start->compts.size();
 		for (int i = 0; i < nModel_pack; ++i) {
@@ -51,13 +65,13 @@ Error_PN2S Device::GenerateModelPacks(double dt, models::Model *m, size_t start,
 				//Assign address for each compartment
 				m_start[i].compts[c].location.address = pack;
 				//Assign index of each object in a modelPack
-				m_start[i].compts[c].location.index = idx++;
+				m_start[i].compts[c].location.index = i;
 			}
 		}
 
-		// Allocate memory at modelpack
+		// Allocate memory for Modelpacks
 		ModelStatistic stat(dt, nModel_pack, nCompt);
-		_modelPacks[pack].Allocate(m_start, stat);
+		_modelPacks[pack].Allocate(m_start, stat,NULL);
 		m_start += nModel_pack;
 	}
 	return Error_PN2S::NO_ERROR;
@@ -107,6 +121,7 @@ void Device::Process()
 	if(model_n < 1)
 		return;
 
+#ifdef USE_TBB
 	graph scheduler;
 
 	broadcast_node<ModelPack*> broadcast(scheduler);
@@ -127,4 +142,11 @@ void Device::Process()
 		broadcast.try_put(&(*it));
 	}
 	scheduler.wait_for_all();
+#else
+	for (vector<ModelPack >::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
+	{
+		it->Process();
+	}
+	cudaDeviceSynchronize();
+#endif
 }

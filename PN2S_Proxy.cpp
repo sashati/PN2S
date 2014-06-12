@@ -43,6 +43,10 @@ void PN2S_Proxy::Setup(double dt)
 	_all_compartmentIds.clear();
 }
 
+void PN2S_Proxy::Close()
+{
+	DeviceManager::Close();
+}
 /**
  * Create Compartmental Model
  */

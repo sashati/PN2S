@@ -117,8 +117,8 @@ void inline _printVector(vector< uint >& vec)
 }
 
 //Debugging
-#define _D(call)
-//#define _D(call)                                          \
+//#define _D(call)
+#define _D(call)                                          \
 do {                                                                  \
 	call;				\
 } while (0)

@@ -192,6 +192,10 @@ HSolve::HSolve()
     ;
 }
 
+HSolve::~HSolve(){
+	PN2S_Proxy::Close();
+}
+
 
 ///////////////////////////////////////////////////
 // Dest function definitions

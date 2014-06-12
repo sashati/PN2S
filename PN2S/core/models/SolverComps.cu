@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
+
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 #include <thrust/transform.h>
@@ -24,32 +25,25 @@ cublasHandle_t _handle;
 //Thrust Variables
 //thrust::device_vector<int> d_rhs = h_vec;
 
-SolverComps::SolverComps()
+//cudaStream_t streams[STREAM_NUMBER];
+
+SolverComps::SolverComps(): _models(0), _stream(0)
 {
-//	_hm.fieldType = Field::TYPE_IO;
+//	for (int i = 0; i < STREAM_NUMBER; ++i) {
+//		cudaStreamCreate(&(streams[i]));
+//	}
 }
 
 SolverComps::~SolverComps()
 {
-//	if (_hm) free(_hm);
-//	if(_rhs) free(_rhs);
-//	if (_Vm) free(_Vm);
-//	if (_Cm) free(_Cm);
-//	if (_Em) free(_Em);
-//	if (_Rm) free(_Rm);
-//	if (_hm_dev) cudaFree(_hm_dev);
-//	if(_rhs_dev) cudaFree(_rhs_dev);
-//	if (_Vm_dev) cudaFree(_Vm_dev);
-//	if (_Cm_dev) cudaFree(_Cm_dev);
-//	if (_Em_dev) cudaFree(_Em_dev);
-//	if (_Rm_dev) cudaFree(_Rm_dev);
 }
 
 
-Error_PN2S SolverComps::AllocateMemory(models::Model * m, models::ModelStatistic& s)
+Error_PN2S SolverComps::AllocateMemory(models::Model * m, models::ModelStatistic& s, cudaStream_t stream)
 {
 	_stat = s;
 	_models = m;
+	_stream = stream;
 
 	if(_stat.nCompts == 0)
 		return Error_PN2S::NO_ERROR;
@@ -83,8 +77,8 @@ Error_PN2S SolverComps::PrepareSolver()
 	}
 
 	//Copy to GPU
-	_hm.Host2Device_Sync();
-	_Em.Host2Device_Sync();
+	_hm.Host2Device_Async(_stream);
+	_Em.Host2Device_Async(_stream);
 
 	//Create Cublas
 	if ( cublasCreate(&_handle) != CUBLAS_STATUS_SUCCESS)
@@ -97,42 +91,59 @@ Error_PN2S SolverComps::PrepareSolver()
 	return Error_PN2S::NO_ERROR;
 }
 
-Error_PN2S SolverComps::Input()
+void SolverComps::Input()
 {
 	//Copy to GPU
-	_rhs.Send2Device(_Em); // Em -> rhs
-	_Rm.Host2Device_Sync();
-	_Vm.Host2Device_Sync();
-	_Cm.Host2Device_Sync();
-
-	return Error_PN2S::NO_ERROR;
 }
 
-Error_PN2S SolverComps::Process()
+void SolverComps::Process()
 {
-	UpdateMatrix();
+	cudaStream_t *streams = (cudaStream_t *) malloc(STREAM_NUMBER * sizeof(cudaStream_t));
 
-    //Solve
-	int ret = dsolve_batch (_hm.device, _rhs.device, _Vm.device, _stat.nCompts, _stat.nModels);
-    assert(!ret);
-	return Error_PN2S::NO_ERROR;
-    //_printVector(nModel*nComp, _Vm);
+	for (int i = 0; i < STREAM_NUMBER; i++)
+	{
+		cudaStreamCreate(&(streams[i]));
+	}
+
+	//Input
+	for (int var = 0; var < 100; ++var)
+	{
+		for (int i = 0; i < STREAM_NUMBER; i++)
+		{
+			cudaMemcpyAsync(_hm.host, _hm.device, sizeof(_hm.host[0])*_hm._size, cudaMemcpyDeviceToHost, streams[i]);
+		}
+		for (int i = 0; i < STREAM_NUMBER; i++)
+		{
+			cudaMemcpyAsync(_hm.device, _hm.host, sizeof(_hm.host[0])*_hm._size, cudaMemcpyHostToDevice, streams[i]);
+		}
+
+	}
+
+	for (int i = 0; i < STREAM_NUMBER; i++)
+	{
+		cudaStreamDestroy(streams[i]);
+	}
+
+//	_rhs.Send2Device_Async(_Em,streams[var%2]); // Em -> rhs
+//			_Rm.Host2Device_Async(streams[var%2]);
+//			_Vm.Host2Device_Async(streams[var%2]);
+//			_Cm.Host2Device_Async(streams[var%2]);
+//
+//		//	UpdateMatrix();
+//
+//		//    //Solve
+//		//	int ret = dsolve_batch (_hm.device, _rhs.device, _Vm.device, _stat.nCompts, _stat.nModels);
+//		//    assert(!ret);
+//			//Output
+//			_Vm.Device2Host_Async(streams[var%2]);
+
 }
 
 
-Error_PN2S SolverComps::Output()
+void SolverComps::Output()
 {
-	_Vm.Device2Host_Sync();
 
-//	for(int i=0; i< _ids.size();i++ )
-//	{
-//		uint gid = _ids[i];
-////		SetValue_Func(gid,VM_FIELD, _Vm[i]);
-////		SetValue_Func(gid,VM_FIELD, 10);
-//	}
-
-	return Error_PN2S::NO_ERROR;
-	//_printVector(nModel*nComp, _Vm);
+//    _Vm.Device2Host_Async(_stream);
 }
 
 /**
@@ -161,7 +172,7 @@ struct update_rhs_functor
 };
 
 
-Error_PN2S SolverComps::UpdateMatrix()
+void SolverComps::UpdateMatrix()
 {
 	uint vectorSize = _stat.nModels * _stat.nCompts;
 
@@ -184,7 +195,6 @@ Error_PN2S SolverComps::UpdateMatrix()
 
 //	getVector(vectorSize, _rhs,_rhs_dev); //TODO maybe is not necessary
 
-	return Error_PN2S::NO_ERROR;
 }
 
 
