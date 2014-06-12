@@ -33,7 +33,15 @@ Device::Device(int _id): id(_id), _dt(1){
 	/**
 	 * Check configuration
 	 */
+	cudaDeviceProp deviceProp;
+	cudaGetDeviceProperties(&deviceProp, _id);
 
+	if ((1 == deviceProp.major) && (deviceProp.minor < 1))
+	{
+		printf("%s does not have Compute Capability 1.1 or newer.  Reducing workload.\n", deviceProp.name);
+	}
+//	cudaSetDeviceFlags(cudaDeviceBlockingSync | cudaDeviceMapHost);
+//	nstreams = deviceProp.multiProcessorCount;
 	nstreams = 6;
 	/**
 	 * Device initialization
