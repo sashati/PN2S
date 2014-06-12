@@ -82,6 +82,6 @@ void DeviceManager::Close()
 {
 	cudaProfilerStop();
 	for(vector<Device>::iterator device = _device.begin(); device != _device.end(); ++device)
-		device->Reset();
+		device->Destroy();
 }
 

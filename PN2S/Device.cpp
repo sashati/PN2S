@@ -24,14 +24,25 @@ using namespace tbb::flow;
 using namespace pn2s::models;
 
 //Create streams
-//cudaStream_t streams[STREAM_NUMBER];
+cudaStream_t* streams;
+int nstreams = DEFAULT_STREAM_NUMBER;
 
 Device::Device(int _id): id(_id), _dt(1){
 	_modelPacks.clear();
+
+	/**
+	 * Check configuration
+	 */
+
+	nstreams = 6;
+	/**
+	 * Device initialization
+	 */
+	streams = (cudaStream_t *) malloc(nstreams * sizeof(cudaStream_t));
 	//Create Streams
-//	for (int i = 0; i < STREAM_NUMBER; ++i) {
-//		cudaStreamCreate(&streams[i]);
-//	}
+	for (int i = 0; i < nstreams; ++i) {
+		cudaStreamCreate(&streams[i]);
+	}
 }
 
 Device::~Device(){
@@ -39,27 +50,46 @@ Device::~Device(){
 //		cudaDeviceReset();
 }
 
-void Device::Reset(){
-//	for (int i = 0; i < STREAM_NUMBER; ++i) {
-//		if(streams[i])
-//			cudaStreamDestroy(streams[i]);
+void Device::Destroy(){
+//	for (int i = 0; i < nstreams; i++)
+//	{
+//		cudaStreamDestroy(streams[i]);
 //	}
 //	cudaDeviceReset();
 }
 
 Error_PN2S Device::GenerateModelPacks(double dt, models::Model *m, size_t start, size_t end, int32_t address){
 	_dt = dt;
-	//TODO: Create packs according to number of input neurons
 
-	//Assign part of models into packs
+	//Distribute model into packs
 	models::Model *m_start = &m[start];
 	size_t nModel = end - start;
-	size_t nModel_pack = nModel/STREAM_NUMBER;
-	_modelPacks.resize(STREAM_NUMBER);
-	for (int pack = 0; pack < STREAM_NUMBER; ++pack) {
+
+	if(nModel <= 0)
+		return Error_PN2S::EMPTY;
+
+	//TODO: Minimum size for models and change strategy for distribution of models
+
+	//If number of models are less than streams, reduce stream number
+	if (nstreams > nModel)
+	{
+		for (int i = nModel; i < nstreams; i++)
+		{
+			cudaStreamDestroy(streams[i]);
+		}
+		nstreams = nModel;
+	}
+
+	size_t nModel_in_pack = nModel/nstreams;
+	_modelPacks.resize(nstreams);
+	for (int pack = 0; pack < nstreams; ++pack) {
 		//Check nComp for each compartments and update it's fields
+		if(pack == nstreams-1) //Last one carries extra parts
+		{
+			 nModel_in_pack += nModel%nstreams;
+		}
 		size_t nCompt = m_start->compts.size();
-		for (int i = 0; i < nModel_pack; ++i) {
+		for (int i = 0; i < nModel_in_pack; ++i) {
 			assert(m_start[i].compts.size() == nCompt);
 			for (int c = 0; c < nCompt; ++c) {
 				//Assign address for each compartment
@@ -70,9 +100,9 @@ Error_PN2S Device::GenerateModelPacks(double dt, models::Model *m, size_t start,
 		}
 
 		// Allocate memory for Modelpacks
-		ModelStatistic stat(dt, nModel_pack, nCompt);
-		_modelPacks[pack].Allocate(m_start, stat,NULL);
-		m_start += nModel_pack;
+		ModelStatistic stat(dt, nModel_in_pack, nCompt);
+		_modelPacks[pack].Allocate(m_start, stat,streams[pack%nstreams]);
+		m_start += nModel_in_pack;
 	}
 	return Error_PN2S::NO_ERROR;
 }
@@ -143,9 +173,18 @@ void Device::Process()
 	}
 	scheduler.wait_for_all();
 #else
+
+	for (vector<ModelPack >::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
+	{
+		it->Input();
+	}
 	for (vector<ModelPack >::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
 	{
 		it->Process();
+	}
+	for (vector<ModelPack >::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
+	{
+		it->Output();
 	}
 	cudaDeviceSynchronize();
 #endif

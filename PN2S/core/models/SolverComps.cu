@@ -22,16 +22,10 @@ using namespace pn2s::models;
 //CuBLAS variables
 cublasHandle_t _handle;
 
-//Thrust Variables
-//thrust::device_vector<int> d_rhs = h_vec;
-
-//cudaStream_t streams[STREAM_NUMBER];
+cudaStream_t _stream;
 
 SolverComps::SolverComps(): _models(0), _stream(0)
 {
-//	for (int i = 0; i < STREAM_NUMBER; ++i) {
-//		cudaStreamCreate(&(streams[i]));
-//	}
 }
 
 SolverComps::~SolverComps()
@@ -80,12 +74,12 @@ Error_PN2S SolverComps::PrepareSolver()
 	_hm.Host2Device_Async(_stream);
 	_Em.Host2Device_Async(_stream);
 
-	//Create Cublas
-	if ( cublasCreate(&_handle) != CUBLAS_STATUS_SUCCESS)
-	{
-		return Error_PN2S(Error_PN2S::CuBLASError,
-				"CUBLAS initialization failed");
-	}
+//	//Create Cublas
+//	if ( cublasCreate(&_handle) != CUBLAS_STATUS_SUCCESS)
+//	{
+//		return Error_PN2S(Error_PN2S::CuBLASError,
+//				"CUBLAS initialization failed");
+//	}
 
 	cudaDeviceSynchronize();
 	return Error_PN2S::NO_ERROR;
@@ -94,56 +88,25 @@ Error_PN2S SolverComps::PrepareSolver()
 void SolverComps::Input()
 {
 	//Copy to GPU
+	_rhs.Send2Device_Async(_Em,_stream); // Em -> rhs
+	_Rm.Host2Device_Async(_stream);
+	_Vm.Host2Device_Async(_stream);
+	_Cm.Host2Device_Async(_stream);
 }
 
 void SolverComps::Process()
 {
-	cudaStream_t *streams = (cudaStream_t *) malloc(STREAM_NUMBER * sizeof(cudaStream_t));
+	UpdateMatrix();
 
-	for (int i = 0; i < STREAM_NUMBER; i++)
-	{
-		cudaStreamCreate(&(streams[i]));
-	}
-
-	//Input
-	for (int var = 0; var < 100; ++var)
-	{
-		for (int i = 0; i < STREAM_NUMBER; i++)
-		{
-			cudaMemcpyAsync(_hm.host, _hm.device, sizeof(_hm.host[0])*_hm._size, cudaMemcpyDeviceToHost, streams[i]);
-		}
-		for (int i = 0; i < STREAM_NUMBER; i++)
-		{
-			cudaMemcpyAsync(_hm.device, _hm.host, sizeof(_hm.host[0])*_hm._size, cudaMemcpyHostToDevice, streams[i]);
-		}
-
-	}
-
-	for (int i = 0; i < STREAM_NUMBER; i++)
-	{
-		cudaStreamDestroy(streams[i]);
-	}
-
-//	_rhs.Send2Device_Async(_Em,streams[var%2]); // Em -> rhs
-//			_Rm.Host2Device_Async(streams[var%2]);
-//			_Vm.Host2Device_Async(streams[var%2]);
-//			_Cm.Host2Device_Async(streams[var%2]);
-//
-//		//	UpdateMatrix();
-//
-//		//    //Solve
-//		//	int ret = dsolve_batch (_hm.device, _rhs.device, _Vm.device, _stat.nCompts, _stat.nModels);
-//		//    assert(!ret);
-//			//Output
-//			_Vm.Device2Host_Async(streams[var%2]);
-
+	//Solve
+	int ret = dsolve_batch (_hm.device, _rhs.device, _Vm.device, _stat.nCompts, _stat.nModels, _stream);
+	assert(!ret);
 }
 
 
 void SolverComps::Output()
 {
-
-//    _Vm.Device2Host_Async(_stream);
+	_Vm.Device2Host_Async(_stream);
 }
 
 /**

@@ -32,7 +32,7 @@ public:
 			int32_t address); //Device address
 	void PrepareSolvers();
 
-	void Reset();
+	void Destroy();
 	void Process();
 
 private:
