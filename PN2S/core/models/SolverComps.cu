@@ -151,7 +151,7 @@ void SolverComps::UpdateMatrix()
 
 #ifndef USE_THRUST
 	dim3 threads, blocks;
-	threads=dim3(512, 1);
+	threads=dim3(32, 1);
 	blocks=dim3(vectorSize / threads.x, 1);
 
 
