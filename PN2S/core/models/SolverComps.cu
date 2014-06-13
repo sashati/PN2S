@@ -94,8 +94,6 @@ void SolverComps::Input()
 	_Rm.Host2Device_Async(_stream);
 	_Vm.Host2Device_Async(_stream);
 	_Cm.Host2Device_Async(_stream);
-	_hm.Host2Device_Async(_stream);
-	_hm.Host2Device_Async(_stream);
 }
 
 void SolverComps::Process()
@@ -110,8 +108,6 @@ void SolverComps::Process()
 void SolverComps::Output()
 {
 	_Vm.Device2Host_Async(_stream);
-	_hm.Host2Device_Async(_stream);
-	_hm.Host2Device_Async(_stream);
 }
 
 /**
