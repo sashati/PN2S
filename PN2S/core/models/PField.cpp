@@ -8,6 +8,8 @@
 #include "PField.h"
 
 #include <assert.h>
+#include <limits>
+#include <iomanip>
 
 using namespace pn2s::models;
 
@@ -105,6 +107,15 @@ Error_PN2S PField<T,arch>::Send2Host_Async(PField& _hostResource,cudaStream_t st
 	if(minSize > 0)
 		CALL(getVector<T>(minSize, _hostResource.host,device,stream));
 	return Error_PN2S::NO_ERROR;
+}
+
+template <typename T, int arch>
+void PField<T,arch>::print()
+{
+	for (int i = 0; i < _size; i+=host_inc) {
+		cout << std::setprecision (std::numeric_limits< double >::digits10)<<host[i] << "\t";
+	}
+	cout << endl << flush;
 }
 
 template class PField<double, ARCH_SM30>;

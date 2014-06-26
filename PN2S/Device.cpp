@@ -97,13 +97,14 @@ Error_PN2S Device::GenerateModelPacks(double dt, models::Model *m, size_t start,
 			 nModel_in_pack += nModel%nstreams;
 		}
 		size_t nCompt = m_start->compts.size();
+		int idx = 0;
 		for (int i = 0; i < nModel_in_pack; ++i) {
 			assert(m_start[i].compts.size() == nCompt);
 			for (int c = 0; c < nCompt; ++c) {
-				//Assign address for each compartment
+				//Assign address for each machine/pack
 				m_start[i].compts[c].location.address = pack;
 				//Assign index of each object in a modelPack
-				m_start[i].compts[c].location.index = i;
+				m_start[i].compts[c].location.index = idx++;
 			}
 		}
 

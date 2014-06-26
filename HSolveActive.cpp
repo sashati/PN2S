@@ -22,6 +22,7 @@
 using namespace moose;
 //~ #include "ZombieCompartment.h"
 //~ #include "ZombieCaConc.h"
+#include "PN2S/HelperFunctions.h"
 
 extern ostream& operator <<( ostream& s, const HinesMatrix& m );
 
@@ -53,9 +54,13 @@ void HSolveActive::step( ProcPtr info )
 
     advanceChannels( info->dt );
     calculateChannelCurrents();
+    cout << HS_.size() << endl<<flush;
+    _printVector(HS_);
     updateMatrix();
+    _printVector(HS_);//TODO: Check till here in GPU
     HSolvePassive::forwardEliminate();
     HSolvePassive::backwardSubstitute();
+
     advanceCalcium();
     advanceSynChans( info );
 

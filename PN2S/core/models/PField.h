@@ -54,6 +54,8 @@ public:
 
 	T operator [](int i) const {return host[i];}
 	T & operator [](int i) {return host[i];}
+
+	void print();
 private:
 
 };

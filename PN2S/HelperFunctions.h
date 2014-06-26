@@ -11,7 +11,8 @@
 #include <math.h>
 #include <algorithm>
 #include <string>
-
+#include <limits>
+#include <iomanip>
 #include <vector>
 using namespace std;
 
@@ -63,7 +64,7 @@ template <typename T_ELEM>
 void _printMatrix_Column(int m, int n, T_ELEM* A) {
 	for (int i = 0; i < m; ++i) {
 		for (int j = 0; j < n; ++j) {
-			cout << A[i + j *n ] << " ";
+			cout << std::setprecision (std::numeric_limits< double >::digits10)<<A[i + j *n ] << " ";
 		}
 		cout << endl;
 	}
@@ -74,7 +75,7 @@ template <typename T_ELEM>
 void _printMatrix(int m, int n, T_ELEM* A) {
 	for (int i = 0; i < m; ++i) {
 		for (int j = 0; j < n; ++j) {
-			cout << A[i*n + j ] << " ";
+			cout <<std::setprecision (std::numeric_limits< double >::digits10)<< A[i*n + j ] << " ";
 		}
 		cout << endl;
 	}
@@ -86,7 +87,7 @@ void inline _printMatrix(vector< vector< double > >& matrix)
 	vector< double >::iterator icc;
 	for ( vector< vector< double > >::iterator ic = matrix.begin(); ic != matrix.end(); ++ic ) {
 		for ( icc = ic->begin(); icc != ic->end(); ++icc ) {
-			cout << *icc << "\t";
+			cout << std::setprecision (std::numeric_limits< double >::digits10)<<*icc << "\t";
 		}
 		cout << endl;
 	}
@@ -95,7 +96,7 @@ void inline _printMatrix(vector< vector< double > >& matrix)
 template <typename T_ELEM>
 void _printVector(int n, T_ELEM* A) {
 	for (int j = 0; j < n; ++j) {
-		cout << A[j] << ", ";
+		cout <<std::setprecision (std::numeric_limits< double >::digits10)<< A[j] << ", ";
 	}
 	cout << endl << flush;
 }
@@ -104,17 +105,17 @@ void inline _printVector(vector< double >& vec)
 {
 	vector< double >::iterator icc;
 	for ( icc = vec.begin(); icc != vec.end(); ++icc ) {
-		cout << *icc << "\t";
+		cout << std::setprecision (std::numeric_limits< double >::digits10)<<*icc << "\t";
 	}
-	cout << endl<<endl<<flush;
+	cout << endl<<flush;
 }
 void inline _printVector(vector< uint >& vec)
 {
 	vector< uint >::iterator icc;
 	for ( icc = vec.begin(); icc != vec.end(); ++icc ) {
-		cout << *icc << "\t";
+		cout << std::setprecision (std::numeric_limits< double >::digits10)<<*icc << "\t";
 	}
-	cout << endl<<endl<<flush;
+	cout << endl<<flush;
 }
 
 //Debugging

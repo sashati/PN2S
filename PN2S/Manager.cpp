@@ -49,23 +49,6 @@ void Manager::InsertModelShape(models::Model &neutral){
 }
 
 
-///**
-// * Create and add a task to scheduler
-// */
-//hscError Manager::AddInputTask(uint id){
-//	//make taskID
-//	TaskInfo task;
-//	task.modelPack = _solver.LocateDataByID(id);
-//
-//	//Add to scheduler
-//	_scheduler.AddInputTask(task);
-//
-//	return  NO_ERROR;
-//}
-
-
-
-
 /**
  * A time increment process for each object
  */
