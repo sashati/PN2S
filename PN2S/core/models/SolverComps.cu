@@ -91,8 +91,6 @@ void SolverComps::Input()
 	_Rm.Host2Device_Async(_stream);
 	_Vm.Host2Device_Async(_stream);
 	_Cm.Host2Device_Async(_stream);
-	_hm.Host2Device_Async(_stream);
-	_hm.Host2Device_Async(_stream);
 }
 
 void SolverComps::Process()
@@ -112,8 +110,6 @@ void SolverComps::Process()
 void SolverComps::Output()
 {
 	_Vm.Device2Host_Async(_stream);
-	_hm.Host2Device_Async(_stream);
-	_hm.Host2Device_Async(_stream);
 }
 
 /**
@@ -158,7 +154,7 @@ void SolverComps::UpdateMatrix()
 
 #ifndef USE_THRUST
 	dim3 threads, blocks;
-	threads=dim3(512, 1);
+	threads=dim3(32, 1);
 	blocks=dim3(vectorSize / threads.x, 1);
 
 
