@@ -124,26 +124,6 @@ void SolverComps::Output()
  * RHS = Vm * Cm / ( dt / 2.0 ) + Em/Rm;
  *
  */
-//#define USE_THRUST
-#ifdef USE_THRUST
-template< class ValueType >
-struct update_rhs_functor
-{
-	typedef ValueType value_type;
-
-	const double dt;
-	update_rhs_functor(double __dt) : dt(__dt) {}
-
-	template< class Tuple >
-	__host__ __device__
-	void operator() ( Tuple t )
-	{
-		thrust::get<0>(t) = thrust::get<1>(t) *
-				thrust::get<2>(t) / dt * 2.0 +
-				thrust::get<0>(t) / thrust::get<3>(t);
-	}
-};
-#else
 
 __global__ void update_rhs(TYPE_* rhs, TYPE_* vm, TYPE_* cm, TYPE_* rm, size_t size, TYPE_ dt)
 {
@@ -152,13 +132,11 @@ __global__ void update_rhs(TYPE_* rhs, TYPE_* vm, TYPE_* cm, TYPE_* rm, size_t s
     	rhs[idx] = vm[idx] * cm[idx] / dt * 2.0 + rhs[idx] / rm[idx];
 }
 
-#endif
 
 void SolverComps::updateMatrix()
 {
 	uint vectorSize = _stat.nModels * _stat.nCompts;
 
-#ifndef USE_THRUST
 	dim3 threads, blocks;
 	threads=dim3(min((vectorSize&0xFFFFFFC0)|0x20,256), 1); //TODO: Check
 	blocks=dim3(max(vectorSize / threads.x,1), 1);
@@ -173,26 +151,6 @@ void SolverComps::updateMatrix()
 			_stat.dt);
 	assert(cudaSuccess == cudaGetLastError());
 	cudaStreamSynchronize(_stream);
-
-#else
-	thrust::for_each(
-		thrust::make_zip_iterator(
-				thrust::make_tuple(
-						_rhs.DeviceStart(),
-						_Vm.DeviceStart(),
-						_Cm.DeviceStart(),
-						_Rm.DeviceStart())),
-
-		thrust::make_zip_iterator(
-				thrust::make_tuple(
-						_rhs.DeviceEnd(),
-						_Vm.DeviceEnd(),
-						_Cm.DeviceEnd(),
-						_Rm.DeviceEnd())),
-
-		update_rhs_functor< TYPE_ >( _stat.dt ) );
-#endif
-
 }
 
 __global__ void update_vm(TYPE_* vm, TYPE_* vmid, size_t size)
