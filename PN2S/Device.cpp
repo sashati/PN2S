@@ -42,7 +42,7 @@ Device::Device(int _id): id(_id), _dt(1){
 	}
 //	cudaSetDeviceFlags(cudaDeviceBlockingSync | cudaDeviceMapHost);
 //	nstreams = deviceProp.multiProcessorCount;
-	nstreams = 1;
+	nstreams = DEFAULT_STREAM_NUMBER;
 	/**
 	 * Device initialization
 	 */

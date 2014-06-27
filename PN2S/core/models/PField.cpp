@@ -37,6 +37,23 @@ __inline__ Error_PN2S sendVector(uint size, T* h, T* d, cudaStream_t stream)
 }
 
 template <typename T>
+__inline__ Error_PN2S sendVector(uint size, T* h, T* d)
+{
+	cudaError_t stat = cudaMemcpy(d, h, sizeof(h[0])*size, cudaMemcpyHostToDevice);
+	assert(stat != cudaSuccess);
+	return Error_PN2S::NO_ERROR;
+}
+
+template <typename T>
+__inline__ Error_PN2S getVector(uint size, T* h, T* d)
+{
+	cudaError_t stat = cudaMemcpy(h, d, sizeof(h[0])*size, cudaMemcpyDeviceToHost);
+	assert(stat == cudaSuccess);
+	return Error_PN2S::NO_ERROR;
+}
+
+
+template <typename T>
 __inline__ Error_PN2S getVector(uint size, T* h, T* d, cudaStream_t stream)
 {
 	cublasStatus_t stat = cublasGetVectorAsync(size, sizeof(h[0]),d, 1,h,1,stream);
@@ -88,6 +105,20 @@ template <typename T, int arch>
 Error_PN2S PField<T,arch>::Device2Host_Async(cudaStream_t stream)
 {
 	CALL(getVector<T>(_size, host,device,stream));
+	return Error_PN2S::NO_ERROR;
+}
+
+template <typename T, int arch>
+Error_PN2S PField<T,arch>::Host2Device()
+{
+	CALL(sendVector<T>(_size, host,device));
+	return Error_PN2S::NO_ERROR;
+}
+
+template <typename T, int arch>
+Error_PN2S PField<T,arch>::Device2Host()
+{
+	CALL(getVector<T>(_size, host,device));
 	return Error_PN2S::NO_ERROR;
 }
 

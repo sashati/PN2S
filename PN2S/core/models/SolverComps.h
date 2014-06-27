@@ -29,13 +29,20 @@ private:
 	PField<TYPE_, ARCH_>  _hm;	// Hines Matrices
 	PField<TYPE_, ARCH_>  _rhs;	// Right hand side of the equation
 	PField<TYPE_, ARCH_>  _Vm;	// Vm of the compartments
+	PField<TYPE_, ARCH_>  _VMid;	// Vm of the compartments
 	PField<TYPE_, ARCH_>  _Cm;	// Cm of the compartments
 	PField<TYPE_, ARCH_>  _Em;	// Em of the compartments
 	PField<TYPE_, ARCH_>  _Rm;	// Rm of the compartments
 	PField<TYPE_, ARCH_>  _Ra;	// Ra of the compartments
 
+
+
 	void  makeHinesMatrix(models::Model *model, TYPE_ * matrix);// float** matrix, uint nCompt);
 	void getValues();
+
+	void updateMatrix();
+	void updateVm();
+
 public:
 	SolverComps();
 	~SolverComps();
@@ -44,7 +51,6 @@ public:
 	void Input();
 	void Process();
 	void Output();
-	void UpdateMatrix();
 
 	double GetDt(){ return _stat.dt;}
 	void SetDt(double dt){ _stat.dt = dt;}

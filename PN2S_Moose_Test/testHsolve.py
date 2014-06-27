@@ -103,7 +103,7 @@ def create_squid(parent):
  #    nachan.Xpower = 3
  #    xGate = moose.HHGate(nachan.path + '/gateX')    
  #    xGate.setupAlpha(Na_m_params + [VDIVS, VMIN, VMAX])
-	# #This is important: one can run without it but the output will diverge.
+    # #This is important: one can run without it but the output will diverge.
  #    xGate.useInterpolation = 1
  #    nachan.Ypower = 1
  #    yGate = moose.HHGate(nachan.path + '/gateY')
@@ -208,8 +208,8 @@ def add_plot( objpath, field, plot ):
 def make_elec_plots(cellpath):
     graphs = moose.Neutral( '/graphs' )
     elec = moose.Neutral( '/graphs/elec' )
-    # add_plot( cellpath+'/compt', 'getVm', 'elec/comptVm' )
-    add_plot( cellpath+'/head0', 'getVm', 'elec/head0Vm' )
+    add_plot( cellpath+'/compt', 'getVm', 'elec/dendVm' )
+    # add_plot( cellpath+'/head0', 'getVm', 'elec/head0Vm' )
     # add_plot( cellpath+'/head2', 'getVm', 'elec/head2Vm' )
     # add_plot( cellpath+'/head2/ca', 'getCa', 'elec/head2Ca' )
 
@@ -217,18 +217,17 @@ def dump_plots( fname ):
     if ( os.path.exists( fname ) ):
         os.remove( fname )
     for x in moose.wildcardFind( '/graphs/##[ISA=Table]' ):
-    	print x.vector
-        t = numpy.arange( 0, len(x.vector), 1 )
-        pylab.plot( t, x.vector, label=x.name )
-    pylab.legend()
-    pylab.show()
+        print x.vector
+#         t = numpy.arange( 0, x.vector.size, 1 )
+#         pylab.plot( t, x.vector, label=x.name )
+    # pylab.legend()
+    # pylab.show()
     #moose.utils.plotAscii(x.vector, file=fname)
 
-def make_spiny_compt(root_path, number,synInput, isGPU):
+def make_spiny_compt(root_path, number,synInput):
     comptLength = 100e-6
     comptDia = 4e-6
     numSpines = 1
-
     cell = moose.Neutral (root_path+"/cell"+str(number))
     
     compt = create_squid(cell)
@@ -257,7 +256,7 @@ def make_spiny_compt(root_path, number,synInput, isGPU):
              sib2 = moose.element( '/n/head' + str(j) )
              moose.connect( sib1, 'sibling', sib2, 'sibling', 'Single' )
         """
-    
+
 def create_pool( compt, name, concInit ):
     meshEntries = moose.element( compt.path + '/mesh' )
     pool = moose.Pool( compt.path + '/' + name )
@@ -265,7 +264,7 @@ def create_pool( compt, name, concInit ):
     pool.concInit = concInit
     return pool
 
-def createCells(net_size=1,isMasterHsolve=False):
+def createCells(net_size=1):
     network = moose.Neutral ("/n")
     synInput = moose.SpikeGen("/n/synInput")
     synInput.refractT = 47e-3
@@ -273,36 +272,25 @@ def createCells(net_size=1,isMasterHsolve=False):
     synInput.edgeTriggered = 0
     synInput.Vm( 0 )
     for i in range(net_size):
- 		make_spiny_compt(network.path, i,synInput,isMasterHsolve)
+         make_spiny_compt(network.path, i,synInput)
 
-<<<<<<< HEAD
+
 def test_elec_alone(sim_time=1):
     dt = 1e-6
 
-    createCells(1)
+    createCells(100)
  
     make_elec_plots("/n/cell0")
-=======
->>>>>>> master
 
-def test_elec_alone(dt = 1e-6, ncell=1, isGPU = False):
-    
     moose.setClock( 0, dt )
     moose.setClock( 1, dt )
     moose.setClock( 2, dt )
-    moose.setClock( 8, 0.1e-3 )
-    
-    createCells(ncell,isGPU)  
-
-    make_elec_plots("/n/cell0")
-    
+    moose.setClock( 8, 1e-4 )
     moose.useClock( 0, '/n/##[ISA=Compartment]', 'init' )
     moose.useClock( 1, '/n/##[ISA=Compartment]', 'process' )
     moose.useClock( 2, '/n/##[ISA=ChanBase],/n/##[ISA=SynBase],/n/##[ISA=CaConc],/n/##[ISA=SpikeGen]','process')
     moose.useClock( 8, '/graphs/elec/#', 'process' )
-    
     moose.reinit()
-<<<<<<< HEAD
     # moose.start( sim_time )
     # dump_plots( 'instab.plot' )
     # make Hsolver and rerun
@@ -315,34 +303,7 @@ def test_elec_alone(dt = 1e-6, ncell=1, isGPU = False):
     dump_plots( 'h_instab.plot' )
 
 def main():
-	test_elec_alone(2e-6)
-=======
-    
-    if isGPU:
-        print "GPU"
-        hsolve = moose.HSolve( '/n/hsolve' )
-        hsolve.dt = dt
-        moose.useClock( 1, '/n/hsolve', 'process' )
-        hsolve.target = '/n[0]/#/compt'
-    else:
-        print "CPU"
-        hsolve = moose.HSolve( '/n/cell0/hsolve' )
-        hsolve.dt = 1e-6
-        moose.useClock( 1, hsolve.path, 'process' )
-        hsolve.target = '/n/cell0/compt'
-    
-    
-def main():
-    dt = 1e-6
-    ncell=2
-    isGPU = True
-
-    test_elec_alone(dt, ncell, isGPU )
-    
-    moose.reinit()    
-    moose.start( dt * 20000 )
-    dump_plots( 'h_instab.plot' )
->>>>>>> master
+    test_elec_alone(1000e-6)
 
 if __name__ == '__main__':
-	main()
+    main()

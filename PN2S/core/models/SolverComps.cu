@@ -50,6 +50,7 @@ Error_PN2S SolverComps::AllocateMemory(models::Model * m, models::ModelStatistic
 	_hm.AllocateMemory(modelSize*s.nModels);
 	_rhs.AllocateMemory(vectorSize);
 	_Vm.AllocateMemory(vectorSize);
+	_VMid.AllocateMemory(vectorSize);
 	_Cm.AllocateMemory(vectorSize);
 	_Em.AllocateMemory(vectorSize);
 	_Rm.AllocateMemory(vectorSize);
@@ -95,15 +96,20 @@ void SolverComps::Input()
 
 void SolverComps::Process()
 {
-	_hm.print();
-	_rhs.print();
-	_Vm.print();
-	_Cm.print();
-	_Rm.print();
+	updateMatrix();
+//	_hm.Device2Host();
+//	_hm.print();
+//	_rhs.Device2Host();
+//	_rhs.print();
+	assert(!dsolve_batch (_hm.device, _rhs.device, _VMid.device, _stat.nCompts, _stat.nModels, _stream));
+//	_VMid.Device2Host();
+//	_VMid.print();
+//	_Vm.Device2Host();
+//		_Vm.print();
+	updateVm();
 
-	UpdateMatrix();
-	_rhs.print();
-	assert(!dsolve_batch (_hm.device, _rhs.device, _Vm.device, _stat.nCompts, _stat.nModels, _stream));
+//	_Vm.Device2Host();
+//	_Vm.print();
 }
 
 
@@ -148,14 +154,14 @@ __global__ void update_rhs(TYPE_* rhs, TYPE_* vm, TYPE_* cm, TYPE_* rm, size_t s
 
 #endif
 
-void SolverComps::UpdateMatrix()
+void SolverComps::updateMatrix()
 {
 	uint vectorSize = _stat.nModels * _stat.nCompts;
 
 #ifndef USE_THRUST
 	dim3 threads, blocks;
-	threads=dim3(32, 1);
-	blocks=dim3(vectorSize / threads.x, 1);
+	threads=dim3(min((vectorSize&0xFFFFFFC0)|0x20,256), 1); //TODO: Check
+	blocks=dim3(max(vectorSize / threads.x,1), 1);
 
 
 	update_rhs <<<blocks, threads,0, _stream>>> (
@@ -165,7 +171,7 @@ void SolverComps::UpdateMatrix()
 			_Rm.device,
 			vectorSize,
 			_stat.dt);
-
+	assert(cudaSuccess == cudaGetLastError());
 	cudaStreamSynchronize(_stream);
 
 #else
@@ -186,10 +192,32 @@ void SolverComps::UpdateMatrix()
 
 		update_rhs_functor< TYPE_ >( _stat.dt ) );
 #endif
-	assert(cudaSuccess != cudaGetLastError());
 
-	_rhs.Device2Host_Async(_stream); //TODO is not necessary
+}
 
+__global__ void update_vm(TYPE_* vm, TYPE_* vmid, size_t size)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < size)
+    	vm[idx] = 2.0 * vmid[idx]- vm[idx];
+}
+
+void SolverComps::updateVm()
+{
+	uint vectorSize = _stat.nModels * _stat.nCompts;
+
+	dim3 threads, blocks;
+	threads=dim3(min((vectorSize&0xFFFFFFC0)|0x20,256), 1); //TODO: Check
+	blocks=dim3(max(vectorSize / threads.x,1), 1);
+
+
+	update_vm <<<blocks, threads,0, _stream>>> (
+			_Vm.device,
+			_VMid.device,
+			vectorSize);
+
+	assert(cudaSuccess == cudaGetLastError());
+	cudaStreamSynchronize(_stream);
 }
 
 

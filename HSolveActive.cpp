@@ -54,12 +54,14 @@ void HSolveActive::step( ProcPtr info )
 
     advanceChannels( info->dt );
     calculateChannelCurrents();
-    cout << HS_.size() << endl<<flush;
-    _printVector(HS_);
+//    cout << HS_.size() << endl<<flush;
+//    _printVector(HS_);
     updateMatrix();
-    _printVector(HS_);//TODO: Check till here in GPU
+//    _printVector(HS_);
     HSolvePassive::forwardEliminate();
     HSolvePassive::backwardSubstitute();
+//    _printVector(VMid_);
+//    _printVector(V_);
 
     advanceCalcium();
     advanceSynChans( info );
@@ -113,7 +115,9 @@ void HSolveActive::updateMatrix()
         }
 
         *ihs = *( 2 + ihs ) + GkSum;
+//        cout << *iv << " "<< ic->CmByDt << " "<< ic->EmByRm << endl<<flush ;
         *( 3 + ihs ) = *iv * ic->CmByDt + ic->EmByRm + GkEkSum;
+//        cout << *( 3 + ihs ) << endl<<flush ;
 
         ++iboundary, ihs += 4, ++iv;
     }
@@ -146,6 +150,7 @@ void HSolveActive::updateMatrix()
     for ( iec = externalCurrent_.begin(); iec != externalCurrent_.end(); iec += 2 )
     {
         *ihs += *iec;
+//        cout <<*( iec + 1 )<< endl <<flush;
         *( 3 + ihs ) += *( iec + 1 );
 
         ihs += 4;
