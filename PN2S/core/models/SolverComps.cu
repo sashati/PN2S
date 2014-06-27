@@ -12,19 +12,11 @@
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 
-#include <thrust/host_vector.h>
-#include <thrust/device_vector.h>
-#include <thrust/transform.h>
-#include <thrust/functional.h>
-#include <thrust/fill.h>
-
 using namespace pn2s::models;
 //CuBLAS variables
-cublasHandle_t _handle;
+//cublasHandle_t _handle;
 
 cudaStream_t _stream;
-
-__global__ void update_rhs(TYPE_* rhs, TYPE_* vm, TYPE_* cm, TYPE_* rm, size_t size, TYPE_ dt);
 
 SolverComps::SolverComps(): _models(0), _stream(0)
 {
@@ -60,8 +52,6 @@ Error_PN2S SolverComps::AllocateMemory(models::Model * m, models::ModelStatistic
 }
 Error_PN2S SolverComps::PrepareSolver()
 {
-//	cudaError_t success;
-	cublasStatus_t stat;
 	if(_stat.nCompts == 0)
 		return Error_PN2S::NO_ERROR;
 
@@ -124,7 +114,6 @@ void SolverComps::Process()
 	threads=dim3(min((vectorSize&0xFFFFFFC0)|0x20,256), 1); //TODO: Check
 	blocks=dim3(max(vectorSize / threads.x,1), 1);
 
-
 	update_rhs <<<blocks, threads,0, _stream>>> (
 			_rhs.device,
 			_Vm.device,
@@ -133,6 +122,7 @@ void SolverComps::Process()
 			vectorSize,
 			_stat.dt);
 	assert(cudaSuccess == cudaGetLastError());
+
 //	cudaStreamSynchronize(_stream);
 
 	assert(!dsolve_batch (_hm.device, _rhs.device, _VMid.device, _stat.nCompts, _stat.nModels, _stream));

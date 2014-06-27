@@ -98,7 +98,8 @@ void HSolveActive::updateMatrix()
     if ( HJ_.size() != 0 )
         memcpy( &HJ_[ 0 ], &HJCopy_[ 0 ], sizeof( double ) * HJ_.size() );
 
-    double GkSum, GkEkSum; vector< CurrentStruct >::iterator icurrent = current_.begin();
+    double GkSum, GkEkSum;
+    vector< CurrentStruct >::iterator icurrent = current_.begin();
     vector< currentVecIter >::iterator iboundary = currentBoundary_.begin();
     vector< double >::iterator ihs = HS_.begin();
     vector< double >::iterator iv = V_.begin();
@@ -150,7 +151,7 @@ void HSolveActive::updateMatrix()
     for ( iec = externalCurrent_.begin(); iec != externalCurrent_.end(); iec += 2 )
     {
         *ihs += *iec;
-//        cout <<*( iec + 1 )<< endl <<flush;
+        cout <<*( iec + 1 )<< endl <<flush;
         *( 3 + ihs ) += *( iec + 1 );
 
         ihs += 4;

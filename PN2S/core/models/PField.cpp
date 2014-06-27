@@ -101,28 +101,28 @@ Error_PN2S PField<T,arch>::AllocateMemory(size_t size)
 }
 
 template <typename T, int arch>
-Error_PN2S PField<T,arch>::Host2Device_Async(cudaStream_t stream)
+__inline__ Error_PN2S PField<T,arch>::Host2Device_Async(cudaStream_t stream)
 {
 	CALL(sendVector<T>(_size, host,device, stream));
 	return Error_PN2S::NO_ERROR;
 }
 
 template <typename T, int arch>
-Error_PN2S PField<T,arch>::Device2Host_Async(cudaStream_t stream)
+__inline__ Error_PN2S PField<T,arch>::Device2Host_Async(cudaStream_t stream)
 {
 	CALL(getVector<T>(_size, host,device,stream));
 	return Error_PN2S::NO_ERROR;
 }
 
 template <typename T, int arch>
-Error_PN2S PField<T,arch>::Host2Device()
+__inline__ Error_PN2S PField<T,arch>::Host2Device()
 {
 	CALL(sendVector<T>(_size, host,device));
 	return Error_PN2S::NO_ERROR;
 }
 
 template <typename T, int arch>
-Error_PN2S PField<T,arch>::Device2Host()
+__inline__ Error_PN2S PField<T,arch>::Device2Host()
 {
 	CALL(getVector<T>(_size, host,device));
 	return Error_PN2S::NO_ERROR;
