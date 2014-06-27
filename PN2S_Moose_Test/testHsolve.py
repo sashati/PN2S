@@ -278,7 +278,7 @@ def createCells(net_size=1):
 def test_elec_alone(sim_time=1):
     dt = 1e-6
 
-    createCells(100)
+    createCells(1)
  
     make_elec_plots("/n/cell0")
 
@@ -303,7 +303,7 @@ def test_elec_alone(sim_time=1):
     dump_plots( 'h_instab.plot' )
 
 def main():
-    test_elec_alone(1000e-6)
+    test_elec_alone(100000e-6)
 
 if __name__ == '__main__':
     main()

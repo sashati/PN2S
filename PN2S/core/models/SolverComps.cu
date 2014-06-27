@@ -85,39 +85,6 @@ Error_PN2S SolverComps::PrepareSolver()
 	return Error_PN2S::NO_ERROR;
 }
 
-void SolverComps::Input()
-{
-	//Copy to GPU
-	_rhs.Send2Device_Async(_Em,_stream); // Em -> rhs
-	_Rm.Host2Device_Async(_stream);
-	_Vm.Host2Device_Async(_stream);
-	_Cm.Host2Device_Async(_stream);
-}
-
-void SolverComps::Process()
-{
-	updateMatrix();
-//	_hm.Device2Host();
-//	_hm.print();
-//	_rhs.Device2Host();
-//	_rhs.print();
-	assert(!dsolve_batch (_hm.device, _rhs.device, _VMid.device, _stat.nCompts, _stat.nModels, _stream));
-//	_VMid.Device2Host();
-//	_VMid.print();
-//	_Vm.Device2Host();
-//		_Vm.print();
-	updateVm();
-
-//	_Vm.Device2Host();
-//	_Vm.print();
-}
-
-
-void SolverComps::Output()
-{
-	_Vm.Device2Host_Async(_stream);
-}
-
 /**
  * 			UPDATE MATRIX
  *
@@ -133,7 +100,23 @@ __global__ void update_rhs(TYPE_* rhs, TYPE_* vm, TYPE_* cm, TYPE_* rm, size_t s
 }
 
 
-void SolverComps::updateMatrix()
+__global__ void update_vm(TYPE_* vm, TYPE_* vmid, size_t size)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < size)
+    	vm[idx] = 2.0 * vmid[idx]- vm[idx];
+}
+
+void SolverComps::Input()
+{
+	//Copy to GPU
+	_rhs.Send2Device_Async(_Em,_stream); // Em -> rhs
+	_Rm.Host2Device_Async(_stream);
+	_Vm.Host2Device_Async(_stream);
+	_Cm.Host2Device_Async(_stream);
+}
+
+void SolverComps::Process()
 {
 	uint vectorSize = _stat.nModels * _stat.nCompts;
 
@@ -150,32 +133,23 @@ void SolverComps::updateMatrix()
 			vectorSize,
 			_stat.dt);
 	assert(cudaSuccess == cudaGetLastError());
-	cudaStreamSynchronize(_stream);
-}
+//	cudaStreamSynchronize(_stream);
 
-__global__ void update_vm(TYPE_* vm, TYPE_* vmid, size_t size)
-{
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < size)
-    	vm[idx] = 2.0 * vmid[idx]- vm[idx];
-}
-
-void SolverComps::updateVm()
-{
-	uint vectorSize = _stat.nModels * _stat.nCompts;
-
-	dim3 threads, blocks;
-	threads=dim3(min((vectorSize&0xFFFFFFC0)|0x20,256), 1); //TODO: Check
-	blocks=dim3(max(vectorSize / threads.x,1), 1);
-
+	assert(!dsolve_batch (_hm.device, _rhs.device, _VMid.device, _stat.nCompts, _stat.nModels, _stream));
 
 	update_vm <<<blocks, threads,0, _stream>>> (
-			_Vm.device,
-			_VMid.device,
-			vectorSize);
+				_Vm.device,
+				_VMid.device,
+				vectorSize);
 
 	assert(cudaSuccess == cudaGetLastError());
-	cudaStreamSynchronize(_stream);
+//	cudaStreamSynchronize(_stream);
+}
+
+
+void SolverComps::Output()
+{
+	_Vm.Device2Host_Async(_stream);
 }
 
 
