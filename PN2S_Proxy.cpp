@@ -24,6 +24,8 @@
 #include "../shell/Wildcard.h"
 #include "../shell/Shell.h"
 
+#include <pthread.h>
+
 using namespace pn2s;
 
 //TODO: Replace with hash maps
@@ -41,6 +43,13 @@ void PN2S_Proxy::Setup(double dt)
 	_compartmentMap.clear();
 //	_idMap.clear();
 	_all_compartmentIds.clear();
+
+	int policy;
+	struct sched_param param;
+
+	pthread_getschedparam(pthread_self(), &policy, &param);
+	param.sched_priority = sched_get_priority_max(policy);
+	pthread_setschedparam(pthread_self(), policy, &param);
 }
 
 void PN2S_Proxy::Close()

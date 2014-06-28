@@ -140,6 +140,7 @@ void SolverComps::Process()
 void SolverComps::Output()
 {
 	_Vm.Device2Host_Async(_stream);
+	cudaStreamSynchronize(_stream);
 }
 
 

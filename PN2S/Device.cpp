@@ -132,7 +132,7 @@ void Device::PrepareSolvers(){
 
 struct input_body {
 	ModelPack* operator()( ModelPack *m ) {
-		_D(std::cout<< "Input" << m<<endl<<flush);
+//		_D(std::cout<< "Input" << m<<endl<<flush);
 		m->Input();
         return m;
     }
@@ -140,7 +140,7 @@ struct input_body {
 
 struct process_body{
 	ModelPack* operator()( ModelPack* m) {
-		_D(std::cout<< "Process" << m<<endl<<flush);
+//		_D(std::cout<< "Process" << m<<endl<<flush);
 		m->Process();
         return m;
     }
@@ -148,7 +148,7 @@ struct process_body{
 
 struct output_body{
 	ModelPack* operator()( ModelPack* m ) {
-		_D(std::cout<< "Output" << m<<endl<<flush);
+//		_D(std::cout<< "Output" << m<<endl<<flush);
 		m->Output();
         return m;
     }
@@ -160,6 +160,7 @@ void Device::Process()
 	if(model_n < 1)
 		return;
 
+//#define USE_TBB
 #ifdef USE_TBB
 	graph scheduler;
 
@@ -195,6 +196,6 @@ void Device::Process()
 	{
 		it->Output();
 	}
-	cudaDeviceSynchronize();
+//	cudaDeviceSynchronize();
 #endif
 }

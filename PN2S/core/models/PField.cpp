@@ -27,11 +27,11 @@ do {                                                                  \
 template <typename T>
 __inline__ Error_PN2S sendVector(uint size, T* h, T* d, cudaStream_t stream)
 {
-	cudaError_t stat = cudaMemcpyAsync(d, h, sizeof(h[0])*size, cudaMemcpyHostToDevice, stream);
-	assert(stat == cudaSuccess);
+//	cudaError_t stat = cudaMemcpyAsync(d, h, sizeof(h[0])*size, cudaMemcpyHostToDevice, stream);
+	cublasStatus_t stat = cublasSetVectorAsync(size, sizeof(h[0]),h, 1,d,1,stream);
+	assert(stat == CUBLAS_STATUS_SUCCESS);
 
 //	cudaError_t stat = cudaMemcpyAsync(d, h, sizeof(h[0])*size, cudaMemcpyHostToDevice, stream);
-//	cublasStatus_t stat = cublasSetVectorAsync(size, sizeof(h[0]),h, 1,d,1,stream);
 //	if (stat != CUDA_SUCCESS) {
 //			cerr << "CUDA setting Variables\n";
 //			return Error_PN2S::CUDA_Error;
@@ -59,10 +59,10 @@ __inline__ Error_PN2S getVector(uint size, T* h, T* d)
 template <typename T>
 __inline__ Error_PN2S getVector(uint size, T* h, T* d, cudaStream_t stream)
 {
-	cudaError_t stat = cudaMemcpyAsync(h, d, sizeof(h[0])*size, cudaMemcpyDeviceToHost, stream);
-	assert(stat == cudaSuccess);
+//	cudaError_t stat = cudaMemcpyAsync(h, d, sizeof(h[0])*size, cudaMemcpyDeviceToHost, stream);
+	cublasStatus_t stat = cublasGetVectorAsync(size, sizeof(h[0]),d, 1,h,1,stream);
+	assert(stat == CUBLAS_STATUS_SUCCESS);
 
-//	cublasStatus_t stat = cublasGetVectorAsync(size, sizeof(h[0]),d, 1,h,1,stream);
 //	cudaError_t stat = cudaMemcpyAsync(h, d, sizeof(h[0])*size, cudaMemcpyDeviceToHost, stream);
 //	if (stat != CUDA_SUCCESS) {
 //		cerr << "CUDA setting Variables\n";

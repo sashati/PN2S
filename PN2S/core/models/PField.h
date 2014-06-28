@@ -43,13 +43,13 @@ public:
 
 	Error_PN2S AllocateMemory(size_t size);
 //	Error_PN2S AllocateMemory(size_t size, int inc);
-	Error_PN2S Host2Device_Async(cudaStream_t stream);
-	Error_PN2S Host2Device();
-	Error_PN2S Device2Host_Async(cudaStream_t stream);
-	Error_PN2S Device2Host();
+	__inline__ Error_PN2S Host2Device_Async(cudaStream_t stream);
+	__inline__ Error_PN2S Host2Device();
+	__inline__ Error_PN2S Device2Host_Async(cudaStream_t stream);
+	__inline__ Error_PN2S Device2Host();
 
-	Error_PN2S Send2Device_Async(PField& _hostResource,cudaStream_t stream);
-	Error_PN2S Send2Host_Async(PField& _hostResource,cudaStream_t stream);
+	__inline__ Error_PN2S Send2Device_Async(PField& _hostResource,cudaStream_t stream);
+	__inline__ Error_PN2S Send2Host_Async(PField& _hostResource,cudaStream_t stream);
 
 	thrust::device_ptr<T> DeviceStart() {return thrust::device_ptr<T> (device); }
 	thrust::device_ptr<T> DeviceEnd() {return thrust::device_ptr<T> (device+_size); }

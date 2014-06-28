@@ -99,28 +99,28 @@ def create_squid(parent):
     compt.Cm = 7.85e-9 * 0.5
     compt.Rm = 4.2e5 * 5.0
     compt.Ra = 7639.44e3
- #    nachan = moose.HHChannel( parent.path+'/compt/Na' )
- #    nachan.Xpower = 3
- #    xGate = moose.HHGate(nachan.path + '/gateX')    
- #    xGate.setupAlpha(Na_m_params + [VDIVS, VMIN, VMAX])
-    # #This is important: one can run without it but the output will diverge.
- #    xGate.useInterpolation = 1
- #    nachan.Ypower = 1
- #    yGate = moose.HHGate(nachan.path + '/gateY')
- #    yGate.setupAlpha(Na_h_params + [VDIVS, VMIN, VMAX])
- #    yGate.useInterpolation = 1
- #    nachan.Gbar = 0.942e-3
- #    nachan.Ek = 115e-3+EREST_ACT
- #    moose.connect(nachan, 'channel', compt, 'channel', 'OneToOne')
+    nachan = moose.HHChannel( parent.path+'/compt/Na' )
+    nachan.Xpower = 3
+    xGate = moose.HHGate(nachan.path + '/gateX')    
+    xGate.setupAlpha(Na_m_params + [VDIVS, VMIN, VMAX])
+    #This is important: one can run without it but the output will diverge.
+    xGate.useInterpolation = 1
+    nachan.Ypower = 1
+    yGate = moose.HHGate(nachan.path + '/gateY')
+    yGate.setupAlpha(Na_h_params + [VDIVS, VMIN, VMAX])
+    yGate.useInterpolation = 1
+    nachan.Gbar = 0.942e-3
+    nachan.Ek = 115e-3+EREST_ACT
+    moose.connect(nachan, 'channel', compt, 'channel', 'OneToOne')
 
- #    kchan = moose.HHChannel( parent.path+'/compt/K' )
- #    kchan.Xpower = 4.0
- #    xGate = moose.HHGate(kchan.path + '/gateX')    
- #    xGate.setupAlpha(K_n_params + [VDIVS, VMIN, VMAX])
- #    xGate.useInterpolation = 1
- #    kchan.Gbar = 0.2836e-3
- #    kchan.Ek = -12e-3+EREST_ACT
- #    moose.connect(kchan, 'channel', compt, 'channel', 'OneToOne')
+    kchan = moose.HHChannel( parent.path+'/compt/K' )
+    kchan.Xpower = 4.0
+    xGate = moose.HHGate(kchan.path + '/gateX')    
+    xGate.setupAlpha(K_n_params + [VDIVS, VMIN, VMAX])
+    xGate.useInterpolation = 1
+    kchan.Gbar = 0.2836e-3
+    kchan.Ek = -12e-3+EREST_ACT
+    moose.connect(kchan, 'channel', compt, 'channel', 'OneToOne')
     return compt
 
 def create_spine( parentCompt, parentObj, index, frac, length, dia, theta ):
@@ -217,11 +217,11 @@ def dump_plots( fname ):
     if ( os.path.exists( fname ) ):
         os.remove( fname )
     for x in moose.wildcardFind( '/graphs/##[ISA=Table]' ):
-        print x.vector
-    #     t = numpy.arange( 0, len(x.vector), 1 )
-    #     pylab.plot( t, x.vector, label=x.name )
-    # pylab.legend()
-    # pylab.show()
+        # print x.vector
+        t = numpy.arange( 0, len(x.vector), 1 )
+        pylab.plot( t, x.vector, label=x.name )
+    pylab.legend()
+    pylab.show()
     #moose.utils.plotAscii(x.vector, file=fname)
 
 def make_spiny_compt(root_path, number,synInput):
@@ -289,7 +289,7 @@ def test_elec_alone():
     moose.useClock( 0, '/n/##[ISA=Compartment]', 'init' )
     moose.useClock( 1, '/n/##[ISA=Compartment]', 'process' )
     moose.useClock( 2, '/n/##[ISA=ChanBase],/n/##[ISA=SynBase],/n/##[ISA=CaConc],/n/##[ISA=SpikeGen]','process')
-    moose.useClock( 1, '/graphs/elec/#', 'process' )
+    moose.useClock( 8, '/graphs/elec/#', 'process' )
     moose.reinit()
     # moose.start( sim_time )
     # dump_plots( 'instab.plot' )
@@ -313,10 +313,11 @@ def test_elec_alone():
 def main():
     test_elec_alone()
 
-Use_MasterHSolve    =   False
-Simulation_Time     =   5e-6
+Use_MasterHSolve    =   True
+# Use_MasterHSolve    =   False
+Simulation_Time     =   5000e-6
 Number_Of_Cells     =   1
-Number_Of_Spines    =   1
+Number_Of_Spines    =   5
 
 
 if __name__ == '__main__':
