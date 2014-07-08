@@ -15,6 +15,8 @@ using namespace pn2s;
 vector<Device> DeviceManager::_device;
 static bool _isInitialized = false;
 
+std::map< Id, pn2s::Location > compartmentMap;
+
 int DeviceManager::CkeckAvailableDevices(){
 //	cudaProfilerStop();
 	_device.clear();
@@ -59,25 +61,13 @@ Error_PN2S DeviceManager::Initialize(){
 
 Error_PN2S DeviceManager::Allocate(vector<Id > &m, double dt){
 
-	//TODO: Add Multidevice
-	int32_t address = 0;
-	_device[0].GenerateModelPacks(dt, m,(size_t)0,(size_t)m.size(),address);
-//	int numDevice = _devices.size();
-//	int numModel  = m.size();
-//
-//	if(numDevice > numModel)
-//		numDevice = numModel;
-//
-//	vector<models<TYPE_, CURRENT_ARCH> >::iterator it = m.begin();
-//
-//	for(int i = 0; i< numDevice;i++)
-//	{
-//		vector<models<TYPE_, CURRENT_ARCH> > subModel (it, it + numModel/numDevice);
-//		_devices[i].Reinit(subModel, dt);
-//
-//		it += numModel/numDevice+1;
-//	}
+	if(_device.size() < 1)
+		return Error_PN2S::NOT_INITIALIZED_Error;
 
+	//TODO: Add Multidevice
+	Location dev_address;
+	dev_address.device = 0;
+	_device[0].GenerateModelPacks(dt, m,(size_t)0,(size_t)m.size(),dev_address);
 	return Error_PN2S::NO_ERROR;
 }
 

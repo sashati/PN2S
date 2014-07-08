@@ -15,7 +15,7 @@
 #include "tbb/tick_count.h"
 #include "core/models/ModelStatistic.h"
 #include <assert.h>
-
+#include "DeviceManager.h"
 //Moose models
 #include "../HSolve.h"
 
@@ -25,6 +25,8 @@ using namespace tbb;
 using namespace tbb::flow;
 
 using namespace pn2s::models;
+
+extern std::map< Id, pn2s::Location > compartmentMap; //Locates in DeviceManager
 
 //Create streams
 cudaStream_t* streams;
@@ -69,11 +71,11 @@ void Device::Destroy(){
 //	cudaDeviceReset();
 }
 
-Error_PN2S Device::GenerateModelPacks(double dt, vector<Id >& m, size_t start, size_t end, int32_t address){
+Error_PN2S Device::GenerateModelPacks(double dt, vector<Id >& m, size_t start, size_t end, Location device){
 	_dt = dt;
 
 	//Distribute model into packs
-	vector<Id >::iterator m_start = &m[start];
+	Id* m_start = &m[start];
 	size_t nModel = end - start;
 
 	if(nModel <= 0)
@@ -91,6 +93,7 @@ Error_PN2S Device::GenerateModelPacks(double dt, vector<Id >& m, size_t start, s
 		nstreams = nModel;
 	}
 
+	//Each stream, one Modelpack
 	size_t nModel_in_pack = nModel/nstreams;
 	_modelPacks.resize(nstreams);
 	for (int pack = 0; pack < nstreams; ++pack) {
@@ -100,22 +103,35 @@ Error_PN2S Device::GenerateModelPacks(double dt, vector<Id >& m, size_t start, s
 			 nModel_in_pack += nModel%nstreams;
 		}
 
-		size_t nCompt = m_start->compts.size();
+		/**
+		 * Allocate memory for Modelpacks
+		 */
+		HSolve* h =	reinterpret_cast< HSolve* >( m_start->eref().data());
+		size_t nCompt = ((HinesMatrix*)h)->nCompt_;
+		ModelStatistic stat(dt, nModel_in_pack, nCompt);
+		_modelPacks[pack].Allocate(m_start, stat,streams[pack%nstreams]);
+
+		/**
+		 * Make Indices and copy data
+		 */
 		int idx = 0;
-		for (int i = 0; i < nModel_in_pack; ++i) {
-			assert(m_start[i].compts.size() == nCompt);
+		for (int i = 0; i < nModel_in_pack; ++i, m_start++) {
+			h =	reinterpret_cast< HSolve* >( m_start->eref().data());
+			assert(h->HinesMatrix::nCompt_ == nCompt);
+
 			for (int c = 0; c < nCompt; ++c) {
-				//Assign address for each machine/pack
-				m_start[i].compts[c].location.address = pack;
-				//Assign index of each object in a modelPack
-				m_start[i].compts[c].location.index = idx++;
+				Id& compt =	h->HSolvePassive::compartmentId_[c];
+
+				Location l = device; //Assign address for each machine/pack
+				l.pack = pack;
+				l.index = idx++; //Assign index of each object in a modelPack
+				compartmentMap[compt] = l;
+
 			}
 		}
 
-		// Allocate memory for Modelpacks
-		ModelStatistic stat(dt, nModel_in_pack, nCompt);
-		_modelPacks[pack].Allocate(m_start, stat,streams[pack%nstreams]);
-		m_start += nModel_in_pack;
+
+
 	}
 	return Error_PN2S::NO_ERROR;
 }

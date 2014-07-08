@@ -185,6 +185,7 @@ const Cinfo* HSolve::initCinfo()
 
 static const Cinfo* hsolveCinfo = HSolve::initCinfo();
 
+
 HSolve::HSolve()
     : dt_( 0.0 ), isMasterHSolve_ (false)
 {
@@ -218,15 +219,22 @@ void HSolve::reinit( const Eref& hsolve, ProcPtr p )
     }
     else
     {
-		for (vector< Id >::const_iterator i = seeds_.begin(); i != seeds_.end(); ++i )
+    	vector<Id> _all_compartmentIds;
+
+    	for (vector< Id >::const_iterator i = seeds_.begin(); i != seeds_.end(); ++i )
 		{
 			HSolve* h =
 					reinterpret_cast< HSolve* >( i->eref().data());
 			h->HSolveActive::reinit( p );
+			_all_compartmentIds.insert(
+					_all_compartmentIds.end(),
+					h->compartmentId_.begin(),
+					h->compartmentId_.end());
 		}
 		//Create model structures and Allocate memory
 		pn2s::DeviceManager::Allocate(seeds_,dt_);
 
+		pn2s::DeviceManager::PrepareSolvers();
     }
 }
 
@@ -272,6 +280,8 @@ void HSolve::setup( Eref hsolve )
 		Shell::dropClockMsgs( temp, "init" );
 		Shell::dropClockMsgs( temp, "process" );
 
+		if(! pn2s::DeviceManager::IsInitialized())
+			pn2s::DeviceManager::Initialize();
 	}
 	else
 	{

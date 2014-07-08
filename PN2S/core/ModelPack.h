@@ -11,7 +11,7 @@
 #include "models/SolverComps.h"
 #include "models/ModelStatistic.h"
 #include <cuda.h>
-
+#include "../../../basecode/header.h"
 namespace pn2s
 {
 
@@ -22,7 +22,7 @@ private:
 public:
 	double _dt;
 	models::ModelStatistic stat;
-	models::Model* models;
+	Id* models;
 
 	ModelPack();
 	virtual ~ModelPack();
@@ -32,7 +32,7 @@ public:
 		_compsSolver.SetDt(dt);
 	}
 
-	Error_PN2S Allocate(models::Model *m, models::ModelStatistic s, cudaStream_t st);
+	Error_PN2S Allocate(Id *m, models::ModelStatistic s, cudaStream_t st);
 	Error_PN2S PrepareSolvers();
 
 	void Process();

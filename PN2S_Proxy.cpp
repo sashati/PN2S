@@ -28,37 +28,6 @@
 
 using namespace pn2s;
 
-//TODO: Replace with hash maps
-map< int, Location > _compartmentMap;
-//map< uint, Id > _idMap;
-vector<Id> _all_compartmentIds;
-/**
- * This method is responsible to create model and get pertinent information from
- * the Shell and send it to Manager
- */
-
-void PN2S_Proxy::Setup(double dt)
-{
-	Manager::Initialize(dt);
-	_compartmentMap.clear();
-//	_idMap.clear();
-	_all_compartmentIds.clear();
-
-	int policy;
-	struct sched_param param;
-
-	pthread_getschedparam(pthread_self(), &policy, &param);
-	param.sched_priority = sched_get_priority_max(policy);
-	pthread_setschedparam(pthread_self(), policy, &param);
-}
-
-void PN2S_Proxy::Close()
-{
-	DeviceManager::Close();
-}
-/**
- * Create Compartmental Model
- */
 void PN2S_Proxy::CreateCompartmentModel(Id seed){
 
 	//Get Compartment id's with hine's index order
@@ -67,7 +36,7 @@ void PN2S_Proxy::CreateCompartmentModel(Id seed){
 	int nCompt = compartmentIds.size();
 
 	//TODO: Merge it with _all_compartmentIds
-	_all_compartmentIds.insert( _all_compartmentIds.end(), compartmentIds.begin(), compartmentIds.end() );
+//	_all_compartmentIds.insert( _all_compartmentIds.end(), compartmentIds.begin(), compartmentIds.end() );
 
 	models::Model neutral(seed.value());
 
@@ -167,19 +136,19 @@ void PN2S_Proxy::Reinit(Eref hsolve){
 	Manager::Allocate();
 
 	//create a map from Id to Location
-	typename vector<Device>::iterator dev;
-	typename vector<ModelPack>::iterator mp;
-	for( dev = DeviceManager::_device.begin(); dev != DeviceManager::_device.end(); ++dev) {
-		for( mp = dev->_modelPacks.begin(); mp != dev->_modelPacks.end(); ++mp) {
-			for (size_t m = 0; m < mp->stat.nModels; ++m) {
-				models::Model& model = mp->models[m];
-				for (size_t c = 0; c < mp->stat.nCompts; ++c) {
-					models::Compartment* cmp = &(model.compts[c]);
-					_compartmentMap[cmp->gid] = cmp->location;
-				}
-			}
-		}
-	}
+//	typename vector<Device>::iterator dev;
+//	typename vector<ModelPack>::iterator mp;
+//	for( dev = DeviceManager::_device.begin(); dev != DeviceManager::_device.end(); ++dev) {
+//		for( mp = dev->_modelPacks.begin(); mp != dev->_modelPacks.end(); ++mp) {
+//			for (size_t m = 0; m < mp->stat.nModels; ++m) {
+//				models::Model& model = mp->models[m];
+//				for (size_t c = 0; c < mp->stat.nCompts; ++c) {
+//					models::Compartment* cmp = &(model.compts[c]);
+//					_compartmentMap[cmp->gid] = cmp->location;
+//				}
+//			}
+//		}
+//	}
 
 	/**
 	 * Zumbify and Copy data values
@@ -187,13 +156,13 @@ void PN2S_Proxy::Reinit(Eref hsolve){
     vector< Id >::const_iterator i;
 	vector< ObjId > temp;
 
-    for ( i = _all_compartmentIds.begin(); i != _all_compartmentIds.end(); ++i )
-		temp.push_back( ObjId( *i, 0 ) );
+//    for ( i = _all_compartmentIds.begin(); i != _all_compartmentIds.end(); ++i )
+//		temp.push_back( ObjId( *i, 0 ) );
 	Shell::dropClockMsgs( temp, "init" );
 	Shell::dropClockMsgs( temp, "process" );
-    for ( i = _all_compartmentIds.begin(); i != _all_compartmentIds.end(); ++i )
-        CompartmentBase::zombify( i->eref().element(),
-					   ZombieCompartment::initCinfo(), hsolve.id() );
+//    for ( i = _all_compartmentIds.begin(); i != _all_compartmentIds.end(); ++i )
+//        CompartmentBase::zombify( i->eref().element(),
+//					   ZombieCompartment::initCinfo(), hsolve.id() );
     //	temp.clear();
     //    for ( i = caConcId_.begin(); i != caConcId_.end(); ++i )
     //		temp.push_back( ObjId( *i, 0 ) );
@@ -213,23 +182,17 @@ void PN2S_Proxy::Reinit(Eref hsolve){
 }
 
 /**
- * If it's the first time to execute, prepare solver
- */
-void PN2S_Proxy::Process(ProcPtr info){
-	Manager::Process();
-}
-
-/**
  * Interface Set/Get functions
  */
+extern std::map< Id, pn2s::Location > compartmentMap;
 void PN2S_Proxy::setValue( Id id, TYPE_ value , FIELD::TYPE n)
 {
-	Location l = _compartmentMap[id.value()];
+	Location l = compartmentMap[id.value()];
 	DeviceManager::_device[0]._modelPacks[l.address]._compsSolver.SetValue(l.index,n,value);
 }
 
 TYPE_ PN2S_Proxy::getValue( Id id, FIELD::TYPE n)
 {
-	Location l = _compartmentMap[id.value()];
+	Location l = compartmentMap[id.value()];
 	return DeviceManager::_device[0]._modelPacks[l.address]._compsSolver.GetValue(l.index,n);
 }

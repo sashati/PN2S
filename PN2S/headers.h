@@ -49,13 +49,19 @@ struct FIELD{
 
 struct Location{
 	union {
-	  int64_t full;
-	  struct {
-		int32_t index;
-		int32_t address;
-	  };
+		int64_t full;
+		struct {
+			union {
+				int32_t address;
+				struct {
+					int16_t pack;
+					int16_t device;
+				};
+			};
+			int32_t index;
+		};
 	};
-	Location():full(-1){}
+	Location():full(0){}
 };
 
 }

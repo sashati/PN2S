@@ -20,12 +20,12 @@ ModelPack::~ModelPack(){
 
 }
 
-Error_PN2S ModelPack::Allocate(models::Model *m, models::ModelStatistic s, cudaStream_t st){
+Error_PN2S ModelPack::Allocate(Id* m, models::ModelStatistic s, cudaStream_t st){
 	stat = s;
 	models = m;
 
 	Error_PN2S res = Error_PN2S::NO_ERROR;
-	res = _compsSolver.AllocateMemory(models,stat, st);
+//	res = _compsSolver.AllocateMemory(models,stat, st);
 	assert(res==Error_PN2S::NO_ERROR);
 
 	return res;

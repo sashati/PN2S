@@ -19,11 +19,8 @@ class PN2S_Proxy
 {
 
 public:
-	static void Setup(double dt);
 	static void CreateCompartmentModel(Id seed);
 	static void Reinit(Eref hsolve);
-	static void Process(ProcPtr info);
-	static void Close();
 
 	static void setValue( Id , TYPE_, pn2s::FIELD::TYPE);
 	static TYPE_ getValue( Id , pn2s::FIELD::TYPE);

@@ -14,9 +14,11 @@
 /**
  * HSolve adapts the integrator HSolveActive into a MOOSE class.
  */
+
 class HSolve: public HSolveActive
 {
 public:
+	friend class pn2s::Device;
 	HSolve();
 	~HSolve();
 	

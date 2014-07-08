@@ -22,6 +22,7 @@ class HSolvePassive: public HinesMatrix
 #ifdef DO_UNIT_TESTS
 	friend void testHSolvePassive();
 #endif
+	friend class pn2s::Device;
 	
 public:
 	void setup( Id seed, double dt );

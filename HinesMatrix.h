@@ -10,6 +10,8 @@
 #ifndef _HINES_MATRIX_H
 #define _HINES_MATRIX_H
 
+#include "PN2S/Device.h"
+
 #ifdef DO_UNIT_TESTS
 # define ASSERT( isOK, message ) \
 	if ( !(isOK) ) { \
@@ -55,6 +57,8 @@ struct TreeNodeStruct
 class HinesMatrix
 {
 public:
+	friend class pn2s::Device;
+
     HinesMatrix();
 
     void setup( const vector< TreeNodeStruct >& tree, double dt );

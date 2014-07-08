@@ -32,7 +32,8 @@ public:
 	Error_PN2S GenerateModelPacks(double dt,
 			vector<Id >& m,
 			size_t start, size_t end,
-			int32_t address); //Device address
+			Location device_address //Device address
+			);
 	void PrepareSolvers();
 
 	void Destroy();

@@ -26,6 +26,7 @@
 
 class HSolveActive: public HSolvePassive
 {
+	friend class pn2s::Device;
     typedef vector< CurrentStruct >::iterator currentVecIter;
 
 public:

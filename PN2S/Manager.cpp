@@ -24,7 +24,7 @@ Error_PN2S Manager::Initialize(double dt){
 
 	_dt = dt;
 	_models.clear();
-	DeviceManager::CkeckAvailableDevices();
+//	DeviceManager::CkeckAvailableDevices();
 
 //	pthread_getschedparam(pthread_self(), &policy, &param);
 //	param.sched_priority = sched_get_priority_max(policy);
