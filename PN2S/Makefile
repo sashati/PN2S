@@ -43,7 +43,7 @@ $(TARGET): $(OBJS) $(COBJS) $(SUBDIR)
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) $(MODULES)
 	 
 $(OBJS):
-	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../basecode -I../msg -I./libs $< -c 
+	$(CXX) $(CXXFLAGS) $(SMOLDYN_FLAGS) -I/usr/local/cuda/include -I. -I../../basecode -I../../msg -I./libs $< -c 
 	
 $(COBJS):
 	nvcc --compile $(CUDAFLAGS) -o  "$@" "$<"     

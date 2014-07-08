@@ -12,6 +12,7 @@
 #include "core/models/Model.h"
 #include "DeviceManager.h"
 
+
 /**
  * This class has a thread to look at scheduler for new tasks and send them to
  * devices.
@@ -23,10 +24,11 @@ namespace pn2s
 class Manager
 {
 public:
-	static Error_PN2S Setup(double dt);
+	static Error_PN2S Initialize(double dt);
+	static bool IsInitialized();
+
 	static Error_PN2S Allocate(); //Allocate model into system and get memory
 	static Error_PN2S PrepareSolvers();
-	static bool IsInitialized();
 	static void InsertModelShape(models::Model &m);
 	static Error_PN2S Process();
 	static Error_PN2S AddInputTask(uint id);

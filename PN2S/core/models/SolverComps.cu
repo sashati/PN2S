@@ -125,6 +125,10 @@ void SolverComps::Process()
 
 //	cudaStreamSynchronize(_stream);
 
+	_hm.Device2Host();
+	_hm.print();
+	_rhs.Device2Host();
+	_rhs.print();
 	assert(!dsolve_batch (_hm.device, _rhs.device, _VMid.device, _stat.nCompts, _stat.nModels, _stream));
 
 	update_vm <<<blocks, threads,0, _stream>>> (

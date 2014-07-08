@@ -16,6 +16,9 @@
 #include "core/models/ModelStatistic.h"
 #include <assert.h>
 
+//Moose models
+#include "../HSolve.h"
+
 using namespace pn2s;
 using namespace std;
 using namespace tbb;
@@ -66,11 +69,11 @@ void Device::Destroy(){
 //	cudaDeviceReset();
 }
 
-Error_PN2S Device::GenerateModelPacks(double dt, models::Model *m, size_t start, size_t end, int32_t address){
+Error_PN2S Device::GenerateModelPacks(double dt, vector<Id >& m, size_t start, size_t end, int32_t address){
 	_dt = dt;
 
 	//Distribute model into packs
-	models::Model *m_start = &m[start];
+	vector<Id >::iterator m_start = &m[start];
 	size_t nModel = end - start;
 
 	if(nModel <= 0)
@@ -96,6 +99,7 @@ Error_PN2S Device::GenerateModelPacks(double dt, models::Model *m, size_t start,
 		{
 			 nModel_in_pack += nModel%nstreams;
 		}
+
 		size_t nCompt = m_start->compts.size();
 		int idx = 0;
 		for (int i = 0; i < nModel_in_pack; ++i) {

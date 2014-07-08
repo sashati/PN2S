@@ -10,6 +10,7 @@
 #ifndef _HSOLVE_H
 #define _HSOLVE_H
 #include <set>
+#include "HSolveActive.h"
 /**
  * HSolve adapts the integrator HSolveActive into a MOOSE class.
  */
@@ -150,7 +151,7 @@ public:
 	
 private:
 	static vector< Id > children( Id obj );
-	static Id deepSearchForCompartment( Id base );
+	static Id deepSearchFor( Id base, const string& name );
 	
 	void setup( Eref hsolve );
 	void zombify( Eref hsolve ) const;
@@ -164,7 +165,6 @@ private:
 	double dt_;
 	string path_;
 	vector<Id> seeds_;
-
 	bool isMasterHSolve_;
 };
 

@@ -39,7 +39,7 @@ vector<Id> _all_compartmentIds;
 
 void PN2S_Proxy::Setup(double dt)
 {
-	Manager::Setup(dt);
+	Manager::Initialize(dt);
 	_compartmentMap.clear();
 //	_idMap.clear();
 	_all_compartmentIds.clear();

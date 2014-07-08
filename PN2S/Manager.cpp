@@ -8,6 +8,7 @@
 
 #include "Manager.h"
 
+
 using namespace pn2s;
 static vector<models::Model> _models;
 
@@ -18,18 +19,27 @@ static DeviceManager _deviceManager;
 /**
  * Initialize the manager and set main parameters
  */
-Error_PN2S Manager::Setup(double dt){
+Error_PN2S Manager::Initialize(double dt){
+	_isInitialized = true;
+
 	_dt = dt;
 	_models.clear();
 	DeviceManager::CkeckAvailableDevices();
+
+//	pthread_getschedparam(pthread_self(), &policy, &param);
+//	param.sched_priority = sched_get_priority_max(policy);
+//	pthread_setschedparam(pthread_self(), policy, &param);
+
 	return  Error_PN2S::NO_ERROR;
 }
 
-Error_PN2S Manager::Allocate(){
-	if (!_isInitialized)
-		_isInitialized = true;
+bool Manager::IsInitialized(){
+	return  _isInitialized;
+}
 
-	DeviceManager::Allocate(_models,_dt);
+Error_PN2S Manager::Allocate(){
+
+//	DeviceManager::Allocate(_models,_dt);
 	return  Error_PN2S::NO_ERROR;
 }
 
@@ -40,9 +50,6 @@ Error_PN2S Manager::PrepareSolvers(){
 	return  Error_PN2S::NO_ERROR;
 }
 
-bool Manager::IsInitialized(){
-	return  _isInitialized;
-}
 
 void Manager::InsertModelShape(models::Model &neutral){
 	_models.push_back(neutral);

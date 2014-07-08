@@ -26,8 +26,7 @@
 #include "../shell/Wildcard.h"
 #include "../shell/Shell.h"
 
-#include "PN2S_Proxy.h"
-
+#include "PN2S/DeviceManager.h"
 
 const Cinfo* HSolve::initCinfo()
 {
@@ -193,7 +192,7 @@ HSolve::HSolve()
 }
 
 HSolve::~HSolve(){
-	PN2S_Proxy::Close();
+	pn2s::DeviceManager::Close();
 }
 
 
@@ -203,19 +202,32 @@ HSolve::~HSolve(){
 
 void HSolve::process( const Eref& hsolve, ProcPtr p )
 {
-    if( isMasterHSolve_ )
-    	PN2S_Proxy::Process(p);
-    else
+//    if( isMasterHSolve_ )
+//    	PN2S_Proxy::Process(p);
+//    else
     	this->HSolveActive::step( p );
 }
 
 void HSolve::reinit( const Eref& hsolve, ProcPtr p )
 {
     dt_ = p->dt;
-    if( isMasterHSolve_ )
-    	PN2S_Proxy::Reinit(hsolve); //Also zumbify
+
+    if( !isMasterHSolve_ )
+    {
+    	this->HSolveActive::reinit(p);
+    }
     else
-    	this->HSolveActive::reinit( p );
+    {
+		for (vector< Id >::const_iterator i = seeds_.begin(); i != seeds_.end(); ++i )
+		{
+			HSolve* h =
+					reinterpret_cast< HSolve* >( i->eref().data());
+			h->HSolveActive::reinit( p );
+		}
+		//Create model structures and Allocate memory
+		pn2s::DeviceManager::Allocate(seeds_,dt_);
+
+    }
 }
 
 void HSolve::zombify( Eref hsolve ) const
@@ -251,30 +263,23 @@ void HSolve::setup( Eref hsolve )
 	if( isMasterHSolve_)
 	{
 		/**
-		 * First Initializations such as reseting device
+		 * Zumbify other HSolve objects
 		 */
-		PN2S_Proxy::Setup(dt_);
+		vector< ObjId > temp;
 
-		int n_models = seeds_.size();
-
-		/**
-		 * Create internal representation for each model, and release the memory
-		 * afterwards. All visited compartments and other objects keep in the analysis object.
-		 * After
-		 *
-		 */
-		for (int i=0; i<n_models; i++) {
-			PN2S_Proxy::CreateCompartmentModel(seeds_[i]);
-		}
+		for (vector< Id >::const_iterator i = seeds_.begin(); i != seeds_.end(); ++i )
+			temp.push_back( ObjId( *i, 0 ) );
+		Shell::dropClockMsgs( temp, "init" );
+		Shell::dropClockMsgs( temp, "process" );
 
 	}
 	else
 	{
-    	// Setup solver.
-    	this->HSolveActive::setup(seeds_[0], dt_ );
+		// Setup solver.
+		this->HSolveActive::setup(seeds_[0], dt_ );
 
-    	mapIds();
-    	zombify( hsolve );
+		mapIds();
+		zombify( hsolve );
 	}
 }
 
@@ -294,8 +299,6 @@ void HSolve::setSeed( Id seed )
     seeds_[0] = seed;
 }
 
-//TODO: Saeed, add Set/Get seedPool
-
 Id HSolve::getSeed() const
 {
     return seeds_[0];
@@ -314,12 +317,29 @@ void HSolve::setPath( const Eref& hsolve, string path )
     wildcardFind(path, ids);
 
     seeds_.clear();
-    for(vector<ObjId>::iterator ic = ids.begin(); ic != ids.end() ; ++ic )
+    if (ids.size() > 0)
     {
-    	Id seed = deepSearchForCompartment( ic->id );
-    	//Just add ones that are correct
-		if ( seed != Id() )
+    	if(ids.size() == 1)
+    	{
+    		Id seed = deepSearchFor( ids[0].id , "Compartment");
 			seeds_.push_back(seed);
+			isMasterHSolve_ = false;
+    	}
+    	else
+    	{
+    		//Is a Master Solver
+    		isMasterHSolve_ = true;
+    		for(vector<ObjId>::iterator ic = ids.begin(); ic != ids.end() ; ++ic )
+			{
+				Id seed = deepSearchFor( ic->id , "HSolve");
+				//Just add ones that are correct
+				if ( seed != Id() )
+					seeds_.push_back(seed);
+			}
+
+    		if(pn2s::DeviceManager::IsInitialized())
+				pn2s::DeviceManager::Initialize();
+    	}
     }
 
     if ( seeds_.empty() )
@@ -331,7 +351,6 @@ void HSolve::setPath( const Eref& hsolve, string path )
 	{
 		// cout << "HSolve: Seed compartment found at '" << seed_.path() << "'.\n";
 		path_ = path;
-		isMasterHSolve_ = seeds_.size()>1;
 		setup( hsolve);
 	}
 }
@@ -342,11 +361,11 @@ string HSolve::getPath( const Eref& e) const
 }
 
 /**
- * This function performs a depth-first search (for a compartment) in the tree
- * with its root at 'base'. Returns (Id of) a compartment if found, else a
- * blank Id.
+ * This function performs a depth-first search (for a compartment or HSolve)
+ * in the tree with its root at 'base'. Returns (Id of) a compartment if found,
+ * else a blank Id.
  */
-Id HSolve::deepSearchForCompartment( Id base )
+Id HSolve::deepSearchFor( Id base , const string& name)
 {
     /*
      * 'cstack' is a stack-of-stacks used to perform the depth-first search.
@@ -387,7 +406,7 @@ Id HSolve::deepSearchForCompartment( Id base )
 
             // if ( current()->cinfo() == moose::Compartment::initCinfo() )
             // Compartment is base class for SymCompartment.
-            if ( current.element()->cinfo()->isA( "Compartment" ) )
+            if ( current.element()->cinfo()->isA( name ) )
             {
                 result = current;
                 break;

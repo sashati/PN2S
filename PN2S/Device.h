@@ -11,6 +11,9 @@
 #include "core/Solver.h"
 #include <omp.h>
 
+//Moose models
+#include "../../basecode/header.h"
+
 namespace pn2s
 {
 
@@ -27,7 +30,7 @@ public:
 	virtual ~Device();
 
 	Error_PN2S GenerateModelPacks(double dt,
-			models::Model *m,
+			vector<Id >& m,
 			size_t start, size_t end,
 			int32_t address); //Device address
 	void PrepareSolvers();

@@ -5,10 +5,10 @@
 //  Original author: Saeed Shariati
 ///////////////////////////////////////////////////////////
 
-#if !defined(EA_8204B80E_EF46_47df_8AB8_FC787EF1223C__INCLUDED_)
-#define EA_8204B80E_EF46_47df_8AB8_FC787EF1223C__INCLUDED_
+#pragma once
 
 #include "Device.h"
+#include "../../basecode/header.h" //Moose header
 
 /**
  * Create one thread per device and let it process tasks and when finished, add
@@ -19,17 +19,17 @@ namespace pn2s
 
 class DeviceManager
 {
+	static int CkeckAvailableDevices();
 public:
 	static vector<Device> _device; //TODO: Should be private
-
-	static int CkeckAvailableDevices();
+	static bool IsInitialized();
+	static Error_PN2S Initialize();
 
 	// Distribute model between devices
-	static Error_PN2S Allocate(vector<models::Model > &m, double dt);
+	static Error_PN2S Allocate(vector<Id > &m, double dt);
 	static void PrepareSolvers();
 	static void Process();
 	static void Close();
 
 };
 }
-#endif // !defined(EA_8204B80E_EF46_47df_8AB8_FC787EF1223C__INCLUDED_)

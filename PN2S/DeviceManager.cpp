@@ -13,8 +13,10 @@
 using namespace pn2s;
 
 vector<Device> DeviceManager::_device;
+static bool _isInitialized = false;
+
 int DeviceManager::CkeckAvailableDevices(){
-	cudaProfilerStop();
+//	cudaProfilerStop();
 	_device.clear();
 
 	int device_count = 0; //TODO: get value from device
@@ -31,16 +33,35 @@ int DeviceManager::CkeckAvailableDevices(){
 	return device_count;
 }
 
+bool DeviceManager::IsInitialized(){
+	return  _isInitialized;
+}
+
+Error_PN2S DeviceManager::Initialize(){
+	if(!_isInitialized)
+	{
+		_isInitialized = true;
+
+		DeviceManager::CkeckAvailableDevices();
+
+//	pthread_getschedparam(pthread_self(), &policy, &param);
+//	param.sched_priority = sched_get_priority_max(policy);
+//	pthread_setschedparam(pthread_self(), policy, &param);
+	}
+	return  Error_PN2S::NO_ERROR;
+}
+
+
 /**
  * This function, assign the model shapes into devices
  * and assign memory for PFields
  */
 
-Error_PN2S DeviceManager::Allocate(vector<models::Model > &m, double dt){
+Error_PN2S DeviceManager::Allocate(vector<Id > &m, double dt){
 
 	//TODO: Add Multidevice
 	int32_t address = 0;
-	_device[0].GenerateModelPacks(dt, &m[0],(size_t)0,(size_t)m.size(),address);
+	_device[0].GenerateModelPacks(dt, m,(size_t)0,(size_t)m.size(),address);
 //	int numDevice = _devices.size();
 //	int numModel  = m.size();
 //
@@ -66,7 +87,7 @@ void DeviceManager::PrepareSolvers()
 	{
 		device->PrepareSolvers();
 	}
-	cudaProfilerStart();
+//	cudaProfilerStart();
 }
 
 void DeviceManager::Process()
@@ -80,7 +101,7 @@ void DeviceManager::Process()
 
 void DeviceManager::Close()
 {
-	cudaProfilerStop();
+//	cudaProfilerStop();
 	for(vector<Device>::iterator device = _device.begin(); device != _device.end(); ++device)
 		device->Destroy();
 }

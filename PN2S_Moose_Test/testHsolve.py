@@ -231,7 +231,7 @@ def make_spiny_compt(root_path, number,synInput):
     cell = moose.Neutral (root_path+"/cell"+str(number))
     
     compt = create_squid(cell)
-    compt.inject = 1e-7
+    compt.inject = INJECT_CURRENT
     compt.x0 = 0
     compt.y0 = 0
     compt.z0 = 0
@@ -242,8 +242,8 @@ def make_spiny_compt(root_path, number,synInput):
     compt.diameter = comptDia
     
     for i in range( numSpines ):
-        create_spine_with_receptor( compt, cell, i, i/float(numSpines) )
-        # r = create_spine_with_receptor( compt, cell, i, i/float(numSpines) )
+        # create_spine_with_receptor( compt, cell, i, i/float(numSpines) )
+        r = create_spine_with_receptor( compt, cell, i, i/float(numSpines) )
         # r.synapse.num = 1
         # syn = moose.element( r.path + '/synapse' )
         # moose.connect( synInput, 'spikeOut', syn, 'addSpike', 'Single' )
@@ -289,23 +289,23 @@ def test_elec_alone():
     moose.useClock( 0, '/n/##[ISA=Compartment]', 'init' )
     moose.useClock( 1, '/n/##[ISA=Compartment]', 'process' )
     moose.useClock( 2, '/n/##[ISA=ChanBase],/n/##[ISA=SynBase],/n/##[ISA=CaConc],/n/##[ISA=SpikeGen]','process')
-    moose.useClock( 8, '/graphs/elec/#', 'process' )
+    moose.useClock( 1, '/graphs/elec/#', 'process' )
     moose.reinit()
     # moose.start( sim_time )
     # dump_plots( 'instab.plot' )
     # make Hsolver and rerun
+    for i in range(Number_Of_Cells):
+        hsolve = moose.HSolve( '/n/cell'+str(i)+'/hsolve' )
+        hsolve.dt = dt
+        moose.useClock( 1, '/n/cell'+str(i)+'/hsolve', 'process' )
+        hsolve.target = '/n/cell'+str(i)+'/compt'
+    
     if Use_MasterHSolve:
         hsolve = moose.HSolve( '/n/hsolve' )
         hsolve.dt = dt
         moose.useClock( 1, '/n/hsolve', 'process' )
-        hsolve.target = '/n/#/compt'
-    else:
-        for i in range(Number_Of_Cells):
-            hsolve = moose.HSolve( '/n/cell'+str(i)+'/hsolve' )
-            hsolve.dt = dt
-            moose.useClock( 1, '/n/cell'+str(i)+'/hsolve', 'process' )
-            hsolve.target = '/n/cell'+str(i)+'/compt'
-
+        hsolve.target = '/n/#/hsolve'
+    
     moose.reinit()    
     moose.start( Simulation_Time )
     dump_plots( 'h_instab.plot' )
@@ -315,10 +315,10 @@ def main():
 
 Use_MasterHSolve    =   True
 # Use_MasterHSolve    =   False
-Simulation_Time     =   5000e-6
-Number_Of_Cells     =   1
-Number_Of_Spines    =   5
-
+Simulation_Time     =   1e-6
+Number_Of_Cells     =   2
+Number_Of_Spines    =   1
+INJECT_CURRENT      =   1e-7
 
 if __name__ == '__main__':
     main()
