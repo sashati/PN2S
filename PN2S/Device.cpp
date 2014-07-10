@@ -129,9 +129,6 @@ Error_PN2S Device::GenerateModelPacks(double dt, vector<Id >& m, size_t start, s
 
 			}
 		}
-
-
-
 	}
 	return Error_PN2S::NO_ERROR;
 }
