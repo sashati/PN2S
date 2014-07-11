@@ -6,13 +6,14 @@
 ///////////////////////////////////////////////////////////
 
 #include "ModelPack.h"
-#include "../headers.h"
+
 
 #include <assert.h>
 
 using namespace pn2s;
 
-ModelPack::ModelPack(): _dt(1), models(0){
+
+ModelPack::ModelPack(): _dt(1){
 
 }
 
@@ -20,16 +21,36 @@ ModelPack::~ModelPack(){
 
 }
 
-Error_PN2S ModelPack::Allocate(Id* m, models::ModelStatistic s, cudaStream_t st){
+Error_PN2S ModelPack::AllocateMemory(models::ModelStatistic s, cudaStream_t st){
 	stat = s;
-	models = m;
 
 	Error_PN2S res = Error_PN2S::NO_ERROR;
-//	res = _compsSolver.AllocateMemory(models,stat, st);
+	res = _compsSolver.AllocateMemory(stat, st);
 	assert(res==Error_PN2S::NO_ERROR);
 
 	return res;
 }
+
+//void ModelPack::AddModel(HSolve* h){
+//	/**
+//	 * Make Indices and copy data
+//	 */
+////	int idx = 0;
+////	for (int i = 0; i < nModel_in_pack; ++i, m_start++) {
+////		h =	reinterpret_cast< HSolve* >( m_start->eref().data());
+////		assert(h->HinesMatrix::nCompt_ == nCompt);
+////
+////		for (int c = 0; c < nCompt; ++c) {
+////			Id& compt =	h->HSolvePassive::compartmentId_[c];
+////
+////			//Assign address
+////			Location l = device;
+////			l.pack = pack;
+////			l.index = idx++; //Assign index of each object in a modelPack
+////			compartmentMap[compt] = l;
+////		}
+////	}
+//}
 
 Error_PN2S ModelPack::PrepareSolvers(){
 	Error_PN2S res = Error_PN2S::NO_ERROR;

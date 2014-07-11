@@ -5,34 +5,38 @@
 //  Original author: Saeed Shariati
 ///////////////////////////////////////////////////////////
 
-#if !defined(A73EC9AE3_8C2D_45e3_AE47_0F3CC8B2E661__INCLUDED_)
-#define A73EC9AE3_8C2D_45e3_AE47_0F3CC8B2E661__INCLUDED_
-#include "models/SolverChannels.h"
-#include "models/SolverComps.h"
+#pragma once
+
 #include "models/ModelStatistic.h"
 #include <cuda.h>
-#include "../../../basecode/header.h"
+#include "../headers.h"
+#include "./models/SolverChannels.h"
+#include "./models/SolverComps.h"
+
+#include "../../../basecode/header.h" //For seed vector
+
 namespace pn2s
 {
 
 class ModelPack
 {
 private:
-
 public:
 	double _dt;
+	vector<Id> models;
+
 	models::ModelStatistic stat;
-	Id* models;
 
 	ModelPack();
 	virtual ~ModelPack();
 
 	double GetDt(){ return _dt;}
-	void SetDt(double dt){ _dt = dt;
-		_compsSolver.SetDt(dt);
-	}
+//	void SetDt(double dt){ _dt = dt;
+//		_compsSolver.SetDt(dt);
+//	}
 
-	Error_PN2S Allocate(Id *m, models::ModelStatistic s, cudaStream_t st);
+	Error_PN2S AllocateMemory( models::ModelStatistic s, cudaStream_t st);
+//	void AddModel(HSolve* h);
 	Error_PN2S PrepareSolvers();
 
 	void Process();
@@ -40,7 +44,7 @@ public:
 	void Input();
 
 	models::SolverComps _compsSolver; //TODO Encapsulation
-//	solvers::SolverChannels<TYPE_,CURRENT_ARCH> _channelsSolver; //TODO Encapsulation
+	//	solvers::SolverChannels<TYPE_,CURRENT_ARCH> _channelsSolver; //TODO Encapsulation
 
 //	friend ostream& operator<<(ostream& out, ModelPack<T,arch>& dt)
 //	{
@@ -52,4 +56,3 @@ public:
 
 }
 
-#endif // !defined(A73EC9AE3_8C2D_45e3_AE47_0F3CC8B2E661__INCLUDED_)

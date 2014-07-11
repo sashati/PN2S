@@ -23,6 +23,7 @@ class HSolvePassive: public HinesMatrix
 	friend void testHSolvePassive();
 #endif
 	friend class pn2s::Device;
+	friend class PN2S_Proxy;
 	
 public:
 	void setup( Id seed, double dt );

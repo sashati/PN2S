@@ -18,7 +18,7 @@ using namespace pn2s::models;
 
 cudaStream_t _stream;
 
-SolverComps::SolverComps(): _models(0), _stream(0)
+SolverComps::SolverComps(): _stream(0)
 {
 }
 
@@ -27,10 +27,9 @@ SolverComps::~SolverComps()
 }
 
 
-Error_PN2S SolverComps::AllocateMemory(models::Model * m, models::ModelStatistic& s, cudaStream_t stream)
+Error_PN2S SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t stream)
 {
 	_stat = s;
-	_models = m;
 	_stream = stream;
 
 	if(_stat.nCompts == 0)
@@ -50,6 +49,7 @@ Error_PN2S SolverComps::AllocateMemory(models::Model * m, models::ModelStatistic
 
 	return Error_PN2S::NO_ERROR;
 }
+
 Error_PN2S SolverComps::PrepareSolver()
 {
 	if(_stat.nCompts == 0)
@@ -57,8 +57,8 @@ Error_PN2S SolverComps::PrepareSolver()
 
 	//TODO: OpenMP
 	//making Hines Matrices
-	for(int i=0; i< _stat.nModels;i++ )
-		makeHinesMatrix(&_models[i], &_hm[i*_stat.nCompts*_stat.nCompts]);
+//	for(int i=0; i< _stat.nModels;i++ )
+//		makeHinesMatrix(&_models[i], &_hm[i*_stat.nCompts*_stat.nCompts]);
 
 	//Copy to GPU
 	_hm.Host2Device_Async(_stream);

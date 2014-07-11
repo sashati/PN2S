@@ -8,7 +8,7 @@
 #pragma once
 
 #include "headers.h"
-#include "core/Solver.h"
+#include "./core/ModelPack.h"
 #include <omp.h>
 
 //Moose models
@@ -21,25 +21,28 @@ class Device
 {
 public:
 	Error_PN2S SelectDevice();
-
 	int id;
 	double _dt;
-	vector<ModelPack> _modelPacks;
 
 	Device(int _id);
 	virtual ~Device();
 
-	Error_PN2S GenerateModelPacks(double dt,
+	vector<ModelPack>& ModelPacks(){ return _modelPacks;}
+	int NumberOfModelPacks(){return nstreams;}
+
+	//Generate model packs
+	Error_PN2S AllocateMemory(double dt,
 			vector<Id >& m,
 			size_t start, size_t end,
-			Location device_address //Device address
-			);
+			int16_t device);
 	void PrepareSolvers();
 
 	void Destroy();
 	void Process();
-
 private:
+	vector<ModelPack> _modelPacks;
+	cudaStream_t* streams;
+	int nstreams;
 //	int _queue_size;
 //	void task1_prepareInput(omp_lock_t& _empty_lock,omp_lock_t& _full_lock, int& state);
 //	void task2_doProcess(omp_lock_t& _empty_lock_input,	omp_lock_t& _full_lock_input,omp_lock_t& _empty_lock_output, int& state);

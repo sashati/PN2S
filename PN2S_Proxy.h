@@ -19,13 +19,10 @@ class PN2S_Proxy
 {
 
 public:
-	static void CreateCompartmentModel(Id seed);
 	static void Reinit(Eref hsolve);
+	static void FillData();
 
 	static void setValue( Id , TYPE_, pn2s::FIELD::TYPE);
 	static TYPE_ getValue( Id , pn2s::FIELD::TYPE);
 
-private:
-	static void walkTree( Id seed, vector<Id> &compartmentIds );
-	static void storeTree(vector<Id> &compartmentIds, vector< TreeNodeStruct >& tree);
 };

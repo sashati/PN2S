@@ -15,15 +15,15 @@ using namespace pn2s;
 vector<Device> DeviceManager::_device;
 static bool _isInitialized = false;
 
-std::map< Id, pn2s::Location > compartmentMap;
+std::map< Id, pn2s::Location > locationMap;
 
 int DeviceManager::CkeckAvailableDevices(){
 //	cudaProfilerStop();
 	_device.clear();
 
-	int device_count = 0; //TODO: get value from device
-	cudaDeviceReset();
+	int device_count = 0;
 	cudaGetDeviceCount(&device_count);
+	cudaDeviceReset();
 
 	for(int i =0; i<device_count; i++)
 	{
@@ -59,16 +59,16 @@ Error_PN2S DeviceManager::Initialize(){
  * and assign memory for PFields
  */
 
-Error_PN2S DeviceManager::Allocate(vector<Id > &m, double dt){
+void DeviceManager::AllocateMemory(vector<Id > &m, double dt){
 
-	if(_device.size() < 1)
-		return Error_PN2S::NOT_INITIALIZED_Error;
+	assert(_device.size() > 1);
 
+	//Distribute model
 	//TODO: Add Multidevice
 	Location dev_address;
-	dev_address.device = 0;
-	_device[0].GenerateModelPacks(dt, m,(size_t)0,(size_t)m.size(),dev_address);
-	return Error_PN2S::NO_ERROR;
+	int16_t device = 0;
+	_device[0].AllocateMemory(dt, m,(size_t)0,(size_t)m.size(), device);
+
 }
 
 void DeviceManager::PrepareSolvers()

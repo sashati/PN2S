@@ -22,7 +22,6 @@ class SolverComps
 {
 private:
 	ModelStatistic _stat;
-	Model* _models;
 	cudaStream_t _stream;
 
 	//Connection Fields
@@ -46,7 +45,7 @@ private:
 public:
 	SolverComps();
 	~SolverComps();
-	Error_PN2S AllocateMemory(models::Model * m, models::ModelStatistic& s, cudaStream_t stream);
+	Error_PN2S AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
 	Error_PN2S PrepareSolver();
 	void Input();
 	void Process();

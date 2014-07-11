@@ -23,113 +23,56 @@
 #include "ZombieHHChannel.h"
 #include "../shell/Wildcard.h"
 #include "../shell/Shell.h"
-
+#include "HSolve.h"
 #include <pthread.h>
 
 using namespace pn2s;
 
-void PN2S_Proxy::CreateCompartmentModel(Id seed){
-
-	//Get Compartment id's with hine's index order
-	vector<Id> compartmentIds;
-	walkTree(seed,compartmentIds);
-	int nCompt = compartmentIds.size();
-
-	//TODO: Merge it with _all_compartmentIds
-//	_all_compartmentIds.insert( _all_compartmentIds.end(), compartmentIds.begin(), compartmentIds.end() );
-
-	models::Model neutral(seed.value());
+extern std::map< Id, pn2s::Location > locationMap; //Locates in DeviceManager
 
 
-	// A map from the MOOSE Id to Hines' index.
-	map< Id, unsigned int > hinesIndex;
-	for ( int i = 0; i < nCompt; ++i )
-	{
-		hinesIndex[ compartmentIds[ i ] ] = i; //TODO: go to below loop
-//		_idMap[compartmentIds[ i ].value()] = compartmentIds[ i ];
-	}
+void PN2S_Proxy::FillData(){
+	for (uint dev_i = 0; dev_i < DeviceManager::Devices().size(); ++dev_i) {
+		pn2s::Device& dev = DeviceManager::Devices()[dev_i];
+		for (uint mp_i = 0; mp_i < dev.ModelPacks().size(); ++mp_i) {
+			pn2s::ModelPack& mp = dev.ModelPacks()[mp_i];
+			int cmpt_idx = 0;
+			for (uint m_i = 0; m_i < mp.models.size(); ++m_i) {
+				Id model = mp.models[m_i];
 
-	/**
-	 * Create Compartmental Model
-	 */
-	vector< Id > childId;
-	vector< Id >::iterator child;
+				//Add index of HSolve object
+				locationMap[model] = Location(dev_i,mp_i);
 
-	for (int i = 0; i < nCompt; ++i) {
-		//Assign a general ID to each compartment
-		models::Compartment c(compartmentIds[ i ].value());
+				//Put model into solvers
+				HSolve* h =	reinterpret_cast< HSolve* >( model.eref().data());
 
-		//Find Children
-		childId.clear();
-		HSolveUtils::children( compartmentIds[ i ], childId );
-		for ( child = childId.begin(); child != childId.end(); ++child )
-		{
-			c.children.push_back( hinesIndex[ *child ] );
+				//Compartments
+				for ( uint ic = 0; ic < h->HSolvePassive::compartmentId_.size(); ++ic )
+				{
+					Id cc = h->HSolvePassive::compartmentId_[ ic ];
+					//Add to location map
+					locationMap[cc] = Location(dev_i,mp_i,cmpt_idx);
+
+					//Copy Data
+					mp._compsSolver.SetValue(cmpt_idx,FIELD::VM,h->getVm(cc));
+					mp._compsSolver.SetValue(cmpt_idx,FIELD::INIT_VM,h->getInitVm(cc));
+
+					cmpt_idx++;
+				}
+
+			}
 		}
-		neutral.compts.push_back(c);
 	}
 
-	/**
-	 * Now model is ready to import into the PN2S
-	 */
-    Manager::InsertModelShape(neutral);
+//	for (; model_id != models.end(); ++model_id) {
+//
+//
+//		DeviceManager::Devices()[l.device].ModelPacks()[l.pack].
+//	}
+
+//
+
 }
-
-void PN2S_Proxy::walkTree( Id seed, vector<Id> &compartmentIds )
-{
-    //~ // Dirty call to explicitly call the compartments reinitFunc.
-    //~ // Should be removed eventually, and replaced with a cleaner way to
-    //~ // initialize the model being read.
-    //~ HSolveUtils::initialize( seed );
-
-    // Find leaf node
-    Id previous;
-    vector< Id > adjacent;
-    HSolveUtils::adjacent( seed, adjacent );
-    if ( adjacent.size() > 1 )
-        while ( !adjacent.empty() )
-        {
-            previous = seed;
-            seed = adjacent[ 0 ];
-
-            adjacent.clear();
-            HSolveUtils::adjacent( seed, previous, adjacent );
-        }
-
-    // Depth-first search
-    vector< vector< Id > > cstack;
-    Id above;
-    Id current;
-    cstack.resize( 1 );
-    cstack[ 0 ].push_back( seed );
-    while ( !cstack.empty() )
-    {
-    	vector< Id >& top = cstack.back();
-
-        if ( top.empty() )
-        {
-            cstack.pop_back();
-            if ( !cstack.empty() )
-                cstack.back().pop_back();
-        }
-        else
-        {
-            if ( cstack.size() > 1 )
-                above = cstack[ cstack.size() - 2 ].back();
-
-            current = top.back();
-            compartmentIds.push_back( current );
-
-            cstack.resize( cstack.size() + 1 );
-            HSolveUtils::adjacent( current, above, cstack.back() );
-        }
-    }
-
-    // Compartments get ordered according to their hines' indices once this
-    // list is reversed.
-    reverse( compartmentIds.begin(), compartmentIds.end() );
-}
-
 
 void PN2S_Proxy::Reinit(Eref hsolve){
 	//Create model structures and Allocate memory
@@ -184,15 +127,15 @@ void PN2S_Proxy::Reinit(Eref hsolve){
 /**
  * Interface Set/Get functions
  */
-extern std::map< Id, pn2s::Location > compartmentMap;
+extern std::map< Id, pn2s::Location > locationMap;
 void PN2S_Proxy::setValue( Id id, TYPE_ value , FIELD::TYPE n)
 {
-	Location l = compartmentMap[id.value()];
-	DeviceManager::_device[0]._modelPacks[l.address]._compsSolver.SetValue(l.index,n,value);
+	Location l = locationMap[id.value()];
+	DeviceManager::Devices()[l.device].ModelPacks()[l.pack]._compsSolver.SetValue(l.index,n,value);
 }
 
 TYPE_ PN2S_Proxy::getValue( Id id, FIELD::TYPE n)
 {
-	Location l = compartmentMap[id.value()];
-	return DeviceManager::_device[0]._modelPacks[l.address]._compsSolver.GetValue(l.index,n);
+	Location l = locationMap[id.value()];
+	return DeviceManager::Devices()[l.device].ModelPacks()[l.pack]._compsSolver.GetValue(l.index,n);
 }

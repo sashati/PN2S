@@ -9,7 +9,7 @@
 #define A8661C97F_679E_4bb9_84D8_5EEB3718169D__INCLUDED_
 #include "../../headers.h"
 #include "../models/Model.h"
-#include "../NetworkAnalyzer.h"
+//#include "../NetworkAnalyzer.h"
 
 namespace pn2s
 {

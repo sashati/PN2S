@@ -62,6 +62,9 @@ struct Location{
 		};
 	};
 	Location():full(0){}
+	Location(int16_t _d): pack(0), device(_d), index(0){}
+	Location(int16_t _d, int16_t _p): pack(_p), device(_d), index(0){}
+	Location(int16_t _d,int16_t _p,int32_t _i): pack(_p), device(_d), index(_i){}
 };
 
 }

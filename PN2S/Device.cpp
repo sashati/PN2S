@@ -26,13 +26,10 @@ using namespace tbb::flow;
 
 using namespace pn2s::models;
 
-extern std::map< Id, pn2s::Location > compartmentMap; //Locates in DeviceManager
+extern std::map< Id, pn2s::Location > locationMap; //Locates in DeviceManager
 
-//Create streams
-cudaStream_t* streams;
-int nstreams = DEFAULT_STREAM_NUMBER;
 
-Device::Device(int _id): id(_id), _dt(1){
+Device::Device(int _id): id(_id), _dt(1), nstreams(DEFAULT_STREAM_NUMBER){
 	_modelPacks.clear();
 
 	/**
@@ -71,7 +68,7 @@ void Device::Destroy(){
 //	cudaDeviceReset();
 }
 
-Error_PN2S Device::GenerateModelPacks(double dt, vector<Id >& m, size_t start, size_t end, Location device){
+Error_PN2S Device::AllocateMemory(double dt, vector<Id >& m, size_t start, size_t end, int16_t device){
 	_dt = dt;
 
 	//Distribute model into packs
@@ -93,7 +90,7 @@ Error_PN2S Device::GenerateModelPacks(double dt, vector<Id >& m, size_t start, s
 		nstreams = nModel;
 	}
 
-	//Each stream, one Modelpack
+	//Each stream for one Modelpack
 	size_t nModel_in_pack = nModel/nstreams;
 	_modelPacks.resize(nstreams);
 	for (int pack = 0; pack < nstreams; ++pack) {
@@ -107,28 +104,12 @@ Error_PN2S Device::GenerateModelPacks(double dt, vector<Id >& m, size_t start, s
 		 * Allocate memory for Modelpacks
 		 */
 		HSolve* h =	reinterpret_cast< HSolve* >( m_start->eref().data());
-		size_t nCompt = ((HinesMatrix*)h)->nCompt_;
+		size_t nCompt = ((HinesMatrix*)h)->nCompt_; //This is why we need HSolve.h
 		ModelStatistic stat(dt, nModel_in_pack, nCompt);
-		_modelPacks[pack].Allocate(m_start, stat,streams[pack%nstreams]);
+		_modelPacks[pack].AllocateMemory(stat,streams[pack%nstreams]);
+		_modelPacks[pack].models.assign(m_start,m_start+nModel_in_pack);
 
-		/**
-		 * Make Indices and copy data
-		 */
-		int idx = 0;
-		for (int i = 0; i < nModel_in_pack; ++i, m_start++) {
-			h =	reinterpret_cast< HSolve* >( m_start->eref().data());
-			assert(h->HinesMatrix::nCompt_ == nCompt);
-
-			for (int c = 0; c < nCompt; ++c) {
-				Id& compt =	h->HSolvePassive::compartmentId_[c];
-
-				Location l = device; //Assign address for each machine/pack
-				l.pack = pack;
-				l.index = idx++; //Assign index of each object in a modelPack
-				compartmentMap[compt] = l;
-
-			}
-		}
+		m_start += nModel_in_pack;
 	}
 	return Error_PN2S::NO_ERROR;
 }

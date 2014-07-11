@@ -22,7 +22,7 @@ endif
 
 TARGET = _core.o
 
-COBJS += 	ModelPack.o	\
+COBJS += 	ModelPack.o	
 		 
 #OBJS += NetworkAnalyzer.o 
 		

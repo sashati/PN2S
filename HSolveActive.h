@@ -24,9 +24,12 @@
 #include "HSolvePassive.h"
 #include "RateLookup.h"
 
+
 class HSolveActive: public HSolvePassive
 {
 	friend class pn2s::Device;
+	friend class PN2S_Proxy;
+
     typedef vector< CurrentStruct >::iterator currentVecIter;
 
 public:

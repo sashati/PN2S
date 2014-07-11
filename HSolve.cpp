@@ -27,6 +27,7 @@
 #include "../shell/Shell.h"
 
 #include "PN2S/DeviceManager.h"
+#include "PN2S_Proxy.h"
 
 const Cinfo* HSolve::initCinfo()
 {
@@ -231,8 +232,11 @@ void HSolve::reinit( const Eref& hsolve, ProcPtr p )
 					h->compartmentId_.begin(),
 					h->compartmentId_.end());
 		}
-		//Create model structures and Allocate memory
-		pn2s::DeviceManager::Allocate(seeds_,dt_);
+		//Distribute model and Allocate memory
+		pn2s::DeviceManager::AllocateMemory(seeds_,dt_);
+
+		//Fill data
+		PN2S_Proxy::FillData();
 
 		pn2s::DeviceManager::PrepareSolvers();
     }

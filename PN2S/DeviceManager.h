@@ -20,15 +20,18 @@ namespace pn2s
 class DeviceManager
 {
 	static int CkeckAvailableDevices();
-public:
 	static vector<Device> _device; //TODO: Should be private
+public:
 	static bool IsInitialized();
 	static Error_PN2S Initialize();
 
 	// Distribute model between devices
-	static Error_PN2S Allocate(vector<Id > &m, double dt);
+	static void AllocateMemory(vector<Id > &m, double dt);
 	static void PrepareSolvers();
 	static void Process();
 	static void Close();
+	static vector<Device>& Devices(){
+		return _device;
+	}
 };
 }
