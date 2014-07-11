@@ -46,6 +46,10 @@ void PN2S_Proxy::FillData(){
 				//Put model into solvers
 				HSolve* h =	reinterpret_cast< HSolve* >( model.eref().data());
 
+				for(int i = 0; i<h->nCompt_;i++)
+					for(int j = 0; j<h->nCompt_;j++)
+						mp._compsSolver.SetA(cmpt_idx,i,j, h->getA(i,j));
+
 				//Compartments
 				for ( uint ic = 0; ic < h->HSolvePassive::compartmentId_.size(); ++ic )
 				{
@@ -56,14 +60,17 @@ void PN2S_Proxy::FillData(){
 					//Copy Data
 					mp._compsSolver.SetValue(cmpt_idx,FIELD::VM,h->getVm(cc));
 					mp._compsSolver.SetValue(cmpt_idx,FIELD::INIT_VM,h->getInitVm(cc));
-					mp._compsSolver.SetValue(cmpt_idx,FIELD::CM,h->getCm(cc));
-					mp._compsSolver.SetValue(cmpt_idx,FIELD::EM,h->getEm(cc));
 					mp._compsSolver.SetValue(cmpt_idx,FIELD::RA,h->getRa(cc));
-					mp._compsSolver.SetValue(cmpt_idx,FIELD::RM,h->getRm(cc));
+					mp._compsSolver.SetValue(cmpt_idx,FIELD::CM_BY_DT,h->getCmByDt(cc));
+					mp._compsSolver.SetValue(cmpt_idx,FIELD::EM_BY_RM,h->getEmByRm(cc));
 
-					for(int i = 0; i<h->nCompt_;i++)
-						for(int j = 0; j<h->nCompt_;j++)
-							mp._compsSolver.SetA(cmpt_idx,i,j, h->getA(i,j));
+					//Add Channel Currents //TODO: Check it out
+					vector< CurrentStruct >::iterator icurrent = h->HSolveActive::current_.begin();
+					typedef vector< CurrentStruct >::iterator currentVecIter;
+					vector< currentVecIter >::iterator iboundary = h->HSolveActive::currentBoundary_.begin();
+					for ( ; icurrent < *iboundary; ++icurrent )
+						mp._compsSolver.AddChannelCurrent(cmpt_idx,icurrent->Gk, icurrent->Ek);
+					++iboundary;
 
 					cmpt_idx++;
 				}

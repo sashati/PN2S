@@ -28,10 +28,14 @@ private:
 	PField<TYPE_, ARCH_>  _rhs;	// Right hand side of the equation
 	PField<TYPE_, ARCH_>  _Vm;	// Vm of the compartments
 	PField<TYPE_, ARCH_>  _VMid;	// Vm of the compartments
-	PField<TYPE_, ARCH_>  _Cm;	// Cm of the compartments
-	PField<TYPE_, ARCH_>  _Em;	// Em of the compartments
-	PField<TYPE_, ARCH_>  _Rm;	// Rm of the compartments
 	PField<TYPE_, ARCH_>  _Ra;	// Ra of the compartments
+	PField<TYPE_, ARCH_>  _CmByDt;	// Cm of the compartments
+	PField<TYPE_, ARCH_>  _EmByRm;	// Em of the compartments
+
+	//Channel currents
+	PField<int, ARCH_>  _currentIndex; // (NumberOfChannels, Index in _current)
+	PField<TYPE_, ARCH_>  _current; // (Gk,Ek)
+
 
 	void  makeHinesMatrix(models::Model *model, TYPE_ * matrix);// float** matrix, uint nCompt);
 	void getValues();
@@ -56,6 +60,7 @@ public:
 //	TYPE_ GetRHS(int n,int i){return _rhs[n*nComp+i];}
 	void 	SetValue(int index, FIELD::TYPE field, TYPE_ value);
 	TYPE_ 	GetValue(int index, FIELD::TYPE field);
+	void AddChannelCurrent(int index, TYPE_ gk, TYPE_ ek);
 };
 
 }

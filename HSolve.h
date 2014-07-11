@@ -142,6 +142,9 @@ public:
 	double getCaFloor( Id id ) const;
 	void setCaFloor( Id id, double floor );
 	
+	double getEmByRm( Id id ) const;
+	double getCmByDt( Id id ) const;
+
 	/// Interface to external channels
 	//~ const vector< vector< Id > >& getExternalChannels() const;
 	

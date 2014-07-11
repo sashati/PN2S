@@ -100,8 +100,6 @@ void HSolve::setVm( Id id, double value )
 
 double HSolve::getCm( Id id ) const
 {
-	CHECK_GET_PN2S(pn2s::FIELD::CM);
-
     unsigned int index = localIndex( id );
     assert( index < tree_.size() );
     return tree_[ index ].Cm;
@@ -109,8 +107,6 @@ double HSolve::getCm( Id id ) const
 
 void HSolve::setCm( Id id, double value )
 {
-	CHECK_SET_PN2S(pn2s::FIELD::CM);
-
     unsigned int index = localIndex( id );
     assert( index < tree_.size() );
     // Also update data structures used for calculations.
@@ -119,8 +115,6 @@ void HSolve::setCm( Id id, double value )
 
 double HSolve::getEm( Id id ) const
 {
-	CHECK_GET_PN2S(pn2s::FIELD::EM);
-
     unsigned int index = localIndex( id );
     assert( index < tree_.size() );
     return tree_[ index ].Em;
@@ -128,8 +122,6 @@ double HSolve::getEm( Id id ) const
 
 void HSolve::setEm( Id id, double value )
 {
-	CHECK_SET_PN2S(pn2s::FIELD::EM);
-
     unsigned int index = localIndex( id );
     assert( index < tree_.size() );
     // Also update data structures used for calculations.
@@ -138,8 +130,6 @@ void HSolve::setEm( Id id, double value )
 
 double HSolve::getRm( Id id ) const
 {
-	CHECK_GET_PN2S(pn2s::FIELD::RM);
-
     unsigned int index = localIndex( id );
     assert( index < tree_.size() );
     return tree_[ index ].Rm;
@@ -147,8 +137,6 @@ double HSolve::getRm( Id id ) const
 
 void HSolve::setRm( Id id, double value )
 {
-	CHECK_SET_PN2S(pn2s::FIELD::RM);
-
     unsigned int index = localIndex( id );
     assert( index < tree_.size() );
     // Also update data structures used for calculations.
@@ -537,4 +525,18 @@ void HSolve::setCaFloor( Id id, double floor )
     assert( index < caConc_.size() );
 
     caConc_[ index ].floor_ = floor;
+}
+
+double HSolve::getCmByDt( Id id ) const
+{
+	unsigned int index = localIndex( id );
+    assert( index < tree_.size() );
+    return compartment_[ index ].CmByDt;
+}
+
+double HSolve::getEmByRm( Id id ) const
+{
+	unsigned int index = localIndex( id );
+    assert( index < tree_.size() );
+    return compartment_[ index ].EmByRm;
 }

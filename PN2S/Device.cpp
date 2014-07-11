@@ -101,11 +101,22 @@ Error_PN2S Device::AllocateMemory(double dt, vector<Id >& m, size_t start, size_
 		}
 
 		/**
-		 * Allocate memory for Modelpacks
+		 * Create statistic and Allocate memory for Modelpacks
 		 */
-		HSolve* h =	reinterpret_cast< HSolve* >( m_start->eref().data());
-		size_t nCompt = ((HinesMatrix*)h)->nCompt_; //This is why we need HSolve.h
-		ModelStatistic stat(dt, nModel_in_pack, nCompt);
+		size_t nCompt = 0;
+		size_t numberOfChannels = 0;
+		for (int i = 0; i < nModel_in_pack; ++i) {
+			Id id = m_start[i];
+			HSolve* h =	reinterpret_cast< HSolve* >( m_start->eref().data());
+			if(nCompt == 0)
+				nCompt = ((HinesMatrix*)h)->nCompt_; //First set
+			else
+				assert(nCompt == ((HinesMatrix*)h)->nCompt_); //Check for others
+
+			numberOfChannels+= h->HSolveActive::current_.size();
+		}
+		ModelStatistic stat(dt, nModel_in_pack, nCompt, numberOfChannels);
+
 		_modelPacks[pack].AllocateMemory(stat,streams[pack%nstreams]);
 		_modelPacks[pack].models.assign(m_start,m_start+nModel_in_pack);
 

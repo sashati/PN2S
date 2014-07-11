@@ -170,8 +170,9 @@ void HSolveActive::updateMatrix()
     vector< double >::iterator iec;
     for ( iec = externalCurrent_.begin(); iec != externalCurrent_.end(); iec += 2 )
     {
+        cout <<*( iec )<< endl <<flush;
         *ihs += *iec;
-//        cout <<*( iec + 1 )<< endl <<flush;
+        cout <<*( iec + 1 )<< endl <<flush;
         *( 3 + ihs ) += *( iec + 1 );
 
         ihs += 4;

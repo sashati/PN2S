@@ -79,7 +79,8 @@ PField<T,arch>::PField():
 	device(0),
 	host_inc(1),
 	device_inc(1),
-	_size(0)
+	_size(0),
+	extra(0)
 {
 
 }
@@ -95,6 +96,17 @@ Error_PN2S PField<T,arch>::AllocateMemory(size_t size)
 {
 	_size = size;
 	CUDA_SAFE_CALL(cudaMallocHost((void **) &host, size * sizeof(host[0]))); //Define pinned memories
+	CUDA_SAFE_CALL(cudaMalloc((void **) &device, size * sizeof(device[0])));
+
+	return Error_PN2S::NO_ERROR;
+}
+
+template <typename T, int arch>
+Error_PN2S PField<T,arch>::AllocateMemory(size_t size, TYPE_ host_defaultValue)
+{
+	_size = size;
+	CUDA_SAFE_CALL(cudaMallocHost((void **) &host, size * sizeof(host[0]))); //Define pinned memories
+	memset(host,host_defaultValue, size * sizeof(host[0])); //Fill
 	CUDA_SAFE_CALL(cudaMalloc((void **) &device, size * sizeof(device[0])));
 
 	return Error_PN2S::NO_ERROR;
@@ -156,3 +168,4 @@ void PField<T,arch>::print()
 }
 
 template class PField<double, ARCH_SM30>;
+template class PField<int, ARCH_SM30>;

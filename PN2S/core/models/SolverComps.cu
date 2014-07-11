@@ -42,10 +42,12 @@ Error_PN2S SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t s
 	_rhs.AllocateMemory(vectorSize);
 	_Vm.AllocateMemory(vectorSize);
 	_VMid.AllocateMemory(vectorSize);
+	_Ra.AllocateMemory(vectorSize);
 	_CmByDt.AllocateMemory(vectorSize);
 	_EmByRm.AllocateMemory(vectorSize);
-	_Rm.AllocateMemory(vectorSize);
-	_Ra.AllocateMemory(vectorSize);
+
+	_currentIndex.AllocateMemory(vectorSize*2,0);
+	_current.AllocateMemory(_stat.nChannels*2);
 
 	return Error_PN2S::NO_ERROR;
 }
@@ -57,7 +59,7 @@ void SolverComps::PrepareSolver()
 
 	//Copy to GPU
 	_hm.Host2Device_Async(_stream);
-	_Em.Host2Device_Async(_stream);
+	_EmByRm.Host2Device_Async(_stream);
 
 //	//Create Cublas
 //	if ( cublasCreate(&_handle) != CUBLAS_STATUS_SUCCESS)
@@ -74,11 +76,13 @@ void SolverComps::PrepareSolver()
  *
  */
 
-__global__ void update_rhs(TYPE_* rhs, TYPE_* vm, TYPE_* cm, TYPE_* rm, size_t size, TYPE_ dt)
+__global__ void update_rhs(TYPE_* rhs, TYPE_* vm, TYPE_* cmByDt, TYPE_* emByRm, size_t size, TYPE_ dt)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < size)
-    	rhs[idx] = vm[idx] * cm[idx] / dt * 2.0 + rhs[idx] / rm[idx];
+    if (idx < size){
+
+    	rhs[idx] = vm[idx] * cmByDt[idx] + emByRm[idx];
+    }
 }
 
 
@@ -91,11 +95,11 @@ __global__ void update_vm(TYPE_* vm, TYPE_* vmid, size_t size)
 
 void SolverComps::Input()
 {
-	//Copy to GPU
-	_rhs.Send2Device_Async(_Em,_stream); // Em -> rhs
-	_Rm.Host2Device_Async(_stream);
-	_Vm.Host2Device_Async(_stream);
-	_Cm.Host2Device_Async(_stream);
+//	//Copy to GPU
+//	_rhs.Send2Device_Async(_Em,_stream); // Em -> rhs
+//	_Rm.Host2Device_Async(_stream);
+//	_Vm.Host2Device_Async(_stream);
+//	_Cm.Host2Device_Async(_stream);
 }
 
 void SolverComps::Process()
@@ -109,8 +113,8 @@ void SolverComps::Process()
 	update_rhs <<<blocks, threads,0, _stream>>> (
 			_rhs.device,
 			_Vm.device,
-			_Cm.device,
-			_Rm.device,
+			_CmByDt.device,
+			_EmByRm.device,
 			vectorSize,
 			_stat.dt);
 	assert(cudaSuccess == cudaGetLastError());
@@ -139,91 +143,15 @@ void SolverComps::Output()
 	cudaStreamSynchronize(_stream);
 }
 
-
-void SolverComps::makeHinesMatrix(models::Model *model, TYPE_ * matrix)
-{
-	/*
-	 * Some convenience variables
-	 */
-	vector< double > CmByDt(_stat.nCompts);
-	vector< double > Ga(_stat.nCompts);
-	for ( unsigned int i = 0; i < _stat.nCompts; i++ ) {
-		TYPE_ cm = GetValue(model->compts[ i ].location.index, FIELD::CM);
-		TYPE_ ra = GetValue(model->compts[ i ].location.index, FIELD::RA);
-
-		CmByDt[i] = cm / ( _stat.dt / 2.0 ) ;
-		Ga[i] =  2.0 / ra ;
-	}
-
-	/* Each entry in 'coupled' is a list of electrically coupled compartments.
-	 * These compartments could be linked at junctions, or even in linear segments
-	 * of the cell.
-	 */
-	vector< vector< unsigned int > > coupled;
-	for ( unsigned int i = 0; i < _stat.nCompts; i++ )
-		if ( model->compts[ i ].children.size() >= 1 ) {
-			coupled.push_back( model->compts[ i ].children );
-			coupled.back().push_back( i );
-		}
-
-	// Setting diagonal elements
-	for ( unsigned int i = 0; i < _stat.nCompts; i++ )
-	{
-		TYPE_ rm = GetValue(model->compts[ i ].location.index, FIELD::RM);
-		matrix[ i * _stat.nCompts + i ] = (TYPE_)(CmByDt[ i ] + 1.0 / rm);
-	}
-
-
-	double gi;
-	vector< vector< unsigned int > >::iterator group;
-	vector< unsigned int >::iterator ic;
-	for ( group = coupled.begin(); group != coupled.end(); ++group ) {
-		double gsum = 0.0;
-
-		for ( ic = group->begin(); ic != group->end(); ++ic )
-			gsum += Ga[ *ic ];
-
-		for ( ic = group->begin(); ic != group->end(); ++ic ) {
-			gi = Ga[ *ic ];
-
-			matrix[ *ic * _stat.nCompts + *ic ] += (TYPE_) (gi * ( 1.0 - gi / gsum ));
-		}
-	}
-
-
-	// Setting off-diagonal elements
-	double gij;
-	vector< unsigned int >::iterator jc;
-	for ( group = coupled.begin(); group != coupled.end(); ++group ) {
-		double gsum = 0.0;
-
-		for ( ic = group->begin(); ic != group->end(); ++ic )
-			gsum += Ga[ *ic ];
-
-		for ( ic = group->begin(); ic != group->end() - 1; ++ic ) {
-			for ( jc = ic + 1; jc != group->end(); ++jc ) {
-				gij = Ga[ *ic ] * Ga[ *jc ] / gsum;
-
-				matrix[ *ic * _stat.nCompts + *jc ] = (TYPE_)(-gij);
-				matrix[ *jc * _stat.nCompts + *ic ] = (TYPE_)(-gij);
-			}
-		}
-	}
-//	_printVector(_stat.nCompts*_stat.nCompts,matrix);
-}
-
 void SolverComps::SetValue(int index, FIELD::TYPE field, TYPE_ value)
 {
 	switch(field)
 	{
-		case FIELD::CM:
-			_Cm[index] = value;
+		case FIELD::CM_BY_DT:
+			_CmByDt[index] = value;
 			break;
-		case FIELD::EM:
-			_Em[index] = value;
-			break;
-		case FIELD::RM:
-			_Rm[index] = value;
+		case FIELD::EM_BY_RM:
+			_EmByRm[index] = value;
 			break;
 		case FIELD::RA:
 			_Ra[index] = value;
@@ -241,12 +169,10 @@ TYPE_ SolverComps::GetValue(int index, FIELD::TYPE field)
 {
 	switch(field)
 	{
-		case FIELD::CM:
-			return _Cm[index];
-		case FIELD::EM:
-			return _Em[index];
-		case FIELD::RM:
-			return _Rm[index];
+		case FIELD::CM_BY_DT:
+			return _CmByDt[index];
+		case FIELD::EM_BY_RM:
+			return _EmByRm[index];
 		case FIELD::RA:
 			return _Ra[index];
 		case FIELD::VM:
@@ -261,3 +187,12 @@ void SolverComps::SetA(int index, int row, int col, TYPE_ value)
 	_hm[_stat.nCompts*_stat.nCompts*index + row *_stat.nCompts + col] = value;
 }
 
+void SolverComps::AddChannelCurrent(int index, TYPE_ gk, TYPE_ ek)
+{
+	_currentIndex[index*2]++; //Number of Channels
+	if (_currentIndex[index*2+1] == 0)
+		_currentIndex[index*2+1] = _current.extra;
+
+	_current[_current.extra++] = gk;
+	_current[_current.extra++] = ek;
+}

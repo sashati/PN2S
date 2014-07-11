@@ -34,6 +34,7 @@ public:
 	T* device;
 	int device_inc;
 
+	int extra;
 
 	PField();
 	//TODO: Use it!
@@ -42,6 +43,7 @@ public:
 	virtual ~PField();
 
 	Error_PN2S AllocateMemory(size_t size);
+	Error_PN2S AllocateMemory(size_t size, TYPE_ defaultValue);
 //	Error_PN2S AllocateMemory(size_t size, int inc);
 	__inline__ Error_PN2S Host2Device_Async(cudaStream_t stream);
 	__inline__ Error_PN2S Host2Device();
