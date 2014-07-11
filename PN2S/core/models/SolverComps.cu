@@ -42,23 +42,18 @@ Error_PN2S SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t s
 	_rhs.AllocateMemory(vectorSize);
 	_Vm.AllocateMemory(vectorSize);
 	_VMid.AllocateMemory(vectorSize);
-	_Cm.AllocateMemory(vectorSize);
-	_Em.AllocateMemory(vectorSize);
+	_CmByDt.AllocateMemory(vectorSize);
+	_EmByRm.AllocateMemory(vectorSize);
 	_Rm.AllocateMemory(vectorSize);
 	_Ra.AllocateMemory(vectorSize);
 
 	return Error_PN2S::NO_ERROR;
 }
 
-Error_PN2S SolverComps::PrepareSolver()
+void SolverComps::PrepareSolver()
 {
 	if(_stat.nCompts == 0)
-		return Error_PN2S::NO_ERROR;
-
-	//TODO: OpenMP
-	//making Hines Matrices
-//	for(int i=0; i< _stat.nModels;i++ )
-//		makeHinesMatrix(&_models[i], &_hm[i*_stat.nCompts*_stat.nCompts]);
+		return;
 
 	//Copy to GPU
 	_hm.Host2Device_Async(_stream);
@@ -70,9 +65,6 @@ Error_PN2S SolverComps::PrepareSolver()
 //		return Error_PN2S(Error_PN2S::CuBLASError,
 //				"CUBLAS initialization failed");
 //	}
-
-	cudaDeviceSynchronize();
-	return Error_PN2S::NO_ERROR;
 }
 
 /**
@@ -264,4 +256,8 @@ TYPE_ SolverComps::GetValue(int index, FIELD::TYPE field)
 	}
 }
 
-//TYPE_ (*SolverComps::Fetch_Func) (uint, SolverComps::Fields);
+void SolverComps::SetA(int index, int row, int col, TYPE_ value)
+{
+	_hm[_stat.nCompts*_stat.nCompts*index + row *_stat.nCompts + col] = value;
+}
+

@@ -5,8 +5,7 @@
 //  Original author: Saeed Shariati
 ///////////////////////////////////////////////////////////
 
-#if !defined(EA_ABB95B66_E531_4681_AE2B_D1CE4B940FF6__INCLUDED_)
-#define EA_ABB95B66_E531_4681_AE2B_D1CE4B940FF6__INCLUDED_
+#pragma once
 
 #include "../../headers.h"
 #include "../models/Model.h"
@@ -34,8 +33,6 @@ private:
 	PField<TYPE_, ARCH_>  _Rm;	// Rm of the compartments
 	PField<TYPE_, ARCH_>  _Ra;	// Ra of the compartments
 
-
-
 	void  makeHinesMatrix(models::Model *model, TYPE_ * matrix);// float** matrix, uint nCompt);
 	void getValues();
 
@@ -46,7 +43,7 @@ public:
 	SolverComps();
 	~SolverComps();
 	Error_PN2S AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
-	Error_PN2S PrepareSolver();
+	void PrepareSolver();
 	void Input();
 	void Process();
 	void Output();
@@ -54,18 +51,13 @@ public:
 	double GetDt(){ return _stat.dt;}
 	void SetDt(double dt){ _stat.dt = dt;}
 
-//	TYPE_ GetA(int n,int i, int j){return _hm[n*nComp*nComp+i*nComp+j];}
+	void 	SetA(int index, int row, int col, TYPE_ value);
+	TYPE_ GetA(int n,int i, int j){return _hm[n*_stat.nCompts*_stat.nCompts+i*_stat.nCompts+j];}
 //	TYPE_ GetRHS(int n,int i){return _rhs[n*nComp+i];}
-//	static TYPE_ GetVm(int n,int i){return _Vm[n*nComp+i];}
 	void 	SetValue(int index, FIELD::TYPE field, TYPE_ value);
 	TYPE_ 	GetValue(int index, FIELD::TYPE field);
-//	TYPE_ GetCm(int n,int i){return _Cm[n*nComp+i];}
-//	TYPE_ GetRm(int n,int i){return _Rm[n*nComp+i];}
-//	TYPE_ GetEm(int n,int i){return _Em[n*nComp+i];}
-
-	static TYPE_ (*Fetch_Func) (uint id, FIELD::TYPE field);
 };
 
 }
 }
-#endif // !defined(EA_ABB95B66_E531_4681_AE2B_D1CE4B940FF6__INCLUDED_)
+

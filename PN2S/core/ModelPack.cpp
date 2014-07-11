@@ -52,15 +52,12 @@ Error_PN2S ModelPack::AllocateMemory(models::ModelStatistic s, cudaStream_t st){
 ////	}
 //}
 
-Error_PN2S ModelPack::PrepareSolvers(){
-	Error_PN2S res = Error_PN2S::NO_ERROR;
+void ModelPack::PrepareSolvers(){
+	_compsSolver.PrepareSolver();
 
-	res = _compsSolver.PrepareSolver();
-	assert(res==Error_PN2S::NO_ERROR);
 //	res = _channelsSolver.PrepareSolver(net, _analyzer);
-//	assert(res==Error_PN2S::NO_ERROR);
 
-	return  res;
+	cudaDeviceSynchronize();
 }
 
 

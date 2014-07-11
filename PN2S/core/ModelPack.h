@@ -37,7 +37,7 @@ public:
 
 	Error_PN2S AllocateMemory( models::ModelStatistic s, cudaStream_t st);
 //	void AddModel(HSolve* h);
-	Error_PN2S PrepareSolvers();
+	void PrepareSolvers();
 
 	void Process();
 	void Output();

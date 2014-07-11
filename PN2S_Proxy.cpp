@@ -56,22 +56,20 @@ void PN2S_Proxy::FillData(){
 					//Copy Data
 					mp._compsSolver.SetValue(cmpt_idx,FIELD::VM,h->getVm(cc));
 					mp._compsSolver.SetValue(cmpt_idx,FIELD::INIT_VM,h->getInitVm(cc));
+					mp._compsSolver.SetValue(cmpt_idx,FIELD::CM,h->getCm(cc));
+					mp._compsSolver.SetValue(cmpt_idx,FIELD::EM,h->getEm(cc));
+					mp._compsSolver.SetValue(cmpt_idx,FIELD::RA,h->getRa(cc));
+					mp._compsSolver.SetValue(cmpt_idx,FIELD::RM,h->getRm(cc));
+
+					for(int i = 0; i<h->nCompt_;i++)
+						for(int j = 0; j<h->nCompt_;j++)
+							mp._compsSolver.SetA(cmpt_idx,i,j, h->getA(i,j));
 
 					cmpt_idx++;
 				}
-
 			}
 		}
 	}
-
-//	for (; model_id != models.end(); ++model_id) {
-//
-//
-//		DeviceManager::Devices()[l.device].ModelPacks()[l.pack].
-//	}
-
-//
-
 }
 
 void PN2S_Proxy::Reinit(Eref hsolve){

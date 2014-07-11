@@ -73,7 +73,7 @@ Error_PN2S Device::AllocateMemory(double dt, vector<Id >& m, size_t start, size_
 
 	//Distribute model into packs
 	Id* m_start = &m[start];
-	size_t nModel = end - start;
+	size_t nModel = end - start +1;
 
 	if(nModel <= 0)
 		return Error_PN2S::EMPTY;

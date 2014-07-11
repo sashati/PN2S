@@ -204,9 +204,9 @@ HSolve::~HSolve(){
 
 void HSolve::process( const Eref& hsolve, ProcPtr p )
 {
-//    if( isMasterHSolve_ )
-//    	PN2S_Proxy::Process(p);
-//    else
+    if( isMasterHSolve_ )
+    	pn2s::DeviceManager::Process();
+    else
     	this->HSolveActive::step( p );
 }
 

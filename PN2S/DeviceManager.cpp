@@ -61,13 +61,13 @@ Error_PN2S DeviceManager::Initialize(){
 
 void DeviceManager::AllocateMemory(vector<Id > &m, double dt){
 
-	assert(_device.size() > 1);
+	assert(_device.size() > 0);
 
 	//Distribute model
 	//TODO: Add Multidevice
 	Location dev_address;
 	int16_t device = 0;
-	_device[0].AllocateMemory(dt, m,(size_t)0,(size_t)m.size(), device);
+	_device[0].AllocateMemory(dt, m,(size_t)0,(size_t)m.size()-1, device);
 
 }
 
@@ -82,11 +82,8 @@ void DeviceManager::PrepareSolvers()
 
 void DeviceManager::Process()
 {
-
-	//TODO: Each device should get its own pack
 	for(vector<Device>::iterator device = _device.begin(); device != _device.end(); ++device)
 		device->Process();
-
 }
 
 void DeviceManager::Close()

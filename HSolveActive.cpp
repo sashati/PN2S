@@ -54,9 +54,27 @@ void HSolveActive::step( ProcPtr info )
 
     advanceChannels( info->dt );
     calculateChannelCurrents();
-//    cout << HS_.size() << endl<<flush;
-//    _printVector(HS_);
+    cout << HS_.size() << endl<<flush;
+    _printVector(HS_);
+    for (int i = 0; i < nCompt_; ++i) {
+    	for (int j = 0; j < nCompt_; ++j) {
+    		cout << getA(i,j) << "\t";
+		}
+    	cout << endl << flush;
+	}
     updateMatrix();
+    cout << HS_.size() << endl<<flush;
+	for (int i = 0; i < nCompt_; ++i) {
+		for (int j = 0; j < nCompt_; ++j) {
+			cout << std::setprecision (std::numeric_limits< double >::digits10)<<getA(i,j) << "\t";
+		}
+		cout << endl << flush;
+	}
+	for (int i = 0; i < nCompt_; ++i) {
+		cout << std::setprecision (std::numeric_limits< double >::digits10)<<getB(i) << "\t";
+	}
+	cout << endl << flush;
+
 //    _printVector(HS_);
     HSolvePassive::forwardEliminate();
     HSolvePassive::backwardSubstitute();
@@ -115,6 +133,7 @@ void HSolveActive::updateMatrix()
             GkEkSum += icurrent->Gk * icurrent->Ek;
         }
 
+
         *ihs = *( 2 + ihs ) + GkSum;
 //        cout << *iv << " "<< ic->CmByDt << " "<< ic->EmByRm << endl<<flush ;
         *( 3 + ihs ) = *iv * ic->CmByDt + ic->EmByRm + GkEkSum;
@@ -126,8 +145,9 @@ void HSolveActive::updateMatrix()
     map< unsigned int, InjectStruct >::iterator inject;
     for ( inject = inject_.begin(); inject != inject_.end(); ++inject )
     {
+
         unsigned int ic = inject->first;
-        InjectStruct& value = inject->second;
+    	InjectStruct& value = inject->second;
 
         HS_[ 4 * ic + 3 ] += value.injectVarying + value.injectBasal;
 

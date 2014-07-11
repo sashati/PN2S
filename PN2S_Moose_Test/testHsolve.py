@@ -300,7 +300,7 @@ def test_elec_alone():
         moose.useClock( 1, '/n/cell'+str(i)+'/hsolve', 'process' )
         hsolve.target = '/n/cell'+str(i)+'/compt'
     
-    if Use_MasterHSolve:
+    if Use_MasterHSolve == True and Number_Of_Cells > 1:
         hsolve = moose.HSolve( '/n/hsolve' )
         hsolve.dt = dt
         moose.useClock( 1, '/n/hsolve', 'process' )
@@ -316,9 +316,9 @@ def main():
 Use_MasterHSolve    =   True
 # Use_MasterHSolve    =   False
 Simulation_Time     =   1e-6
-Number_Of_Cells     =   2
+Number_Of_Cells     =   1
 Number_Of_Spines    =   1
-INJECT_CURRENT      =   1e-7
+INJECT_CURRENT      =   0
 
 if __name__ == '__main__':
     main()
