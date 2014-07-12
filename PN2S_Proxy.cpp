@@ -50,8 +50,12 @@ void PN2S_Proxy::FillData(){
 					for(int j = 0; j<h->nCompt_;j++)
 						mp._compsSolver.SetA(cmpt_idx,i,j, h->getA(i,j));
 
-				//Compartments
-				for ( uint ic = 0; ic < h->HSolvePassive::compartmentId_.size(); ++ic )
+				//Compartments and channels
+				vector< CurrentStruct >::iterator icurrent = h->HSolveActive::current_.begin();
+				typedef vector< CurrentStruct >::iterator currentVecIter;
+				vector< currentVecIter >::iterator iboundary = h->HSolveActive::currentBoundary_.begin();
+
+				for ( uint ic = 0; ic < h->HSolvePassive::compartmentId_.size(); ++ic, iboundary++, cmpt_idx++ )
 				{
 					Id cc = h->HSolvePassive::compartmentId_[ ic ];
 					//Add to location map
@@ -64,15 +68,10 @@ void PN2S_Proxy::FillData(){
 					mp._compsSolver.SetValue(cmpt_idx,FIELD::CM_BY_DT,h->getCmByDt(cc));
 					mp._compsSolver.SetValue(cmpt_idx,FIELD::EM_BY_RM,h->getEmByRm(cc));
 
-					//Add Channel Currents //TODO: Check it out
-					vector< CurrentStruct >::iterator icurrent = h->HSolveActive::current_.begin();
-					typedef vector< CurrentStruct >::iterator currentVecIter;
-					vector< currentVecIter >::iterator iboundary = h->HSolveActive::currentBoundary_.begin();
+					//Add Channel Currents
 					for ( ; icurrent < *iboundary; ++icurrent )
 						mp._compsSolver.AddChannelCurrent(cmpt_idx,icurrent->Gk, icurrent->Ek);
-					++iboundary;
 
-					cmpt_idx++;
 				}
 			}
 		}

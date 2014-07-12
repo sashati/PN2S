@@ -1,35 +1,61 @@
 ///////////////////////////////////////////////////////////
 //  SolverChannels.h
 //  Implementation of the Class SolverChannels
-//  Created on:      27-Dec-2013 4:23:16 PM
+//  Created on:      27-Dec-2013 7:57:50 PM
 //  Original author: Saeed Shariati
 ///////////////////////////////////////////////////////////
 
-#if !defined(A8661C97F_679E_4bb9_84D8_5EEB3718169D__INCLUDED_)
-#define A8661C97F_679E_4bb9_84D8_5EEB3718169D__INCLUDED_
+#pragma once
+
 #include "../../headers.h"
 #include "../models/Model.h"
-//#include "../NetworkAnalyzer.h"
+#include "PField.h"
+#include "ModelStatistic.h"
 
 namespace pn2s
 {
-namespace solvers
+namespace models
 {
 
-template <typename T, int arch>
 class SolverChannels
 {
 private:
-	float* hostMemory;
-	float* deviceMemory;
+	ModelStatistic _stat;
+	cudaStream_t _stream;
+
+	//Connection Fields
+	PField<TYPE_, ARCH_>  _gbar; //Select between 1,2,3,4,N power function
+	PField<TYPE_, ARCH_>  _current; // (Gk,Ek)
+	PField<TYPE_, ARCH_>  _hm;	// Hines Matrices
+
+	//Channel currents
+	PField<int, ARCH_>  _currentIndex; // (NumberOfChannels, Index in _current)
+
+
+	void  makeHinesMatrix(models::Model *model, TYPE_ * matrix);// float** matrix, uint nCompt);
+	void getValues();
+
+	void updateMatrix();
+	void updateVm();
 
 public:
 	SolverChannels();
-	virtual ~SolverChannels();
+	~SolverChannels();
+	Error_PN2S AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
+	void PrepareSolver();
+	void Input();
+	void Process();
+	void Output();
 
-//	Error_PN2S PrepareSolver(vector<models::Model<T,arch> > &models, NetworkAnalyzer<T,arch> &analyzer);
+	double GetDt(){ return _stat.dt;}
+	void SetDt(double dt){ _stat.dt = dt;}
+
+	void 	SetA(int index, int row, int col, TYPE_ value);
+	void 	SetValue(int index, FIELD::TYPE field, TYPE_ value);
+	TYPE_ 	GetValue(int index, FIELD::TYPE field);
+	void AddChannelCurrent(int index, TYPE_ gk, TYPE_ ek);
 };
 
 }
 }
-#endif // !defined(A8661C97F_679E_4bb9_84D8_5EEB3718169D__INCLUDED_)
+

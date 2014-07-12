@@ -16,8 +16,6 @@ using namespace pn2s::models;
 //CuBLAS variables
 //cublasHandle_t _handle;
 
-cudaStream_t _stream;
-
 SolverComps::SolverComps(): _stream(0)
 {
 }
@@ -189,10 +187,10 @@ void SolverComps::SetA(int index, int row, int col, TYPE_ value)
 
 void SolverComps::AddChannelCurrent(int index, TYPE_ gk, TYPE_ ek)
 {
+	if (_currentIndex[index*2] == 0)
+		_currentIndex[index*2+1] = _current.extraIndex;
 	_currentIndex[index*2]++; //Number of Channels
-	if (_currentIndex[index*2+1] == 0)
-		_currentIndex[index*2+1] = _current.extra;
 
-	_current[_current.extra++] = gk;
-	_current[_current.extra++] = ek;
+	_current[_current.extraIndex++] = gk;
+	_current[_current.extraIndex++] = ek;
 }

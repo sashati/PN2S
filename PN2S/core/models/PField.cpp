@@ -80,7 +80,7 @@ PField<T,arch>::PField():
 	host_inc(1),
 	device_inc(1),
 	_size(0),
-	extra(0)
+	extraIndex(0)
 {
 
 }
