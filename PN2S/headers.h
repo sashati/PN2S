@@ -44,7 +44,7 @@ using namespace std;
 namespace pn2s{
 //Setter and Getter functions
 struct FIELD{
-	enum  TYPE {CM_BY_DT, EM_BY_RM, RA,INIT_VM, VM, INJECT};
+	enum  TYPE {CM_BY_DT, EM_BY_RM, RA,INIT_VM, VM, INJECT, CH_X_POWER, CH_Y_POWER, CH_Z_POWER, CH_GBAR};
 };
 
 struct Location{

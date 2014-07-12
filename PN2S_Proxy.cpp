@@ -37,6 +37,7 @@ void PN2S_Proxy::FillData(){
 		for (uint mp_i = 0; mp_i < dev.ModelPacks().size(); ++mp_i) {
 			pn2s::ModelPack& mp = dev.ModelPacks()[mp_i];
 			int cmpt_idx = 0;
+			int ch_idx = 0;
 			for (uint m_i = 0; m_i < mp.models.size(); ++m_i) {
 				Id model = mp.models[m_i];
 
@@ -48,31 +49,33 @@ void PN2S_Proxy::FillData(){
 
 				for(int i = 0; i<h->nCompt_;i++)
 					for(int j = 0; j<h->nCompt_;j++)
-						mp._compsSolver.SetA(cmpt_idx,i,j, h->getA(i,j));
+						mp.ComptSolver().SetHinesMatrix(cmpt_idx,i,j, h->getA(i,j));
 
-				//Compartments
-				for ( uint ic = 0; ic < h->HSolvePassive::compartmentId_.size(); ++ic )
+				//Compartments and channels
+				vector< CurrentStruct >::iterator icurrent = h->HSolveActive::current_.begin();
+				typedef vector< CurrentStruct >::iterator currentVecIter;
+				vector< currentVecIter >::iterator iboundary = h->HSolveActive::currentBoundary_.begin();
+
+				for ( uint ic = 0; ic < h->HSolvePassive::compartmentId_.size(); ++ic, iboundary++, cmpt_idx++ )
 				{
 					Id cc = h->HSolvePassive::compartmentId_[ ic ];
 					//Add to location map
 					locationMap[cc] = Location(dev_i,mp_i,cmpt_idx);
 
 					//Copy Data
-					mp._compsSolver.SetValue(cmpt_idx,FIELD::VM,h->getVm(cc));
-					mp._compsSolver.SetValue(cmpt_idx,FIELD::INIT_VM,h->getInitVm(cc));
-					mp._compsSolver.SetValue(cmpt_idx,FIELD::RA,h->getRa(cc));
-					mp._compsSolver.SetValue(cmpt_idx,FIELD::CM_BY_DT,h->getCmByDt(cc));
-					mp._compsSolver.SetValue(cmpt_idx,FIELD::EM_BY_RM,h->getEmByRm(cc));
+					mp.ComptSolver().SetValue(cmpt_idx,FIELD::VM,h->getVm(cc));
+					mp.ComptSolver().SetValue(cmpt_idx,FIELD::INIT_VM,h->getInitVm(cc));
+					mp.ComptSolver().SetValue(cmpt_idx,FIELD::RA,h->getRa(cc));
+					mp.ComptSolver().SetValue(cmpt_idx,FIELD::CM_BY_DT,h->getCmByDt(cc));
+					mp.ComptSolver().SetValue(cmpt_idx,FIELD::EM_BY_RM,h->getEmByRm(cc));
 
-					//Add Channel Currents //TODO: Check it out
-					vector< CurrentStruct >::iterator icurrent = h->HSolveActive::current_.begin();
-					typedef vector< CurrentStruct >::iterator currentVecIter;
-					vector< currentVecIter >::iterator iboundary = h->HSolveActive::currentBoundary_.begin();
-					for ( ; icurrent < *iboundary; ++icurrent )
-						mp._compsSolver.AddChannelCurrent(cmpt_idx,icurrent->Gk, icurrent->Ek);
-					++iboundary;
+					//Add Channel for a compartment
+					for ( ; icurrent < *iboundary; ++icurrent, ch_idx++ )
+					{
+						mp.ComptSolver().ConnectChanne(cmpt_idx,ch_idx);
+//								icurrent->Gk, icurrent->Ek);
+					}
 
-					cmpt_idx++;
 				}
 			}
 		}

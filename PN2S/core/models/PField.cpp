@@ -80,7 +80,7 @@ PField<T,arch>::PField():
 	host_inc(1),
 	device_inc(1),
 	_size(0),
-	extra(0)
+	extraIndex(0)
 {
 
 }
@@ -168,4 +168,4 @@ void PField<T,arch>::print()
 }
 
 template class PField<double, ARCH_SM30>;
-template class PField<int, ARCH_SM30>;
+template class PField<uint, ARCH_SM30>;

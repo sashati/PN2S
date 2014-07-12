@@ -1,35 +1,55 @@
 ///////////////////////////////////////////////////////////
 //  SolverChannels.h
 //  Implementation of the Class SolverChannels
-//  Created on:      27-Dec-2013 4:23:16 PM
+//  Created on:      27-Dec-2013 7:57:50 PM
 //  Original author: Saeed Shariati
 ///////////////////////////////////////////////////////////
 
-#if !defined(A8661C97F_679E_4bb9_84D8_5EEB3718169D__INCLUDED_)
-#define A8661C97F_679E_4bb9_84D8_5EEB3718169D__INCLUDED_
+#pragma once
+
 #include "../../headers.h"
 #include "../models/Model.h"
-//#include "../NetworkAnalyzer.h"
+#include "PField.h"
+#include "ModelStatistic.h"
 
 namespace pn2s
 {
-namespace solvers
+namespace models
 {
 
-template <typename T, int arch>
 class SolverChannels
 {
 private:
-	float* hostMemory;
-	float* deviceMemory;
+	ModelStatistic _m_statistic;
+	cudaStream_t _stream;
+
+	//Connection Fields
+	PField<TYPE_, ARCH_>  _state;
+	PField<TYPE_, ARCH_>  _gbar;
+	PField<TYPE_, ARCH_>  _xPower;
+	PField<TYPE_, ARCH_>  _yPower;
+	PField<TYPE_, ARCH_>  _zPower;
+	PField<TYPE_, ARCH_>  _gk;
+	PField<TYPE_, ARCH_>  _ek;
+
 
 public:
 	SolverChannels();
-	virtual ~SolverChannels();
+	~SolverChannels();
 
-//	Error_PN2S PrepareSolver(vector<models::Model<T,arch> > &models, NetworkAnalyzer<T,arch> &analyzer);
+	void AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
+	void PrepareSolver();
+	void Input();
+	void Process();
+	void Output();
+
+	double GetDt(){ return _m_statistic.dt;}
+	void SetDt(double dt){ _m_statistic.dt = dt;}
+
+	void 	SetValue(int index, FIELD::TYPE field, TYPE_ value);
+	TYPE_ 	GetValue(int index, FIELD::TYPE field);
 };
 
 }
 }
-#endif // !defined(A8661C97F_679E_4bb9_84D8_5EEB3718169D__INCLUDED_)
+

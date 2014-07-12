@@ -20,7 +20,7 @@ namespace models
 class SolverComps
 {
 private:
-	ModelStatistic _stat;
+	ModelStatistic _statistic;
 	cudaStream_t _stream;
 
 	//Connection Fields
@@ -33,8 +33,7 @@ private:
 	PField<TYPE_, ARCH_>  _EmByRm;	// Em of the compartments
 
 	//Channel currents
-	PField<int, ARCH_>  _currentIndex; // (NumberOfChannels, Index in _current)
-	PField<TYPE_, ARCH_>  _current; // (Gk,Ek)
+	PField<uint, ARCH_>  _currentIndex; // (NumberOfChannels, Index in _current)
 
 
 	void  makeHinesMatrix(models::Model *model, TYPE_ * matrix);// float** matrix, uint nCompt);
@@ -52,15 +51,15 @@ public:
 	void Process();
 	void Output();
 
-	double GetDt(){ return _stat.dt;}
-	void SetDt(double dt){ _stat.dt = dt;}
+	double GetDt(){ return _statistic.dt;}
+	void SetDt(double dt){ _statistic.dt = dt;}
 
-	void 	SetA(int index, int row, int col, TYPE_ value);
-	TYPE_ GetA(int n,int i, int j){return _hm[n*_stat.nCompts*_stat.nCompts+i*_stat.nCompts+j];}
+	void 	SetHinesMatrix(int n, int row, int col, TYPE_ value);
+	TYPE_ GetA(int n,int i, int j){return _hm[n*_statistic.nCompts_per_model*_statistic.nCompts_per_model+i*_statistic.nCompts_per_model+j];}
 //	TYPE_ GetRHS(int n,int i){return _rhs[n*nComp+i];}
-	void 	SetValue(int index, FIELD::TYPE field, TYPE_ value);
-	TYPE_ 	GetValue(int index, FIELD::TYPE field);
-	void AddChannelCurrent(int index, TYPE_ gk, TYPE_ ek);
+	void 	SetValue(int cmpt_index, FIELD::TYPE field, TYPE_ value);
+	TYPE_ 	GetValue(int cmpt_index, FIELD::TYPE field);
+	void ConnectChanne(int cmpt_index,  int ch_index);
 };
 
 }

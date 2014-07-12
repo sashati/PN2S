@@ -21,14 +21,10 @@ ModelPack::~ModelPack(){
 
 }
 
-Error_PN2S ModelPack::AllocateMemory(models::ModelStatistic s, cudaStream_t st){
+void ModelPack::AllocateMemory(models::ModelStatistic s, cudaStream_t st){
 	stat = s;
-
-	Error_PN2S res = Error_PN2S::NO_ERROR;
-	res = _compsSolver.AllocateMemory(stat, st);
-	assert(res==Error_PN2S::NO_ERROR);
-
-	return res;
+	_compsSolver.AllocateMemory(stat, st);
+	_chanSolver.AllocateMemory(stat, st);
 }
 
 //void ModelPack::AddModel(HSolve* h){
@@ -54,6 +50,7 @@ Error_PN2S ModelPack::AllocateMemory(models::ModelStatistic s, cudaStream_t st){
 
 void ModelPack::PrepareSolvers(){
 	_compsSolver.PrepareSolver();
+	_chanSolver.PrepareSolver();
 
 //	res = _channelsSolver.PrepareSolver(net, _analyzer);
 
@@ -64,16 +61,19 @@ void ModelPack::PrepareSolvers(){
 void ModelPack::Input()
 {
 	//For each model in the pack, executes the Process()
+	_chanSolver.Input();
 	_compsSolver.Input();
 }
 
 void ModelPack::Process()
 {
+	_chanSolver.Process();
 	_compsSolver.Process();
 }
 
 void ModelPack::Output()
 {
+	_chanSolver.Output();
 	_compsSolver.Output();
 }
 

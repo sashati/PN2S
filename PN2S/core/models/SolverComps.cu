@@ -16,8 +16,6 @@ using namespace pn2s::models;
 //CuBLAS variables
 //cublasHandle_t _handle;
 
-cudaStream_t _stream;
-
 SolverComps::SolverComps(): _stream(0)
 {
 }
@@ -29,14 +27,14 @@ SolverComps::~SolverComps()
 
 Error_PN2S SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t stream)
 {
-	_stat = s;
+	_statistic = s;
 	_stream = stream;
 
-	if(_stat.nCompts == 0)
+	if(_statistic.nCompts_per_model == 0)
 		return Error_PN2S::NO_ERROR;
 
-	size_t modelSize = s.nCompts*s.nCompts;
-	size_t vectorSize = s.nModels * s.nCompts;
+	size_t modelSize = s.nCompts_per_model*s.nCompts_per_model;
+	size_t vectorSize = s.nModels * s.nCompts_per_model;
 
 	_hm.AllocateMemory(modelSize*s.nModels);
 	_rhs.AllocateMemory(vectorSize);
@@ -46,15 +44,14 @@ Error_PN2S SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t s
 	_CmByDt.AllocateMemory(vectorSize);
 	_EmByRm.AllocateMemory(vectorSize);
 
-	_currentIndex.AllocateMemory(vectorSize*2,0);
-	_current.AllocateMemory(_stat.nChannels*2);
+	_currentIndex.AllocateMemory(vectorSize*2, 0); //Filled with zero
 
 	return Error_PN2S::NO_ERROR;
 }
 
 void SolverComps::PrepareSolver()
 {
-	if(_stat.nCompts == 0)
+	if(_statistic.nCompts_per_model == 0)
 		return;
 
 	//Copy to GPU
@@ -104,7 +101,7 @@ void SolverComps::Input()
 
 void SolverComps::Process()
 {
-	uint vectorSize = _stat.nModels * _stat.nCompts;
+	uint vectorSize = _statistic.nModels * _statistic.nCompts_per_model;
 
 	dim3 threads, blocks;
 	threads=dim3(min((vectorSize&0xFFFFFFC0)|0x20,256), 1); //TODO: Check
@@ -116,7 +113,7 @@ void SolverComps::Process()
 			_CmByDt.device,
 			_EmByRm.device,
 			vectorSize,
-			_stat.dt);
+			_statistic.dt);
 	assert(cudaSuccess == cudaGetLastError());
 
 //	cudaStreamSynchronize(_stream);
@@ -125,7 +122,7 @@ void SolverComps::Process()
 	_hm.print();
 	_rhs.Device2Host();
 	_rhs.print();
-	assert(!dsolve_batch (_hm.device, _rhs.device, _VMid.device, _stat.nCompts, _stat.nModels, _stream));
+	assert(!dsolve_batch (_hm.device, _rhs.device, _VMid.device, _statistic.nCompts_per_model, _statistic.nModels, _stream));
 
 	update_vm <<<blocks, threads,0, _stream>>> (
 				_Vm.device,
@@ -182,17 +179,14 @@ TYPE_ SolverComps::GetValue(int index, FIELD::TYPE field)
 	}
 }
 
-void SolverComps::SetA(int index, int row, int col, TYPE_ value)
+void SolverComps::SetHinesMatrix(int n, int row, int col, TYPE_ value)
 {
-	_hm[_stat.nCompts*_stat.nCompts*index + row *_stat.nCompts + col] = value;
+	_hm[_statistic.nCompts_per_model*_statistic.nCompts_per_model*n + row *_statistic.nCompts_per_model + col] = value;
 }
 
-void SolverComps::AddChannelCurrent(int index, TYPE_ gk, TYPE_ ek)
+void SolverComps::ConnectChanne(int cmpt_index, int ch_index)
 {
-	_currentIndex[index*2]++; //Number of Channels
-	if (_currentIndex[index*2+1] == 0)
-		_currentIndex[index*2+1] = _current.extra;
-
-	_current[_current.extra++] = gk;
-	_current[_current.extra++] = ek;
+	if (_currentIndex[cmpt_index*2] == 0)
+		_currentIndex[cmpt_index*2+1] = ch_index;
+	_currentIndex[cmpt_index*2]++;
 }

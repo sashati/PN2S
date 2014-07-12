@@ -20,37 +20,29 @@ namespace pn2s
 
 class ModelPack
 {
-private:
+
 public:
+	models::SolverComps _compsSolver;
+	models::SolverChannels _chanSolver;
+
 	double _dt;
 	vector<Id> models;
-
 	models::ModelStatistic stat;
 
 	ModelPack();
 	virtual ~ModelPack();
 
-	double GetDt(){ return _dt;}
-//	void SetDt(double dt){ _dt = dt;
-//		_compsSolver.SetDt(dt);
-//	}
 
-	Error_PN2S AllocateMemory( models::ModelStatistic s, cudaStream_t st);
-//	void AddModel(HSolve* h);
+	void AllocateMemory( models::ModelStatistic s, cudaStream_t st);
 	void PrepareSolvers();
 
 	void Process();
 	void Output();
 	void Input();
 
-	models::SolverComps _compsSolver; //TODO Encapsulation
-	//	solvers::SolverChannels<TYPE_,CURRENT_ARCH> _channelsSolver; //TODO Encapsulation
-
-//	friend ostream& operator<<(ostream& out, ModelPack<T,arch>& dt)
-//	{
-//	    out << "ModelPakc";
-//	    return out;
-//	}
+	double GetDt(){ return _dt;}
+	models::SolverComps& ComptSolver(){return _compsSolver;}
+	models::SolverChannels& ChannelSolver(){return _chanSolver;}
 
 };
 

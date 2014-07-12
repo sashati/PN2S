@@ -34,7 +34,7 @@ public:
 	T* device;
 	int device_inc;
 
-	int extra;
+	int extraIndex;
 
 	PField();
 	//TODO: Use it!

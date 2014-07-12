@@ -46,7 +46,7 @@ Matrix.o: Matrix.cpp Matrix.h
 Neuron.o: Neuron.cpp Neuron.h Compartment.o
 NeuronVector.o: NeuronVector.cpp NeuronVector.h
 PField.o: PField.cpp PField.h
-SolverChannels.o: SolverChannels.cpp SolverChannels.h 
+SolverChannels.o: SolverChannels.cu SolverChannels.h 
 SolverComps.o: SolverComps.cu SolverComps.h
 solve.o: solve.cu solve.h operations.h
 
