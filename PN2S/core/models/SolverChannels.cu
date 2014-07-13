@@ -30,8 +30,10 @@ void SolverChannels::AllocateMemory(models::ModelStatistic& s, cudaStream_t stre
 	if(_m_statistic.nChannels_all == 0)
 		return;
 
-	_state.AllocateMemory(_m_statistic.nChannels_all);
 	_gbar.AllocateMemory(_m_statistic.nChannels_all);
+	_x.AllocateMemory(_m_statistic.nChannels_all);
+	_y.AllocateMemory(_m_statistic.nChannels_all);
+	_z.AllocateMemory(_m_statistic.nChannels_all);
 	_xPower.AllocateMemory(_m_statistic.nChannels_all);
 	_yPower.AllocateMemory(_m_statistic.nChannels_all);
 	_zPower.AllocateMemory(_m_statistic.nChannels_all);
@@ -44,8 +46,10 @@ void SolverChannels::PrepareSolver()
 	if(_m_statistic.nChannels_all)
 	{
 		//Copy to GPU
-		_state.Host2Device();
 		_gbar.Host2Device();
+		_x.Host2Device();
+		_y.Host2Device();
+		_z.Host2Device();
 		_xPower.Host2Device();
 		_yPower.Host2Device();
 		_zPower.Host2Device();
@@ -78,13 +82,13 @@ void SolverChannels::Process()
 	blocks=dim3(max((int)(_m_statistic.nChannels_all / threads.x),1), 1);
 
 	advanceChannels <<<blocks, threads,0, _stream>>> (
-			_state.device,
+			_x.device,
 			_m_statistic.nChannels_all,
 			_m_statistic.dt);
 	assert(cudaSuccess == cudaGetLastError());
 
-	_state.Device2Host();
-	_state.print();
+	_x.Device2Host();
+	_x.print();
 
 }
 

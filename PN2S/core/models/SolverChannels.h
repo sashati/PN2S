@@ -24,13 +24,18 @@ private:
 	cudaStream_t _stream;
 
 	//Connection Fields
-	PField<TYPE_, ARCH_>  _state;
 	PField<TYPE_, ARCH_>  _gbar;
+	PField<TYPE_, ARCH_>  _x; // (x,y,z) are same as _stat in MOOSE
+	PField<TYPE_, ARCH_>  _y;
+	PField<TYPE_, ARCH_>  _z;
 	PField<TYPE_, ARCH_>  _xPower;
 	PField<TYPE_, ARCH_>  _yPower;
 	PField<TYPE_, ARCH_>  _zPower;
+
 	PField<TYPE_, ARCH_>  _gk;
 	PField<TYPE_, ARCH_>  _ek;
+
+	PField<uint, ARCH_>  _instant;
 
 
 public:
