@@ -38,10 +38,10 @@ private:
 	PField<uint, ARCH_>  _instant;
 
 
+
 public:
 	SolverChannels();
 	~SolverChannels();
-
 	void AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
 	void PrepareSolver();
 	void Input();

@@ -7,6 +7,7 @@
 
 #include "SolverChannels.h"
 #include <math.h>
+
 #include <assert.h>
 #include <cuda_runtime.h>
 #include <cublas_v2.h>

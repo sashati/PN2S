@@ -75,7 +75,6 @@ void PN2S_Proxy::FillData(){
 						mp.ComptSolver().ConnectChanne(cmpt_idx,ch_idx);
 //								icurrent->Gk, icurrent->Ek);
 					}
-
 				}
 			}
 		}
