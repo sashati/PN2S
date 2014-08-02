@@ -64,6 +64,13 @@ public:
 	double Zpower_;
 
 	/**
+	 * Extra values for GPU execution
+	 */
+	vector<double> Xparams;
+	vector<double> Yparams;
+	vector<double> Zparams;
+
+	/**
 	 * Instantaneously change conductance - conductance follows no kinetics
 	 * It's like tau = 0 => conductance change directly mirrors voltage
 	 * step.

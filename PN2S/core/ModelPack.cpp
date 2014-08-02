@@ -67,7 +67,7 @@ void ModelPack::Input()
 
 void ModelPack::Process()
 {
-	_chanSolver.Process();
+	_chanSolver.Process(&_compsSolver._Vm);
 	_compsSolver.Process();
 }
 

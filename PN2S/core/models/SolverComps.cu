@@ -44,6 +44,7 @@ Error_PN2S SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t s
 	_CmByDt.AllocateMemory(vectorSize);
 	_EmByRm.AllocateMemory(vectorSize);
 
+	//Connection to Channels
 	_currentIndex.AllocateMemory(vectorSize*2, 0); //Filled with zero
 
 	return Error_PN2S::NO_ERROR;
@@ -184,7 +185,7 @@ void SolverComps::SetHinesMatrix(int n, int row, int col, TYPE_ value)
 	_hm[_statistic.nCompts_per_model*_statistic.nCompts_per_model*n + row *_statistic.nCompts_per_model + col] = value;
 }
 
-void SolverComps::ConnectChanne(int cmpt_index, int ch_index)
+void SolverComps::ConnectChannel(int cmpt_index, int ch_index)
 {
 	if (_currentIndex[cmpt_index*2] == 0)
 		_currentIndex[cmpt_index*2+1] = ch_index;

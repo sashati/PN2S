@@ -21,6 +21,51 @@ namespace pn2s
 {
 namespace models
 {
+#define PARAMS_A_A 0
+#define PARAMS_A_B 1
+#define PARAMS_A_C 2
+#define PARAMS_A_D 3
+#define PARAMS_A_F 4
+#define PARAMS_B_A 5
+#define PARAMS_B_B 6
+#define PARAMS_B_C 7
+#define PARAMS_B_D 8
+#define PARAMS_B_F 9
+#define PARAMS_MIN 10
+#define PARAMS_MAX 11
+#define PARAMS_DIV 12
+
+struct ChannelType {
+	// (x,y,z) are same as _state in MOOSE
+	unsigned char _x_power;
+	TYPE_ _x;
+	unsigned char _y_power;
+	TYPE_ _y;
+
+	unsigned char _instant;
+	TYPE_ _gbar;
+
+	unsigned char _z_power;
+	TYPE_ _z;
+
+	//Params X
+	TYPE_ _x_params[13];
+	TYPE_ _y_params[13];
+	TYPE_ _z_params[13];
+
+
+	friend ostream& operator<<(ostream& out, const ChannelType& obj) // output
+	{
+	    out << "("
+	    		<<  (int) obj._x_power << ", " << obj._x << ", "
+	    		<<  (int) obj._y_power << ", " << obj._y << ", "
+	    		<<  (int) obj._z_power << ", " << obj._z << ", "
+	    		<<  (int) obj._instant << ", " << obj._gbar
+	    		<< ")";
+	    return out;
+	}
+
+};
 
 template <typename T, int arch>
 class PField

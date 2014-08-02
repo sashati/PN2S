@@ -56,6 +56,10 @@ void PN2S_Proxy::FillData(){
 				typedef vector< CurrentStruct >::iterator currentVecIter;
 				vector< currentVecIter >::iterator iboundary = h->HSolveActive::currentBoundary_.begin();
 
+				vector< double >::iterator istate = h->HSolveActive::state_.begin();
+				vector< ChannelStruct >::iterator ichannel = h->HSolveActive::channel_.begin();
+
+
 				for ( uint ic = 0; ic < h->HSolvePassive::compartmentId_.size(); ++ic, iboundary++, cmpt_idx++ )
 				{
 					Id cc = h->HSolvePassive::compartmentId_[ ic ];
@@ -70,9 +74,42 @@ void PN2S_Proxy::FillData(){
 					mp.ComptSolver().SetValue(cmpt_idx,FIELD::EM_BY_RM,h->getEmByRm(cc));
 
 					//Add Channel for a compartment
-					for ( ; icurrent < *iboundary; ++icurrent, ch_idx++ )
+					for ( ; icurrent < *iboundary; ++icurrent, ch_idx++, ichannel++ )
 					{
-						mp.ComptSolver().ConnectChanne(cmpt_idx,ch_idx);
+						if(ichannel->Xpower_)
+						{
+							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_X_POWER,ichannel->Xpower_);
+							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_X,*istate);
+							mp.ChannelSolver().SetGateXParams(ch_idx,ichannel->Xparams);
+							istate++;
+						}
+						if(ichannel->Ypower_)
+						{
+							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Y_POWER,ichannel->Xpower_);
+							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Y,*istate);
+							mp.ChannelSolver().SetGateYParams(ch_idx,ichannel->Yparams);
+							istate++;
+						}
+						if(ichannel->Zpower_)
+						{
+							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Z_POWER,ichannel->Zpower_);
+							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Z,*istate);
+							mp.ChannelSolver().SetGateZParams(ch_idx,ichannel->Zparams);
+							istate++;
+						}
+
+//						min = Field< double >::get( caGate[ ig ], "min" );
+//						        max = Field< double >::get( caGate[ ig ], "max" );
+//						        divs = Field< unsigned int >::get( caGate[ ig ], "divs" );
+//						        dx = ( max - min ) / divs;
+
+//						min = Field< double >::get( vGate[ ig ], "min" );
+//						        max = Field< double >::get( vGate[ ig ], "max" );
+//						        divs = Field< unsigned int >::get( vGate[ ig ], "divs" );
+
+
+
+						mp.ComptSolver().ConnectChannel(cmpt_idx,ch_idx);
 //								icurrent->Gk, icurrent->Ek);
 					}
 				}

@@ -97,7 +97,7 @@ Error_PN2S Device::AllocateMemory(double dt, vector<Id >& m, size_t start, size_
 		//Check nComp for each compartments and update it's fields
 		if(pack == nstreams-1) //Last one carries extra parts
 		{
-			 nModel_in_pack += nModel%nstreams;
+			 nModel_in_pack += (nModel > nstreams)?nModel%nstreams:nModel;
 		}
 
 		/**
@@ -113,7 +113,7 @@ Error_PN2S Device::AllocateMemory(double dt, vector<Id >& m, size_t start, size_
 			else
 				assert(nCompt == ((HinesMatrix*)h)->nCompt_); //Check for others
 
-			numberOfChannels+= h->HSolveActive::current_.size();
+			numberOfChannels+= h->HSolveActive::channelId_.size();
 		}
 		ModelStatistic stat(dt, nModel_in_pack, nCompt, numberOfChannels);
 

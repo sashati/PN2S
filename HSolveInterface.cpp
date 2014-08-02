@@ -279,12 +279,31 @@ void HSolve::setPowers(
     Id id,
     double Xpower,
     double Ypower,
-    double Zpower )
+    double Zpower)
 {
     unsigned int index = localIndex( id );
     assert( index < channel_.size() );
     channel_[ index ].setPowers( Xpower, Ypower, Zpower );
 }
+void HSolve::setXparams(Id id, vector<double> params)
+{
+	unsigned int index = localIndex( id );
+	assert( index < channel_.size() );
+	channel_[ index ].Xparams = params;
+}
+void HSolve::setYparams(Id id, vector<double> params)
+{
+	unsigned int index = localIndex( id );
+	assert( index < channel_.size() );
+	channel_[ index ].Yparams = params;
+}
+void HSolve::setZparams(Id id, vector<double> params)
+{
+	unsigned int index = localIndex( id );
+	assert( index < channel_.size() );
+	channel_[ index ].Zparams = params;
+}
+
 
 int HSolve::getInstant( Id id ) const
 {

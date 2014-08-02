@@ -26,7 +26,6 @@ private:
 	//Connection Fields
 	PField<TYPE_, ARCH_>  _hm;	// Hines Matrices
 	PField<TYPE_, ARCH_>  _rhs;	// Right hand side of the equation
-	PField<TYPE_, ARCH_>  _Vm;	// Vm of the compartments
 	PField<TYPE_, ARCH_>  _VMid;	// Vm of the compartments
 	PField<TYPE_, ARCH_>  _Ra;	// Ra of the compartments
 	PField<TYPE_, ARCH_>  _CmByDt;	// Cm of the compartments
@@ -43,6 +42,7 @@ private:
 	void updateVm();
 
 public:
+	PField<TYPE_, ARCH_>  _Vm;	// Vm of the compartments
 	SolverComps();
 	~SolverComps();
 	Error_PN2S AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
@@ -59,7 +59,7 @@ public:
 //	TYPE_ GetRHS(int n,int i){return _rhs[n*nComp+i];}
 	void 	SetValue(int cmpt_index, FIELD::TYPE field, TYPE_ value);
 	TYPE_ 	GetValue(int cmpt_index, FIELD::TYPE field);
-	void ConnectChanne(int cmpt_index,  int ch_index);
+	void ConnectChannel(int cmpt_index,  int ch_index);
 };
 
 }

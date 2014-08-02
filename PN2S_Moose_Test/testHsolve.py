@@ -53,16 +53,27 @@ EREST_ACT = -70e-3
 # where x is membrane voltage and y is the rate constant for gate
 # closing or opening
 
-Na_m_params = [1e5 * (25e-3 + EREST_ACT),   # 'A_A':
-                -1e5,                       # 'A_B':
-                -1.0,                       # 'A_C':
-                -25e-3 - EREST_ACT,         # 'A_D':
-               -10e-3,                      # 'A_F':
-                4e3,                     # 'B_A':
-                0.0,                        # 'B_B':
-                0.0,                        # 'B_C':
-                0.0 - EREST_ACT,            # 'B_D':
-                18e-3                       # 'B_F':    
+# Na_m_params = [1e5 * (25e-3 + EREST_ACT),   # 'A_A':
+#                 -1e5,                       # 'A_B':
+#                 -1.0,                       # 'A_C':
+#                 -25e-3 - EREST_ACT,         # 'A_D':
+#                -10e-3,                      # 'A_F':
+#                 4e3,                     # 'B_A':
+#                 0.0,                        # 'B_B':
+#                 0.0,                        # 'B_C':
+#                 0.0 - EREST_ACT,            # 'B_D':
+#                 18e-3                       # 'B_F':    
+               # ]
+Na_m_params = [1,   # 'A_A':
+                2,                       # 'A_B':
+                10,                       # 'A_C':
+                100,         # 'A_D':
+               400,                      # 'A_F':
+                500,                     # 'B_A':
+                800,                        # 'B_B':
+                1000,                        # 'B_C':
+                2000,            # 'B_D':
+                4000                       # 'B_F':    
                ]
 Na_h_params = [ 70.0,                        # 'A_A':
                 0.0,                       # 'A_B':
@@ -99,6 +110,7 @@ def create_squid(parent):
     compt.Cm = 7.85e-9 * 0.5
     compt.Rm = 4.2e5 * 5.0
     compt.Ra = 7639.44e3
+
     nachan = moose.HHChannel( parent.path+'/compt/Na' )
     nachan.Xpower = 3
     xGate = moose.HHGate(nachan.path + '/gateX')    
@@ -313,10 +325,10 @@ def test_elec_alone():
 def main():
     test_elec_alone()
 
-# Use_MasterHSolve    =   True
-Use_MasterHSolve    =   False
+Use_MasterHSolve    =   True
+# Use_MasterHSolve    =   False
 Simulation_Time     =   1e-6
-Number_Of_Cells     =   1
+Number_Of_Cells     =   2
 Number_Of_Spines    =   1
 INJECT_CURRENT      =   0
 

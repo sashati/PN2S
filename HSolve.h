@@ -101,6 +101,11 @@ public:
 		double Xpower,
 		double Ypower,
 		double Zpower );
+
+	//Extra method to feed GPU data
+	void setXparams(Id id, vector<double> params);
+	void setYparams(Id id, vector<double> params);
+	void setZparams(Id id, vector<double> params);
 	
 	int getInstant( Id id ) const;
 	void setInstant( Id id, int instant );
