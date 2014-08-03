@@ -31,6 +31,8 @@ private:
 	PField<TYPE_, ARCH_>  _Ra;	// Ra of the compartments
 	PField<TYPE_, ARCH_>  _CmByDt;	// Cm of the compartments
 	PField<TYPE_, ARCH_>  _EmByRm;	// Em of the compartments
+	PField<TYPE_, ARCH_>  _InjectBasal;
+	PField<TYPE_, ARCH_>  _InjectVarying;
 
 	//Channel currents
 	PField<uint, ARCH_>  _channelIndex; 	// (NumberOfChannels, Index in _current)

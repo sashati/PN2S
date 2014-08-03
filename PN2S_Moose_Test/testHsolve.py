@@ -64,17 +64,6 @@ Na_m_params = [1e5 * (25e-3 + EREST_ACT),   # 'A_A':
                 0.0 - EREST_ACT,            # 'B_D':
                 18e-3                       # 'B_F':    
                ]
-# Na_m_params = [1,   # 'A_A':
-#                 2,                       # 'A_B':
-#                 10,                       # 'A_C':
-#                 100,         # 'A_D':
-#                400,                      # 'A_F':
-#                 500,                     # 'B_A':
-#                 800,                        # 'B_B':
-#                 1000,                        # 'B_C':
-#                 2000,            # 'B_D':
-#                 4000                       # 'B_F':    
-#                ]
 Na_h_params = [ 70.0,                        # 'A_A':
                 0.0,                       # 'A_B':
                 0.0,                       # 'A_C':
@@ -326,11 +315,11 @@ def main():
     test_elec_alone()
 
 Use_MasterHSolve    =   True
-# Use_MasterHSolve    =   False
-Simulation_Time     =   1e-6
-Number_Of_Cells     =   2
+#Use_MasterHSolve    =   False
+Simulation_Time     =   2e-6
+Number_Of_Cells     =   1
 Number_Of_Spines    =   1
-INJECT_CURRENT      =   0
+INJECT_CURRENT      =   1
 
 if __name__ == '__main__':
     main()

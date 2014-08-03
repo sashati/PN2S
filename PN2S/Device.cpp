@@ -30,7 +30,6 @@ extern std::map< Id, pn2s::Location > locationMap; //Locates in DeviceManager
 
 
 Device::Device(int _id): id(_id), _dt(1), nstreams(DEFAULT_STREAM_NUMBER){
-	cudaDeviceReset();
 	_modelPacks.clear();
 
 	/**
@@ -97,9 +96,7 @@ Error_PN2S Device::AllocateMemory(double dt, vector<Id >& m, size_t start, size_
 	for (int pack = 0; pack < nstreams; ++pack) {
 		//Check nComp for each compartments and update it's fields
 		if(pack == nstreams-1) //Last one carries extra parts
-		{
-			 nModel_in_pack += (nModel > nstreams)?nModel%nstreams:nModel;
-		}
+			nModel_in_pack += (nModel > nstreams)?nModel%nstreams:nModel;
 
 		/**
 		 * Create statistic and Allocate memory for Modelpacks

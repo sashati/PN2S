@@ -209,7 +209,7 @@ double HSolve::getIa( Id id ) const
 
 double HSolve::getInject( Id id ) const
 {
-	CHECK_GET_PN2S(pn2s::FIELD::INJECT);
+	CHECK_GET_PN2S(pn2s::FIELD::INJECT_BASAL);
 
     unsigned int index = localIndex( id );
     // Not assert( index < inject_.size() ), because inject_ is a map.
@@ -226,7 +226,7 @@ double HSolve::getInject( Id id ) const
 
 void HSolve::setInject( Id id, double value )
 {
-	CHECK_SET_PN2S(pn2s::FIELD::INJECT);
+	CHECK_SET_PN2S(pn2s::FIELD::INJECT_BASAL);
     unsigned int index = localIndex( id );
     // Not assert( index < inject_.size() ), because inject_ is a map.
     assert( index < nCompt_ );
@@ -239,6 +239,7 @@ void HSolve::addInject( Id id, double value )
     // Not assert( index < inject_.size() ), because inject_ is a map.
     assert( index < nCompt_ );
     inject_[ index ].injectVarying += value;
+    assert(0); //Should not come here! Test injectVarying!
 }
 
 

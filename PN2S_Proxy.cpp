@@ -49,7 +49,7 @@ void PN2S_Proxy::FillData(){
 
 				for(int i = 0; i<h->nCompt_;i++)
 					for(int j = 0; j<h->nCompt_;j++)
-						mp.ComptSolver().SetHinesMatrix(cmpt_idx,i,j, h->getA(i,j));
+						mp.ComptSolver().SetHinesMatrix(m_i,i,j, h->getA(i,j));
 
 				//Compartments and channels
 				vector< CurrentStruct >::iterator icurrent = h->HSolveActive::current_.begin();
@@ -72,6 +72,8 @@ void PN2S_Proxy::FillData(){
 					mp.ComptSolver().SetValue(cmpt_idx,FIELD::RA,h->getRa(cc));
 					mp.ComptSolver().SetValue(cmpt_idx,FIELD::CM_BY_DT,h->getCmByDt(cc));
 					mp.ComptSolver().SetValue(cmpt_idx,FIELD::EM_BY_RM,h->getEmByRm(cc));
+
+					mp.ComptSolver().SetValue(cmpt_idx,FIELD::INJECT_BASAL,h->getInject(cc));
 
 					//Add Channel for a compartment
 					for ( ; icurrent < *iboundary; ++icurrent, ch_idx++, ichannel++ )

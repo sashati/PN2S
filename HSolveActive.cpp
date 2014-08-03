@@ -54,14 +54,14 @@ void HSolveActive::step( ProcPtr info )
 
     advanceChannels( info->dt );
     calculateChannelCurrents();
-    cout << HS_.size() << endl<<flush;
-    _printVector(HS_);
-    for (int i = 0; i < nCompt_; ++i) {
-    	for (int j = 0; j < nCompt_; ++j) {
-    		cout << getA(i,j) << "\t";
-		}
-    	cout << endl << flush;
-	}
+//    cout << HS_.size() << endl<<flush;
+//    _printVector(HS_);
+//    for (int i = 0; i < nCompt_; ++i) {
+//    	for (int j = 0; j < nCompt_; ++j) {
+//    		cout << getA(i,j) << "\t";
+//		}
+//    	cout << endl << flush;
+//	}
     updateMatrix();
     cout << HS_.size() << endl<<flush;
 	for (int i = 0; i < nCompt_; ++i) {
@@ -133,12 +133,12 @@ void HSolveActive::updateMatrix()
             GkEkSum += icurrent->Gk * icurrent->Ek;
         }
 
-        cout << *ihs << " "<< *(2+ihs)<< " "<< *(3+ihs) <<endl<<flush ;
+//        cout << *ihs << " "<< *(2+ihs)<< " "<< *(3+ihs) <<endl<<flush ;
 
         *ihs = *( 2 + ihs ) + GkSum;
         *( 3 + ihs ) = *iv * ic->CmByDt + ic->EmByRm + GkEkSum;
 
-        cout << *ihs << " "<< *(2+ihs)<< " "<< *(3+ihs) <<endl<<flush ;
+//        cout << *ihs << " "<< *(2+ihs)<< " "<< *(3+ihs) <<endl<<flush ;
 
         ++iboundary, ihs += 4, ++iv;
     }
@@ -172,9 +172,10 @@ void HSolveActive::updateMatrix()
     vector< double >::iterator iec;
     for ( iec = externalCurrent_.begin(); iec != externalCurrent_.end(); iec += 2 )
     {
-        cout <<*( iec )<< endl <<flush;
+    	assert(!(*( iec ) || *( iec + 1 )));
+//        cout <<*( iec )<< endl <<flush;
         *ihs += *iec;
-        cout <<*( iec + 1 )<< endl <<flush;
+//        cout <<*( iec + 1 )<< endl <<flush;
         *( 3 + ihs ) += *( iec + 1 );
 
         ihs += 4;
