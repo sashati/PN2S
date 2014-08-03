@@ -133,14 +133,16 @@ void HSolveActive::updateMatrix()
             GkEkSum += icurrent->Gk * icurrent->Ek;
         }
 
+        cout << *ihs << " "<< *(2+ihs)<< " "<< *(3+ihs) <<endl<<flush ;
 
         *ihs = *( 2 + ihs ) + GkSum;
-//        cout << *iv << " "<< ic->CmByDt << " "<< ic->EmByRm << endl<<flush ;
         *( 3 + ihs ) = *iv * ic->CmByDt + ic->EmByRm + GkEkSum;
-//        cout << *( 3 + ihs ) << endl<<flush ;
+
+        cout << *ihs << " "<< *(2+ihs)<< " "<< *(3+ihs) <<endl<<flush ;
 
         ++iboundary, ihs += 4, ++iv;
     }
+
 
     map< unsigned int, InjectStruct >::iterator inject;
     for ( inject = inject_.begin(); inject != inject_.end(); ++inject )

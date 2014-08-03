@@ -53,28 +53,28 @@ EREST_ACT = -70e-3
 # where x is membrane voltage and y is the rate constant for gate
 # closing or opening
 
-# Na_m_params = [1e5 * (25e-3 + EREST_ACT),   # 'A_A':
-#                 -1e5,                       # 'A_B':
-#                 -1.0,                       # 'A_C':
-#                 -25e-3 - EREST_ACT,         # 'A_D':
-#                -10e-3,                      # 'A_F':
-#                 4e3,                     # 'B_A':
-#                 0.0,                        # 'B_B':
-#                 0.0,                        # 'B_C':
-#                 0.0 - EREST_ACT,            # 'B_D':
-#                 18e-3                       # 'B_F':    
-               # ]
-Na_m_params = [1,   # 'A_A':
-                2,                       # 'A_B':
-                10,                       # 'A_C':
-                100,         # 'A_D':
-               400,                      # 'A_F':
-                500,                     # 'B_A':
-                800,                        # 'B_B':
-                1000,                        # 'B_C':
-                2000,            # 'B_D':
-                4000                       # 'B_F':    
+Na_m_params = [1e5 * (25e-3 + EREST_ACT),   # 'A_A':
+                -1e5,                       # 'A_B':
+                -1.0,                       # 'A_C':
+                -25e-3 - EREST_ACT,         # 'A_D':
+               -10e-3,                      # 'A_F':
+                4e3,                     # 'B_A':
+                0.0,                        # 'B_B':
+                0.0,                        # 'B_C':
+                0.0 - EREST_ACT,            # 'B_D':
+                18e-3                       # 'B_F':    
                ]
+# Na_m_params = [1,   # 'A_A':
+#                 2,                       # 'A_B':
+#                 10,                       # 'A_C':
+#                 100,         # 'A_D':
+#                400,                      # 'A_F':
+#                 500,                     # 'B_A':
+#                 800,                        # 'B_B':
+#                 1000,                        # 'B_C':
+#                 2000,            # 'B_D':
+#                 4000                       # 'B_F':    
+#                ]
 Na_h_params = [ 70.0,                        # 'A_A':
                 0.0,                       # 'A_B':
                 0.0,                       # 'A_C':

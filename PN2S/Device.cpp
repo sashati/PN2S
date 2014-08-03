@@ -30,6 +30,7 @@ extern std::map< Id, pn2s::Location > locationMap; //Locates in DeviceManager
 
 
 Device::Device(int _id): id(_id), _dt(1), nstreams(DEFAULT_STREAM_NUMBER){
+	cudaDeviceReset();
 	_modelPacks.clear();
 
 	/**

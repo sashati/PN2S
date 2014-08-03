@@ -85,7 +85,7 @@ void PN2S_Proxy::FillData(){
 						}
 						if(ichannel->Ypower_)
 						{
-							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Y_POWER,ichannel->Xpower_);
+							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Y_POWER,ichannel->Ypower_);
 							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Y,*istate);
 							mp.ChannelSolver().SetGateYParams(ch_idx,ichannel->Yparams);
 							istate++;
@@ -97,20 +97,12 @@ void PN2S_Proxy::FillData(){
 							mp.ChannelSolver().SetGateZParams(ch_idx,ichannel->Zparams);
 							istate++;
 						}
+						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_GBAR,ichannel->Gbar_);
+						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_GK,icurrent->Gk);
+						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_EK,icurrent->Ek);
 
-//						min = Field< double >::get( caGate[ ig ], "min" );
-//						        max = Field< double >::get( caGate[ ig ], "max" );
-//						        divs = Field< unsigned int >::get( caGate[ ig ], "divs" );
-//						        dx = ( max - min ) / divs;
-
-//						min = Field< double >::get( vGate[ ig ], "min" );
-//						        max = Field< double >::get( vGate[ ig ], "max" );
-//						        divs = Field< unsigned int >::get( vGate[ ig ], "divs" );
-
-
-
+						//Connect the channel with the compartment
 						mp.ComptSolver().ConnectChannel(cmpt_idx,ch_idx);
-//								icurrent->Gk, icurrent->Ek);
 					}
 				}
 			}

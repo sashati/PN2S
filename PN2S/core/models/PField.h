@@ -31,40 +31,37 @@ namespace models
 #define PARAMS_B_C 7
 #define PARAMS_B_D 8
 #define PARAMS_B_F 9
-#define PARAMS_MIN 10
-#define PARAMS_MAX 11
-#define PARAMS_DIV 12
+#define PARAMS_DIV 10
+#define PARAMS_MIN 11
+#define PARAMS_MAX 12
 
+struct ChannelCurrent{
+
+	TYPE_ _gk;
+	TYPE_ _ek;
+	friend ostream& operator<<(ostream& out, const ChannelCurrent& obj) // output
+	{
+	    out << "(" << obj._gk<< ", " << obj._ek << ")";
+	    return out;
+	}
+};
 struct ChannelType {
-	// (x,y,z) are same as _state in MOOSE
-	unsigned char _x_power;
-	TYPE_ _x;
-	unsigned char _y_power;
-	TYPE_ _y;
-
+	//TODO: Constants, put them in texture memory
+	unsigned char _xyz_power [3];
+	TYPE_ _xyz_params[3][13];
 	unsigned char _instant;
 	TYPE_ _gbar;
 
-	unsigned char _z_power;
-	TYPE_ _z;
-
-	//Params X
-	TYPE_ _x_params[13];
-	TYPE_ _y_params[13];
-	TYPE_ _z_params[13];
-
-
 	friend ostream& operator<<(ostream& out, const ChannelType& obj) // output
 	{
-	    out << "("
-	    		<<  (int) obj._x_power << ", " << obj._x << ", "
-	    		<<  (int) obj._y_power << ", " << obj._y << ", "
-	    		<<  (int) obj._z_power << ", " << obj._z << ", "
-	    		<<  (int) obj._instant << ", " << obj._gbar
-	    		<< ")";
+//	    out << "("
+//	    		<<  (int) obj._xyx_power << ", " << obj._x << ", "
+//	    		<<  (int) obj._y_power << ", " << obj._y << ", "
+//	    		<<  (int) obj._z_power << ", " << obj._z << ", "
+//	    		<<  (int) obj._instant << ", " << obj._gbar
+//	    		<< ")";
 	    return out;
 	}
-
 };
 
 template <typename T, int arch>

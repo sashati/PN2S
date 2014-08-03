@@ -45,7 +45,7 @@ namespace pn2s{
 //Setter and Getter functions
 struct FIELD{
 	enum  TYPE {CM_BY_DT, EM_BY_RM, RA,INIT_VM, VM, INJECT,
-		CH_X, CH_Y, CH_Z, CH_X_POWER, CH_Y_POWER, CH_Z_POWER, CH_GBAR};
+		CH_X, CH_Y, CH_Z, CH_X_POWER, CH_Y_POWER, CH_Z_POWER, CH_GBAR, CH_GK, CH_EK};
 };
 
 struct Location{

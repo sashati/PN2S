@@ -46,8 +46,8 @@ Matrix.o: Matrix.cpp Matrix.h
 Neuron.o: Neuron.cpp Neuron.h Compartment.o
 NeuronVector.o: NeuronVector.cpp NeuronVector.h
 PField.o: PField.cpp PField.h
-SolverChannels.o: SolverChannels.cu SolverChannels.h 
-SolverComps.o: SolverComps.cu SolverComps.h
+SolverChannels.o: SolverChannels.cu SolverChannels.h PField.cpp PField.h
+SolverComps.o: SolverComps.cu SolverComps.h PField.cpp PField.h
 solve.o: solve.cu solve.h operations.h
 
 $(TARGET): $(OBJS) $(COBJS) 

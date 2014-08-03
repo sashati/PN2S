@@ -49,11 +49,8 @@ void ModelPack::AllocateMemory(models::ModelStatistic s, cudaStream_t st){
 //}
 
 void ModelPack::PrepareSolvers(){
-	_compsSolver.PrepareSolver();
-	_chanSolver.PrepareSolver();
-
-//	res = _channelsSolver.PrepareSolver(net, _analyzer);
-
+	_compsSolver.PrepareSolver(_chanSolver.GetFieldChannelCurrents());
+	_chanSolver.PrepareSolver(_compsSolver.GetFieldVm());
 	cudaDeviceSynchronize();
 }
 
@@ -61,13 +58,13 @@ void ModelPack::PrepareSolvers(){
 void ModelPack::Input()
 {
 	//For each model in the pack, executes the Process()
-	_chanSolver.Input();
 	_compsSolver.Input();
+	_chanSolver.Input();
 }
 
 void ModelPack::Process()
 {
-	_chanSolver.Process(&_compsSolver._Vm);
+	_chanSolver.Process();
 	_compsSolver.Process();
 }
 
