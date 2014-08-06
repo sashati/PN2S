@@ -239,6 +239,13 @@ void HSolve::reinit( const Eref& hsolve, ProcPtr p )
 		PN2S_Proxy::FillData();
 
 		pn2s::DeviceManager::PrepareSolvers();
+
+		//Change in/out direction
+		for (vector< Id >::const_iterator i = seeds_.begin(); i != seeds_.end(); ++i )
+		{
+			HSolve* h =	reinterpret_cast< HSolve* >( i->eref().data());
+			h->isMasterHSolve_ = true;
+		}
     }
 }
 

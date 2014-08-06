@@ -39,6 +39,7 @@ Error_PN2S SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t s
 	_hm.AllocateMemory(modelSize*s.nModels);
 	_rhs.AllocateMemory(vectorSize);
 	_Vm.AllocateMemory(vectorSize);
+	_Constant.AllocateMemory(vectorSize);
 	_VMid.AllocateMemory(vectorSize);
 	_Ra.AllocateMemory(vectorSize);
 	_CmByDt.AllocateMemory(vectorSize);
@@ -52,12 +53,13 @@ Error_PN2S SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t s
 	return Error_PN2S::NO_ERROR;
 }
 
-void SolverComps::PrepareSolver(PField<ChannelCurrent, ARCH_>*  channels_current)
+void SolverComps::PrepareSolver(PField<ChannelCurrent, ARCH_>*  channels_current, PField<TYPE_, ARCH_> * Vchannel)
 {
 	if(_statistic.nCompts_per_model == 0)
 		return;
 
 	_channels_current = channels_current;
+	_channels_voltage = Vchannel;
 
 	//Copy to GPU
 	_hm.Host2Device_Async(_stream);
@@ -66,6 +68,7 @@ void SolverComps::PrepareSolver(PField<ChannelCurrent, ARCH_>*  channels_current
 	_channelIndex.Host2Device_Async(_stream);
 	_Vm.Host2Device_Async(_stream);
 	_InjectBasal.Host2Device_Async(_stream);
+	_Constant.Host2Device_Async(_stream);
 
 //	//Create Cublas
 //	if ( cublasCreate(&_handle) != CUBLAS_STATUS_SUCCESS)
@@ -86,6 +89,7 @@ __global__ void update_rhs(
 		TYPE_* hm,
 		TYPE_* rhs,
 		TYPE_* vm,
+		TYPE_* constants,
 		size_t nCompt,
 		TYPE_* cmByDt,
 		TYPE_* emByRm,
@@ -121,7 +125,7 @@ __global__ void update_rhs(
 
 		unsigned int pos_a = pos_matrix + pos_localIndex * (nCompt+1) ;
 
-    	hm[pos_a] += GkSum; //TODO: Check this value for more complex models
+    	hm[pos_a] = constants[idx] + GkSum; //TODO: Check this value for more complex models
     	rhs[idx] = vm[idx] * cmByDt[idx] + emByRm[idx] + GkEkSum;
 
     	//Injects from basal or varying resources
@@ -130,11 +134,18 @@ __global__ void update_rhs(
 }
 
 
-__global__ void update_vm(TYPE_* vm, TYPE_* vmid, size_t size)
+__global__ void update_vm(TYPE_* vm, TYPE_* vmid, unsigned int* channelIndex, TYPE_* channels_voltage, size_t size)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < size)
+    if (idx < size){
     	vm[idx] = 2.0 * vmid[idx]- vm[idx];
+    	if(channelIndex[idx << 1])
+		{
+			size_t pos = channelIndex[idx << 1 | 0x01];
+			for ( int i = 0; i < channelIndex[idx << 1]; ++i)
+				channels_voltage[pos+i] = vm[idx];
+		}
+    }
 }
 
 void SolverComps::Input()
@@ -150,13 +161,17 @@ void SolverComps::Process()
 	threads=dim3(min((vectorSize&0xFFFFFFC0)|0x20,256), 1); //TODO: Check
 	blocks=dim3(max(vectorSize / threads.x,1), 1);
 
-	_hm.print();
-	_rhs.print();
+//	_hm.print();
+//	_rhs.print();
+//	_Constant.print();
+//	_channels_current->Device2Host();
+//	_channels_current->print();
 
 	update_rhs <<<blocks, threads,0, _stream>>> (
 			_hm.device,
 			_rhs.device,
 			_Vm.device,
+			_Constant.device,
 			_statistic.nCompts_per_model,
 			_CmByDt.device,
 			_EmByRm.device,
@@ -168,18 +183,31 @@ void SolverComps::Process()
 			_statistic.dt);
 	assert(cudaSuccess == cudaGetLastError());
 
-//	cudaStreamSynchronize(_stream);
+	cudaStreamSynchronize(_stream);
 
-	_hm.Device2Host();
-	_hm.print();
-	_rhs.Device2Host();
-	_rhs.print();
+//	_hm.Device2Host();
+//	_hm.print();
+//	_rhs.Device2Host();
+//	_rhs.print();
 	assert(!dsolve_batch (_hm.device, _rhs.device, _VMid.device, _statistic.nCompts_per_model, _statistic.nModels, _stream));
+
+//	_Vm.Device2Host();
+//	_Vm.print();
+//	_VMid.Device2Host();
+//	_VMid.print();
 
 	update_vm <<<blocks, threads,0, _stream>>> (
 				_Vm.device,
 				_VMid.device,
+				_channelIndex.device,
+				_channels_voltage->device,
 				vectorSize);
+
+//	_Vm.Device2Host_Async(_stream);
+//	_Vm.print();
+//	_VMid.Device2Host();
+//	_VMid.print();
+
 
 	assert(cudaSuccess == cudaGetLastError());
 //	cudaStreamSynchronize(_stream);
@@ -216,6 +244,9 @@ void SolverComps::SetValue(int index, FIELD::TYPE field, TYPE_ value)
 			break;
 		case FIELD::INJECT_VARYING:
 			_InjectVarying[index] = value;
+			break;
+		case FIELD::CONSTANT:
+			_Constant[index] = value;
 			break;
 	}
 }

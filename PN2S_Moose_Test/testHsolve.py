@@ -309,17 +309,17 @@ def test_elec_alone():
     
     moose.reinit()    
     moose.start( Simulation_Time )
-    dump_plots( 'h_instab.plot' )
+    # dump_plots( 'h_instab.plot' )
 
 def main():
     test_elec_alone()
 
 Use_MasterHSolve    =   True
 #Use_MasterHSolve    =   False
-Simulation_Time     =   2e-6
-Number_Of_Cells     =   1
-Number_Of_Spines    =   1
-INJECT_CURRENT      =   1
+Simulation_Time     =   1e-4
+Number_Of_Cells     =   1000
+Number_Of_Spines    =   6
+INJECT_CURRENT      =   1e-7
 
 if __name__ == '__main__':
     main()

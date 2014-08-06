@@ -62,6 +62,9 @@ public:
 	// Interface functions defined in HSolveInterface.cpp
 	double getInitVm( Id id ) const;
 	void setInitVm( Id id, double value );
+
+	//Required by GPU kernels
+	double getHS2( Id id );
 	
 	double getVm( Id id ) const;
 	void setVm( Id id, double value );

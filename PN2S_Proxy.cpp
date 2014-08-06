@@ -68,6 +68,7 @@ void PN2S_Proxy::FillData(){
 
 					//Copy Data
 					mp.ComptSolver().SetValue(cmpt_idx,FIELD::VM,h->getVm(cc));
+					mp.ComptSolver().SetValue(cmpt_idx,FIELD::CONSTANT,h->getHS2(cc));
 					mp.ComptSolver().SetValue(cmpt_idx,FIELD::INIT_VM,h->getInitVm(cc));
 					mp.ComptSolver().SetValue(cmpt_idx,FIELD::RA,h->getRa(cc));
 					mp.ComptSolver().SetValue(cmpt_idx,FIELD::CM_BY_DT,h->getCmByDt(cc));

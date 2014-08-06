@@ -49,8 +49,8 @@ void ModelPack::AllocateMemory(models::ModelStatistic s, cudaStream_t st){
 //}
 
 void ModelPack::PrepareSolvers(){
-	_compsSolver.PrepareSolver(_chanSolver.GetFieldChannelCurrents());
-	_chanSolver.PrepareSolver(_compsSolver.GetFieldVm());
+	_compsSolver.PrepareSolver(_chanSolver.GetFieldChannelCurrents(), _chanSolver.GetFieldVm());
+	_chanSolver.PrepareSolver();
 	cudaDeviceSynchronize();
 }
 

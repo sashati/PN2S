@@ -40,17 +40,17 @@ void SolverChannels::AllocateMemory(models::ModelStatistic& s, cudaStream_t stre
 		return;
 
 	_state.AllocateMemory(_m_statistic.nChannels_all*3);
-	_channels.AllocateMemory(_m_statistic.nChannels_all);
+	_Vchannel.AllocateMemory(_m_statistic.nChannels_all);
+	_channel_base.AllocateMemory(_m_statistic.nChannels_all);
 	_channel_currents.AllocateMemory(_m_statistic.nChannels_all);
 }
 
-void SolverChannels::PrepareSolver(PField<TYPE_, ARCH_>*  Vm)
+void SolverChannels::PrepareSolver()
 {
-	_Vm = Vm;
 	if(_m_statistic.nChannels_all)
 	{
 		_state.Host2Device();
-		_channels.Host2Device();
+		_channel_base.Host2Device();
 		_channel_currents.Host2Device();
 	}
 }
@@ -130,23 +130,22 @@ __global__ void advanceChannels(
 				}
 
 				//Update channels characteristics
-				switch(ch[idx]._xyz_power[xyz])
+				fraction = fraction * temp2;
+				if (ch[idx]._xyz_power[xyz] > 1)
 				{
-					case 1:
+					fraction = fraction * temp2;
+					if (ch[idx]._xyz_power[xyz] > 2)
+					{
 						fraction = fraction * temp2;
-						break;
-					case 2:
-						fraction = fraction * temp2 * temp2;
-						break;
-					case 3:
-						fraction = fraction * temp2 * temp2 * temp2;
-						break;
-					case 4:
-						fraction = fraction * temp2 * temp2 * temp2 * temp2;
-						break;
-					default:
-						fraction = fraction * pow( temp2, (TYPE_)ch[idx]._xyz_power[xyz]);
-						break;
+						if (ch[idx]._xyz_power[xyz] > 3)
+						{
+							fraction = fraction * temp2;
+							if (ch[idx]._xyz_power[xyz] > 4)
+							{
+								fraction = fraction * pow( temp2, (TYPE_)ch[idx]._xyz_power[xyz]-4);
+							}
+						}
+					}
 				}
 			}
     	}
@@ -165,41 +164,41 @@ void SolverChannels::Process()
 	threads=dim3(min((int)(_m_statistic.nChannels_all&0xFFFFFFC0)|0x20,256), 1);
 	blocks=dim3(max((int)(_m_statistic.nChannels_all / threads.x),1), 1);
 
-	_channels.print();
+//	_channels.print();
 	advanceChannels <<<blocks, threads,0, _stream>>> (
-			_Vm->device,
+			_Vchannel.device,
 			_state.device,
-			_channels.device,
+			_channel_base.device,
 			_channel_currents.device,
 			_m_statistic.nChannels_all,
 			_m_statistic.dt);
 	assert(cudaSuccess == cudaGetLastError());
 
-	_channels.Device2Host();
-	_channels.print();
+//	_channel_currents.Device2Host();
+//	_channel_currents.print();
 }
 
 
 void SolverChannels::Output()
 {
-//	_Vm.Device2Host_Async(_stream);
-//	cudaStreamSynchronize(_stream);
+	_channel_currents.Device2Host_Async(_stream);
+	cudaStreamSynchronize(_stream);
 }
 
 void SolverChannels::SetGateXParams(int index, vector<double> params)
 {
 	for (int i = 0; i < min((int)params.size(),13); ++i)
-		_channels[index]._xyz_params[0][i] = (TYPE_)params[i];
+		_channel_base[index]._xyz_params[0][i] = (TYPE_)params[i];
 }
 void SolverChannels::SetGateYParams(int index, vector<double> params)
 {
 	for (int i = 0; i < min((int)params.size(),13); ++i)
-		_channels[index]._xyz_params[1][i] = (TYPE_)params[i];
+		_channel_base[index]._xyz_params[1][i] = (TYPE_)params[i];
 }
 void SolverChannels::SetGateZParams(int index, vector<double> params)
 {
 	for (int i = 0; i < min((int)params.size(),13); ++i)
-		_channels[index]._xyz_params[2][i] = (TYPE_)params[i];
+		_channel_base[index]._xyz_params[2][i] = (TYPE_)params[i];
 }
 
 void SolverChannels::SetValue(int index, FIELD::TYPE field, TYPE_ value)
@@ -207,7 +206,7 @@ void SolverChannels::SetValue(int index, FIELD::TYPE field, TYPE_ value)
 	switch(field)
 	{
 		case FIELD::CH_GBAR:
-			_channels[index]._gbar = value;
+			_channel_base[index]._gbar = value;
 			break;
 		case FIELD::CH_GK:
 			_channel_currents[index]._gk = value;
@@ -216,13 +215,13 @@ void SolverChannels::SetValue(int index, FIELD::TYPE field, TYPE_ value)
 			_channel_currents[index]._ek = value;
 			break;
 		case FIELD::CH_X_POWER:
-			_channels[index]._xyz_power[0] = (unsigned char)value;
+			_channel_base[index]._xyz_power[0] = (unsigned char)value;
 			break;
 		case FIELD::CH_Y_POWER:
-			_channels[index]._xyz_power[1] = (unsigned char)value;
+			_channel_base[index]._xyz_power[1] = (unsigned char)value;
 			break;
 		case FIELD::CH_Z_POWER:
-			_channels[index]._xyz_power[2] = (unsigned char)value;
+			_channel_base[index]._xyz_power[2] = (unsigned char)value;
 			break;
 		case FIELD::CH_X:
 			_state[3*index] = value;

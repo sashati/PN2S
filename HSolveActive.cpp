@@ -63,21 +63,23 @@ void HSolveActive::step( ProcPtr info )
 //    	cout << endl << flush;
 //	}
     updateMatrix();
-    cout << HS_.size() << endl<<flush;
-	for (int i = 0; i < nCompt_; ++i) {
-		for (int j = 0; j < nCompt_; ++j) {
-			cout << std::setprecision (std::numeric_limits< double >::digits10)<<getA(i,j) << "\t";
-		}
-		cout << endl << flush;
-	}
-	for (int i = 0; i < nCompt_; ++i) {
-		cout << std::setprecision (std::numeric_limits< double >::digits10)<<getB(i) << "\t";
-	}
-	cout << endl << flush;
+//    cout << HS_.size() << endl<<flush;
+//	for (int i = 0; i < nCompt_; ++i) {
+//		for (int j = 0; j < nCompt_; ++j) {
+//			cout << std::setprecision (std::numeric_limits< double >::digits10)<<getA(i,j) << "\t";
+//		}
+//		cout << endl << flush;
+//	}
+//	for (int i = 0; i < nCompt_; ++i) {
+//		cout << std::setprecision (std::numeric_limits< double >::digits10)<<getB(i) << "\t";
+//	}
+//	cout << endl << flush;
 
 //    _printVector(HS_);
     HSolvePassive::forwardEliminate();
+//    _printVector(HS_);
     HSolvePassive::backwardSubstitute();
+//    _printVector(HS_);
 //    _printVector(VMid_);
 //    _printVector(V_);
 
@@ -133,7 +135,7 @@ void HSolveActive::updateMatrix()
             GkEkSum += icurrent->Gk * icurrent->Ek;
         }
 
-//        cout << *ihs << " "<< *(2+ihs)<< " "<< *(3+ihs) <<endl<<flush ;
+//        cout <<" "<< *(2+ihs);
 
         *ihs = *( 2 + ihs ) + GkSum;
         *( 3 + ihs ) = *iv * ic->CmByDt + ic->EmByRm + GkEkSum;
@@ -142,7 +144,7 @@ void HSolveActive::updateMatrix()
 
         ++iboundary, ihs += 4, ++iv;
     }
-
+//    cout <<endl<<flush ;
 
     map< unsigned int, InjectStruct >::iterator inject;
     for ( inject = inject_.begin(); inject != inject_.end(); ++inject )

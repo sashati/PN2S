@@ -179,6 +179,13 @@ void HSolve::setInitVm( Id id, double value )
     tree_[ index ].initVm = value;
 }
 
+double HSolve::getHS2( Id id)
+{
+	unsigned int index = localIndex( id );
+    assert( index < HS_.size() );
+    return HS_[ index * 4 + 2 ];
+}
+
 // Read-only
 double HSolve::getIm( Id id ) const
 {

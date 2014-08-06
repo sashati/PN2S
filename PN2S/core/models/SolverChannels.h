@@ -23,29 +23,24 @@ private:
 	ModelStatistic _m_statistic;
 	cudaStream_t _stream;
 
-	PField<TYPE_, ARCH_>*  _Vm; //Comes from Component solver
+	PField<TYPE_, ARCH_>  _Vchannel; //Fills from compartment solver
 
 	PField<TYPE_, ARCH_>  _state;
-	PField<ChannelType, ARCH_>  _channels;
+	PField<ChannelType, ARCH_>  _channel_base;
 	PField<ChannelCurrent, ARCH_>  _channel_currents;
-
-//	PField<TYPE_, ARCH_>  _gk;
-//	PField<TYPE_, ARCH_>  _ek;
-//
-//	PField<uint, ARCH_>  _instant;
-
-
 
 public:
 	SolverChannels();
 	~SolverChannels();
 	void AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
-	void PrepareSolver(PField<TYPE_, ARCH_>*  _Vm);
+	void PrepareSolver();
 	void Input();
 	void Process();
 	void Output();
 
 	PField<ChannelCurrent, ARCH_> * GetFieldChannelCurrents(){return & _channel_currents;}
+	PField<TYPE_, ARCH_> * GetFieldVm(){return & _Vchannel;}
+
 	double GetDt(){ return _m_statistic.dt;}
 	void SetDt(double dt){ _m_statistic.dt = dt;}
 

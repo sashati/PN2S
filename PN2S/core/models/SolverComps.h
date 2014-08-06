@@ -25,6 +25,7 @@ private:
 
 	//Connection Fields
 	PField<TYPE_, ARCH_>  _Vm;	// Vm of the compartments
+	PField<TYPE_, ARCH_>  _Constant;
 	PField<TYPE_, ARCH_>  _hm;	// Hines Matrices
 	PField<TYPE_, ARCH_>  _rhs;	// Right hand side of the equation
 	PField<TYPE_, ARCH_>  _VMid;	// Vm of the compartments
@@ -36,8 +37,8 @@ private:
 
 	//Channel currents
 	PField<uint, ARCH_>  _channelIndex; 	// (NumberOfChannels, Index in _current)
-	//TODO: Optimize this part and just get necessary information
 	PField<ChannelCurrent, ARCH_>*  _channels_current;	// Refer to channel kernel
+	PField<TYPE_, ARCH_>*  _channels_voltage;			// Refer to channel kernel
 
 	void  makeHinesMatrix(models::Model *model, TYPE_ * matrix);// float** matrix, uint nCompt);
 	void getValues();
@@ -50,14 +51,13 @@ public:
 	SolverComps();
 	~SolverComps();
 	Error_PN2S AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
-	void PrepareSolver(PField<ChannelCurrent, ARCH_>*  _channels_current);
+	void PrepareSolver(PField<ChannelCurrent, ARCH_>*  channels_current, PField<TYPE_, ARCH_> * Vchannel);
 	void Input();
 	void Process();
 	void Output();
 
 	double GetDt(){ return _statistic.dt;}
 	void SetDt(double dt){ _statistic.dt = dt;}
-	PField<TYPE_, ARCH_> * GetFieldVm(){return & _Vm;}
 
 	void 	SetHinesMatrix(int n, int row, int col, TYPE_ value);
 	TYPE_ GetA(int n,int i, int j){return _hm[n*_statistic.nCompts_per_model*_statistic.nCompts_per_model+i*_statistic.nCompts_per_model+j];}
