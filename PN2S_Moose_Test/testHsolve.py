@@ -182,12 +182,12 @@ def create_spine_with_receptor( compt, cell, index, frac ):
     spineLength = 5.0e-6
     spineDia = 4.0e-6
     head = create_spine( compt, cell, index, frac, spineLength, spineDia, 0.0 )
-    # gluR = moose.SynChan( head.path + '/gluR' )
-    # gluR.tau1 = 4e-3
-    # gluR.tau2 = 4e-3
-    # gluR.Gbar = 1e-6
-    # gluR.Ek= 10.0e-3
-    # moose.connect( head, 'channel', gluR, 'channel', 'Single' )
+    gluR = moose.SynChan( head.path + '/gluR' )
+    gluR.tau1 = 4e-3
+    gluR.tau2 = 4e-3
+    gluR.Gbar = 1e-6
+    gluR.Ek= 10.0e-3
+    moose.connect( head, 'channel', gluR, 'channel', 'Single' )
 
     # caPool = moose.CaConc( head.path + '/ca' )
     # caPool.CaBasal = 1e-4       # 0.1 micromolar
@@ -197,7 +197,7 @@ def create_spine_with_receptor( compt, cell, index, frac ):
     # caPool.B = B
     # moose.connect( gluR, 'IkOut', caPool, 'current', 'Single' )
 
-    # return gluR
+    return gluR
 
 def add_plot( objpath, field, plot ):
     assert moose.exists( objpath )
@@ -243,13 +243,12 @@ def make_spiny_compt(root_path, number,synInput):
     compt.diameter = comptDia
     
     for i in range( numSpines ):
-        # create_spine_with_receptor( compt, cell, i, i/float(numSpines) )
         r = create_spine_with_receptor( compt, cell, i, i/float(numSpines) )
-        # r.synapse.num = 1
-        # syn = moose.element( r.path + '/synapse' )
-        # moose.connect( synInput, 'spikeOut', syn, 'addSpike', 'Single' )
-        # syn.weight = 0.2
-        # syn.delay = i * 1.0e-4
+        r.synapse.num = 1
+        syn = moose.element( r.path + '/synapse' )
+        moose.connect( synInput, 'spikeOut', syn, 'addSpike', 'Single' )
+        syn.weight = 0.2
+        syn.delay = i * 1.0e-4
         """
         path = '/n/head' + str(i)
         sib1 = moose.element( path )
@@ -309,16 +308,16 @@ def test_elec_alone():
     
     moose.reinit()    
     moose.start( Simulation_Time )
-    # dump_plots( 'h_instab.plot' )
+    dump_plots( 'h_incuDoubleComplexcuComplexstab.plot' )
 
 def main():
     test_elec_alone()
 
 Use_MasterHSolve    =   True
-#Use_MasterHSolve    =   False
-Simulation_Time     =   1e-4
-Number_Of_Cells     =   1000
-Number_Of_Spines    =   6
+# Use_MasterHSolve    =   False
+Simulation_Time     =   1e-2
+Number_Of_Cells     =   10
+Number_Of_Spines    =   3
 INJECT_CURRENT      =   1e-7
 
 if __name__ == '__main__':

@@ -36,7 +36,7 @@ private:
 	PField<TYPE_, ARCH_>  _InjectVarying;
 
 	//Channel currents
-	PField<uint, ARCH_>  _channelIndex; 	// (NumberOfChannels, Index in _current)
+	PField<int, ARCH_>  _channelIndex; 	// (NumberOfChannels, Index in _current)
 	PField<ChannelCurrent, ARCH_>*  _channels_current;	// Refer to channel kernel
 	PField<TYPE_, ARCH_>*  _channels_voltage;			// Refer to channel kernel
 

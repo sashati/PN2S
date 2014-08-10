@@ -168,7 +168,7 @@ void PField<T,arch>::print()
 }
 
 template class PField<double, ARCH_SM30>;
-template class PField<uint, ARCH_SM30>;
+template class PField<int, ARCH_SM30>;
 template class PField<unsigned char, ARCH_SM30>;
 template class PField<ChannelType, ARCH_SM30>;
 template class PField<ChannelCurrent, ARCH_SM30>;

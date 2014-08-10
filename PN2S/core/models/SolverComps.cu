@@ -95,7 +95,7 @@ __global__ void update_rhs(
 		TYPE_* emByRm,
 		TYPE_* inject_basal,
 		TYPE_* inject_varying,
-		unsigned int* channelIndex,
+		int* channelIndex,
 		ChannelCurrent* channels_current,
 		unsigned int size,
 		TYPE_ dt)
@@ -134,7 +134,7 @@ __global__ void update_rhs(
 }
 
 
-__global__ void update_vm(TYPE_* vm, TYPE_* vmid, unsigned int* channelIndex, TYPE_* channels_voltage, size_t size)
+__global__ void update_vm(TYPE_* vm, TYPE_* vmid, int* channelIndex, TYPE_* channels_voltage, size_t size)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size){
