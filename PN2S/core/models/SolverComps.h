@@ -28,7 +28,6 @@ private:
 	PField<TYPE_, ARCH_>  _Constant;
 	PField<TYPE_, ARCH_>  _hm;	// Hines Matrices
 	PField<TYPE_, ARCH_>  _rhs;	// Right hand side of the equation
-	PField<TYPE_, ARCH_>  _VMid;	// Vm of the compartments
 	PField<TYPE_, ARCH_>  _Ra;	// Ra of the compartments
 	PField<TYPE_, ARCH_>  _CmByDt;	// Cm of the compartments
 	PField<TYPE_, ARCH_>  _EmByRm;	// Em of the compartments

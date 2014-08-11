@@ -48,18 +48,6 @@
 #define ARCH_SM30       (2)
 #define ARCH_SM35       (3)
 
-#if defined(KEPLER2)
-#define GPU_ARCH        (ARCH_SM35)
-#elif defined(FERMI) || defined(KEPLER1)
-/* FIXME: This is a hack: instead of setting up tuning parameters for KEPLER1 
-   platforms we simply re-use the Fermi settings. This very likely leads to 
-   suboptimal performance.
-*/
-#define GPU_ARCH        (ARCH_SM20)
-#else 
-#define GPU_ARCH        (ARCH_SM13)
-#endif
-
 template <typename T, int arch>
 class config {
 public:
@@ -1555,7 +1543,7 @@ extern __shared__ double2 shmem[];
 template<typename T, int matinv, int pad, int arch>
 __global__ void 
 __launch_bounds__(config<T,arch>::gj1MaxThrds,config<T,arch>::gj1MinBlks)
-gauss_jordan_solve_gpu1 (const T *A, T *b, T *x, int n, int batch)
+gauss_jordan_solve_gpu1 (const T *A, T *b, T *x, int* ci, T *cv_d, int n, int batch)
 {
     T *As = (T*)shmem;
     double *Val = (double*)(As + (n+pad) * (n+1));
@@ -1633,7 +1621,7 @@ gauss_jordan_solve_gpu1 (const T *A, T *b, T *x, int n, int batch)
 template<typename T, int matinv, int pad, int arch>
 __global__ void 
 __launch_bounds__(config<T,arch>::gj2MaxThrds,config<T,arch>::gj2MinBlks)
-gauss_jordan_solve_gpu2 (const T *A, T *b, T *x, int n, int batch)
+gauss_jordan_solve_gpu2 (const T *A, T *b, T *x, int* ci, T *cv_d, int n, int batch)
 {
     T *As = (T*)shmem;
     double *Val = (double*)(As + (n+pad) * (n+1));
@@ -1715,7 +1703,7 @@ gauss_jordan_solve_gpu2 (const T *A, T *b, T *x, int n, int batch)
 template<typename T, int matinv, int pad, int pivot_thrds, int arch>
 __global__ void 
 __launch_bounds__(config<T,arch>::ge2MaxThrds,config<T,arch>::ge2MinBlks)
-gauss_solve_gpu2 (const T *A, T *b, T *x, int n, int batch)
+gauss_solve_gpu2 (const T *A, T *b, T *x, int* ci, T *cv_d, int n, int batch)
 {
     T *As = (T*)shmem;
     double *Val = (double*)(As + (n+pad) * (n+1));
@@ -1813,13 +1801,21 @@ gauss_solve_gpu2 (const T *A, T *b, T *x, int n, int batch)
     } while (j);
 
     __syncthreads();
-    if ((tx == 0) && (ty < n)) x[ty] = As(ty,n);
+
+    /**
+     * Extra part of PN2S solver
+     *  - Calculate actual value of Vm
+     *  - Propagate the Vm into channels
+     */
+//    if ((tx == 0) && (ty < n)) x[ty] = As(ty,n);
+    if ((tx == 0) && (ty < n)) 	x[ty] = ((T)2.0) * As(ty,n) - x[ty] ;
+
 }
 
 template <typename T, int arch>
-int fast_solve (const T *A_d, T *b_d, T *x_d, int n, int batch, int matinv, cudaStream_t stream)
+int fast_solve (const T *A_d, T *b_d, T *x_d, int* ci_d, T *cv_d, int n, int batch, int matinv, cudaStream_t stream)
 { 
-    typedef void (* func)(const T *A_d, T *b_d, T *x_d, int n, int batch);
+    typedef void (* func)(const T *A_d, T *b_d, T *x_d, int* ci, T *cv, int n, int batch);
 
     static int padding[77] = {
         config<T,arch>::fsPad_00, config<T,arch>::fsPad_01,
@@ -2159,7 +2155,7 @@ int fast_solve (const T *A_d, T *b_d, T *x_d, int n, int batch, int matinv, cuda
                      sizeof(T) * srchThrd[n] +
                      sizeof(int) * srchThrd[n]);
 
-    pf[77*(!!matinv)+n]<<<dimGrid,dimBlock,smem_size, stream>>>(A_d,b_d,x_d,n,batch);
+    pf[77*(!!matinv)+n]<<<dimGrid,dimBlock,smem_size, stream>>>(A_d,b_d,x_d,ci_d,cv_d,n,batch);
     cudaError_t err = cudaGetLastError();
     /* Check synchronous errors, i.e. pre-launch */
     if (cudaSuccess != err) {
@@ -2169,23 +2165,7 @@ int fast_solve (const T *A_d, T *b_d, T *x_d, int n, int batch, int matinv, cuda
 }
 
 /* C-callable wrapper functions */
-int dsolve_batch (double *A, double *b, double *x, int n, int batch, cudaStream_t stream)
+int dsolve_batch_35 (double *A, double *b, double *x, int* ci, double *cv, int n, int batch, cudaStream_t stream)
 {
-    return fast_solve<double,GPU_ARCH>(A, b, x, n, batch, 0, stream);
-}
-
-int zsolve_batch (cuDoubleComplex *A, cuDoubleComplex *b, cuDoubleComplex *x,
-                  int n, int batch, cudaStream_t stream)
-{ 
-    return fast_solve<cuDoubleComplex,GPU_ARCH>(A, b, x, n, batch, 0, stream);
-}
-
-int dmatinv (double *A, double *Ainv, int n, cudaStream_t stream)
-{
-    return fast_solve<double,GPU_ARCH>(A, 0, Ainv, n, n, 1, stream);
-}
-
-int zmatinv (cuDoubleComplex *A, cuDoubleComplex *Ainv, int n, cudaStream_t stream)
-{
-    return fast_solve<cuDoubleComplex,GPU_ARCH>(A, 0, Ainv, n, n, 1, stream);
+    return fast_solve<double,ARCH_SM35>(A, b, x, ci, cv, n, batch, 0, stream);
 }

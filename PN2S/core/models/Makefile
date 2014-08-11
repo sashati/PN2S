@@ -57,6 +57,9 @@ $(OBJS):
 $(COBJS): 
 	nvcc --compile $(CUDAFLAGS) -o  "$@" "$<"
 	
-.PHONY: clean
+.PHONY: clean, test
 clean:
-	rm -rf $(OBJS) $(COBJS) $(TARGET)	
+	rm -rf $(OBJS) $(COBJS) $(TARGET)
+	
+test: $(TARGET)
+	 nvcc -G -O0 -Xcompiler -fopenmp -Xcompiler -fPIC -g -gencode arch=compute_30,code=compute_30 -x cu -I./libs -I./libs/tbb/include -o  SolverChannels SolverChannels.o

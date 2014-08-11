@@ -40,7 +40,6 @@ Error_PN2S SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t s
 	_rhs.AllocateMemory(vectorSize);
 	_Vm.AllocateMemory(vectorSize);
 	_Constant.AllocateMemory(vectorSize);
-	_VMid.AllocateMemory(vectorSize);
 	_Ra.AllocateMemory(vectorSize);
 	_CmByDt.AllocateMemory(vectorSize);
 	_EmByRm.AllocateMemory(vectorSize);
@@ -134,11 +133,10 @@ __global__ void update_rhs(
 }
 
 
-__global__ void update_vm(TYPE_* vm, TYPE_* vmid, int* channelIndex, TYPE_* channels_voltage, size_t size)
+__global__ void update_vm(TYPE_* vm, int* channelIndex, TYPE_* channels_voltage, size_t size)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size){
-    	vm[idx] = 2.0 * vmid[idx]- vm[idx];
     	if(channelIndex[idx << 1])
 		{
 			size_t pos = channelIndex[idx << 1 | 0x01];
@@ -150,7 +148,7 @@ __global__ void update_vm(TYPE_* vm, TYPE_* vmid, int* channelIndex, TYPE_* chan
 
 void SolverComps::Input()
 {
-	_InjectVarying.Host2Device();
+	_InjectVarying.Host2Device_Async(_stream);
 }
 
 void SolverComps::Process()
@@ -183,13 +181,15 @@ void SolverComps::Process()
 			_statistic.dt);
 	assert(cudaSuccess == cudaGetLastError());
 
-	cudaStreamSynchronize(_stream);
+//	cudaStreamSynchronize(_stream);
 
 //	_hm.Device2Host();
 //	_hm.print();
 //	_rhs.Device2Host();
 //	_rhs.print();
-	assert(!dsolve_batch (_hm.device, _rhs.device, _VMid.device, _statistic.nCompts_per_model, _statistic.nModels, _stream));
+	assert(!dsolve_batch_35(_hm.device, _rhs.device, _Vm.device,
+			_channelIndex.device, _channels_voltage->device,
+			_statistic.nCompts_per_model, _statistic.nModels, _stream));
 
 //	_Vm.Device2Host();
 //	_Vm.print();
@@ -198,7 +198,6 @@ void SolverComps::Process()
 
 	update_vm <<<blocks, threads,0, _stream>>> (
 				_Vm.device,
-				_VMid.device,
 				_channelIndex.device,
 				_channels_voltage->device,
 				vectorSize);
@@ -217,7 +216,7 @@ void SolverComps::Process()
 void SolverComps::Output()
 {
 	_Vm.Device2Host_Async(_stream);
-	cudaStreamSynchronize(_stream);
+
 }
 
 void SolverComps::SetValue(int index, FIELD::TYPE field, TYPE_ value)
