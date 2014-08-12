@@ -25,7 +25,7 @@ int DeviceManager::CkeckAvailableDevices(){
 	int device_count = 0;
 	cudaGetDeviceCount(&device_count);
 	cudaDeviceReset();
-
+	device_count = min(MAX_DEVICE_NUMBER, device_count);
 	for(int i =0; i<device_count; i++)
 	{
 		Device d(i);
@@ -61,15 +61,25 @@ Error_PN2S DeviceManager::Initialize(){
  */
 
 void DeviceManager::AllocateMemory(vector<unsigned int > &ids, vector<int2 > &m, double dt){
-
 	assert(_device.size() > 0);
+	assert(ids.size() > 0);
+	assert(m.size() > 0);
+
+	if(ids.size() < _device.size() )
+		for (int i = ids.size() - 1; i < _device.size(); ++i)
+			_device.pop_back();
 
 	//Distribute model
-	//TODO: Add Multidevice
-	Location dev_address;
-	int16_t device = 0;
-	_device[0].AllocateMemory(dt, ids, m,(size_t)0,(size_t)m.size()-1, device);
-
+	size_t start = 0;
+	size_t pack = ids.size() / _device.size();
+	size_t end = pack-1;
+	for (int i = 0; i < _device.size(); ++i) {
+		if (i == _device.size()-1) //Last one
+			end = ids.size() - 1;
+		_device[i].AllocateMemory(dt, ids, m, start, end);
+		start += pack;
+		end += pack;
+	}
 }
 
 void DeviceManager::PrepareSolvers()
@@ -85,6 +95,8 @@ void DeviceManager::Process()
 {
 	for(vector<Device>::iterator device = _device.begin(); device != _device.end(); ++device)
 		device->Process();
+	for(vector<Device>::iterator device = _device.begin(); device != _device.end(); ++device)
+		device->Sync();
 }
 
 void DeviceManager::Close()

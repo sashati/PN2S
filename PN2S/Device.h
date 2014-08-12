@@ -34,12 +34,12 @@ public:
 	Error_PN2S AllocateMemory(double dt,
 			vector<unsigned int>& ids,
 			vector<int2 >& m,
-			size_t start, size_t end,
-			int16_t device);
+			size_t start, size_t end);
 	void PrepareSolvers();
 
 	void Destroy();
 	void Process();
+	void Sync();
 private:
 	vector<ModelPack> _modelPacks;
 	cudaStream_t* streams;

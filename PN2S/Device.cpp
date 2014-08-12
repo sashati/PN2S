@@ -68,7 +68,8 @@ void Device::Destroy(){
 //	cudaDeviceReset();
 }
 
-Error_PN2S Device::AllocateMemory(double dt, vector<unsigned int>& ids, vector<int2>& statistic, size_t start, size_t end, int16_t device){
+Error_PN2S Device::AllocateMemory(double dt, vector<unsigned int>& ids, vector<int2>& statistic, size_t start, size_t end){
+	cudaSetDevice(id);
 	_dt = dt;
 
 	//Distribute model into packs
@@ -97,7 +98,7 @@ Error_PN2S Device::AllocateMemory(double dt, vector<unsigned int>& ids, vector<i
 	for (int pack = 0; pack < nstreams; ++pack) {
 		//Check nComp for each compartments and update it's fields
 		if(pack == nstreams-1) //Last one carries extra parts
-			nModel_in_pack += (nModel > nstreams)?nModel%nstreams:nModel;
+			nModel_in_pack += nModel%nstreams;
 
 		/**
 		 * Create statistic and Allocate memory for Modelpacks
@@ -126,6 +127,7 @@ Error_PN2S Device::AllocateMemory(double dt, vector<unsigned int>& ids, vector<i
 }
 
 void Device::PrepareSolvers(){
+	cudaSetDevice(id);
 	for(vector<ModelPack>::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it) {
 		it->PrepareSolvers();
 	}
@@ -163,8 +165,11 @@ struct output_body{
     }
 };
 
+
 void Device::Process()
 {
+	cudaSetDevice(id);
+
 	uint model_n = _modelPacks.size();
 	if(model_n < 1)
 		return;
@@ -205,7 +210,12 @@ void Device::Process()
 	{
 		it->Output();
 	}
-	cudaDeviceSynchronize();
 
 #endif
+}
+
+void Device::Sync()
+{
+	cudaSetDevice(id);
+	cudaDeviceSynchronize();
 }

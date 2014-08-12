@@ -122,19 +122,6 @@ __global__ void update_rhs(
     }
 }
 
-__global__ void update_vm(TYPE_* vm, int* channelIndex, TYPE_* channels_voltage, size_t size)
-{
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < size){
-    	if(channelIndex[idx << 1])
-		{
-			size_t pos = channelIndex[idx << 1 | 0x01];
-			for ( int i = 0; i < channelIndex[idx << 1]; ++i)
-				channels_voltage[pos+i] = vm[idx];
-		}
-    }
-}
-
 void SolverComps::Input()
 {
 	_InjectVarying.Host2Device_Async(_stream);

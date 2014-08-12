@@ -65,7 +65,7 @@ int main(int argc, char *argv[] )
 	//Create model
 
 	pn2s::models::ModelStatistic st;
-	st.nModels = 10000;
+	st.nModels = 9;
 	if (argc > 1)
 		st.nModels = atoi(argv[1]);
 	st.nCompts_per_model = 3;
