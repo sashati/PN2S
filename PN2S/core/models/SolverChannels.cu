@@ -22,6 +22,8 @@ using namespace pn2s::models;
 #define INSTANT_Y 2
 #define INSTANT_Z 4
 
+#define NUMBER_OF_MULTI_PROCESSOR 8
+
 SolverChannels::SolverChannels(): _stream(0)
 {
 }
@@ -43,8 +45,9 @@ void SolverChannels::AllocateMemory(models::ModelStatistic& s, cudaStream_t stre
 	_channel_base.AllocateMemory(_m_statistic.nChannels_all);
 	_channel_currents.AllocateMemory(_m_statistic.nChannels_all);
 
-	_threads=dim3(min((int)(_m_statistic.nChannels_all&0xFFFFFFC0)|0x20,256), 1);
-	_blocks=dim3(max((int)(_m_statistic.nChannels_all / _threads.x),1), 1);
+	int threadSize = min(max((int)_m_statistic.nChannels_all/NUMBER_OF_MULTI_PROCESSOR,16), 32);
+	_threads=dim3(2,threadSize, 1);
+	_blocks=dim3(max((int)(ceil(_m_statistic.nChannels_all / _threads.y)),1), 1);
 }
 
 void SolverChannels::PrepareSolver()
@@ -60,6 +63,8 @@ void SolverChannels::PrepareSolver()
 /**
  * KERNELS
  */
+extern __shared__ TYPE_ shmem[];
+
 __global__ void advanceChannels(
 		TYPE_* v,
 		TYPE_* state,
@@ -67,91 +72,102 @@ __global__ void advanceChannels(
 		pn2s::models::ChannelCurrent* current,
 		size_t size, TYPE_ dt)
 {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < size){
-		TYPE_ temp, temp2, A, B;
-    	TYPE_ x = v[idx];
+	TYPE_ temp, temp2, A, B;
+	TYPE_* data = shmem;
+	int idx = blockIdx.x * blockDim.y + threadIdx.y;
+	if (idx >= size)
+		return;
 
-    	TYPE_ fraction = 1.0;
-    	if ( ch[idx]._xyz_power[threadIdx.y] > 0.0 )
+	int i = threadIdx.y * 2 + threadIdx.x;
+
+	TYPE_ power = ch[idx]._xyz_power[threadIdx.x];
+	TYPE_ x = v[idx];
+	data[i] = 1.0;
+
+	int xyz = threadIdx.x; //TODO: Remove
+	if ( power > 0.0 )
+	{
+		temp = ch[idx]._xyz_params[xyz][PARAMS_MIN];
+		temp2 = ch[idx]._xyz_params[xyz][PARAMS_MAX];
+		// Check boundaries
+		x = fmax(temp, x);
+		x = fmin(temp2, x);
+
+		// Calculate new states
+		TYPE_ dx = ( temp2 - temp ) / ch[idx]._xyz_params[xyz][PARAMS_DIV];
+		if ( fabs(ch[idx]._xyz_params[xyz][PARAMS_A_F]) < SINGULARITY ) {
+			temp = 0.0;
+			A = 0.0;
+		} else {
+			temp2 = ch[idx]._xyz_params[xyz][PARAMS_A_C] + exp( ( x + ch[idx]._xyz_params[xyz][PARAMS_A_D] ) / ch[idx]._xyz_params[xyz][PARAMS_A_F] );
+			if ( fabs( temp2 ) < SINGULARITY ) {
+				temp2 = ch[idx]._xyz_params[xyz][PARAMS_A_C] + exp( ( x + dx/10.0 + ch[idx]._xyz_params[xyz][PARAMS_A_D] ) / ch[idx]._xyz_params[xyz][PARAMS_A_F] );
+				temp = ( ch[idx]._xyz_params[xyz][PARAMS_A_A] + ch[idx]._xyz_params[xyz][PARAMS_A_B] * (x + dx/10 ) ) / temp2;
+
+				temp2 = ch[idx]._xyz_params[xyz][PARAMS_A_C] + exp( ( x - dx/10.0 + ch[idx]._xyz_params[xyz][PARAMS_A_D] ) / ch[idx]._xyz_params[xyz][PARAMS_A_F] );
+				temp += ( ch[idx]._xyz_params[xyz][PARAMS_A_A] + ch[idx]._xyz_params[xyz][1] * (x - dx/10 ) ) / temp2;
+				temp /= 2.0;
+
+				A = temp;
+			} else {
+				temp = ( ch[idx]._xyz_params[xyz][PARAMS_A_A] + ch[idx]._xyz_params[xyz][PARAMS_A_B] * x) / temp2;
+				A = temp;
+			}
+		}
+
+		__syncthreads();
+
+		if ( fabs( ch[idx]._xyz_params[xyz][9] ) < SINGULARITY ) {
+			B = 0.0;
+		} else {
+			temp2 = ch[idx]._xyz_params[xyz][7] + exp( ( x + ch[idx]._xyz_params[xyz][8] ) / ch[idx]._xyz_params[xyz][9] );
+			if ( fabs( temp2 ) < SINGULARITY ) {
+				temp2 = ch[idx]._xyz_params[xyz][7] + exp( ( x + dx/10.0 + ch[idx]._xyz_params[xyz][8] ) / ch[idx]._xyz_params[xyz][9] );
+				temp = (ch[idx]._xyz_params[xyz][5] + ch[idx]._xyz_params[xyz][6] * (x + dx/10) ) / temp2;
+				temp2 = ch[idx]._xyz_params[xyz][7] + exp( ( x - dx/10.0 + ch[idx]._xyz_params[xyz][8] ) / ch[idx]._xyz_params[xyz][9] );
+				temp += (ch[idx]._xyz_params[xyz][5] + ch[idx]._xyz_params[xyz][6] * (x - dx/10) ) / temp2;
+				temp /= 2.0;
+				B = temp;
+			} else {
+				B = (ch[idx]._xyz_params[xyz][5] + ch[idx]._xyz_params[xyz][6] * x ) / temp2;
+			}
+		}
+
+		if ( fabs( temp2 ) > SINGULARITY )
+			B += temp;
+
+		__syncthreads();
+		temp2 = state[3*idx+xyz];
+		if ( ch[idx]._instant& INSTANT_X )
+			state[3*idx+xyz] = A / B;
+		else
 		{
-			// Check boundaries
-			if ( x < ch[idx]._xyz_params[threadIdx.y][PARAMS_MIN] )
-				x = ch[idx]._xyz_params[threadIdx.y][PARAMS_MIN];
-			else if ( x > ch[idx]._xyz_params[threadIdx.y][PARAMS_MAX] )
-				x = ch[idx]._xyz_params[threadIdx.y][PARAMS_MAX];
+			temp = 1.0 + dt / 2.0 * B; //new value for temp
+			state[3*idx+xyz] = ( temp2 * ( 2.0 - temp ) + dt * A ) / temp;
+		}
 
-			// Calculate new states
-			TYPE_ dx = ( ch[idx]._xyz_params[threadIdx.y][PARAMS_MAX] - ch[idx]._xyz_params[threadIdx.y][PARAMS_MIN] ) / ch[idx]._xyz_params[threadIdx.y][PARAMS_DIV];
-			if ( fabs(ch[idx]._xyz_params[threadIdx.y][PARAMS_A_F]) < SINGULARITY ) {
-				temp = 0.0;
-				A = 0.0;
-			} else {
-				temp2 = ch[idx]._xyz_params[threadIdx.y][PARAMS_A_C] + exp( ( x + ch[idx]._xyz_params[threadIdx.y][PARAMS_A_D] ) / ch[idx]._xyz_params[threadIdx.y][PARAMS_A_F] );
-				if ( fabs( temp2 ) < SINGULARITY ) {
-					temp2 = ch[idx]._xyz_params[threadIdx.y][PARAMS_A_C] + exp( ( x + dx/10.0 + ch[idx]._xyz_params[threadIdx.y][PARAMS_A_D] ) / ch[idx]._xyz_params[threadIdx.y][PARAMS_A_F] );
-					temp = ( ch[idx]._xyz_params[threadIdx.y][PARAMS_A_A] + ch[idx]._xyz_params[threadIdx.y][PARAMS_A_B] * (x + dx/10 ) ) / temp2;
-
-					temp2 = ch[idx]._xyz_params[threadIdx.y][PARAMS_A_C] + exp( ( x - dx/10.0 + ch[idx]._xyz_params[threadIdx.y][PARAMS_A_D] ) / ch[idx]._xyz_params[threadIdx.y][PARAMS_A_F] );
-					temp += ( ch[idx]._xyz_params[threadIdx.y][PARAMS_A_A] + ch[idx]._xyz_params[threadIdx.y][1] * (x - dx/10 ) ) / temp2;
-					temp /= 2.0;
-
-					A = temp;
-				} else {
-					temp = ( ch[idx]._xyz_params[threadIdx.y][PARAMS_A_A] + ch[idx]._xyz_params[threadIdx.y][PARAMS_A_B] * x) / temp2;
-					A = temp;
-				}
-			}
-			if ( fabs( ch[idx]._xyz_params[threadIdx.y][9] ) < SINGULARITY ) {
-				B = 0.0;
-			} else {
-				temp2 = ch[idx]._xyz_params[threadIdx.y][7] + exp( ( x + ch[idx]._xyz_params[threadIdx.y][8] ) / ch[idx]._xyz_params[threadIdx.y][9] );
-				if ( fabs( temp2 ) < SINGULARITY ) {
-					temp2 = ch[idx]._xyz_params[threadIdx.y][7] + exp( ( x + dx/10.0 + ch[idx]._xyz_params[threadIdx.y][8] ) / ch[idx]._xyz_params[threadIdx.y][9] );
-					temp = (ch[idx]._xyz_params[threadIdx.y][5] + ch[idx]._xyz_params[threadIdx.y][6] * (x + dx/10) ) / temp2;
-					temp2 = ch[idx]._xyz_params[threadIdx.y][7] + exp( ( x - dx/10.0 + ch[idx]._xyz_params[threadIdx.y][8] ) / ch[idx]._xyz_params[threadIdx.y][9] );
-					temp += (ch[idx]._xyz_params[threadIdx.y][5] + ch[idx]._xyz_params[threadIdx.y][6] * (x - dx/10) ) / temp2;
-					temp /= 2.0;
-					B = temp;
-				} else {
-					B = (ch[idx]._xyz_params[threadIdx.y][5] + ch[idx]._xyz_params[threadIdx.y][6] * x ) / temp2;
-				}
-			}
-			if ( fabs( temp2 ) > SINGULARITY )
-				B += temp;
-
-			temp2 = state[3*idx+threadIdx.y];
-			if ( ch[idx]._instant& INSTANT_X )
-				state[3*idx+threadIdx.y] = A / B;
-			else
+		//Update channels characteristics
+		data[i] = temp2;
+		if (power > 1)
+		{
+			data[i] *= temp2;
+			if (power > 2)
 			{
-				temp = 1.0 + dt / 2.0 * B; //new value for temp
-				state[3*idx+threadIdx.y] = ( temp2 * ( 2.0 - temp ) + dt * A ) / temp;
-			}
-
-			//Update channels characteristics
-			fraction = fraction * temp2;
-			if (ch[idx]._xyz_power[threadIdx.y] > 1)
-			{
-				fraction = fraction * temp2;
-				if (ch[idx]._xyz_power[threadIdx.y] > 2)
+				data[i] *= temp2;
+				if (power > 3)
 				{
-					fraction = fraction * temp2;
-					if (ch[idx]._xyz_power[threadIdx.y] > 3)
+					data[i] *= temp2;
+					if (power > 4)
 					{
-						fraction = fraction * temp2;
-						if (ch[idx]._xyz_power[threadIdx.y] > 4)
-						{
-							fraction = fraction * pow( temp2, (TYPE_)ch[idx]._xyz_power[threadIdx.y]-4);
-						}
+						data[i] = pow( temp2, power);
 					}
 				}
 			}
 		}
-    	__syncthreads();
-    	if(threadIdx.y == 0)
-    		current[idx]._gk = ch[idx]._gbar * fraction;
-    }
+		__syncthreads();
+		if(!threadIdx.x)
+			current[idx]._gk = ch[idx]._gbar * data[i] * data[i+1];
+	}
 }
 
 void SolverChannels::Input()
@@ -161,12 +177,14 @@ void SolverChannels::Input()
 
 void SolverChannels::Process()
 {
-	double sp_number = 8;
-	_threads=dim3(ceil(_m_statistic.nChannels_all/sp_number), 2);
-	_blocks=dim3(sp_number);
+//	double sp_number = 8;
+//	_threads=dim3(ceil(_m_statistic.nChannels_all/sp_number), 2);
+//	_blocks=dim3(sp_number);
 
 //	_channels.print();
-	advanceChannels <<<_blocks, dim3(ceil(100/8.0),2),0, _stream>>> (
+
+	int smem_size = (sizeof(TYPE_) * _threads.x * _threads.y);
+	advanceChannels <<<_blocks, _threads,smem_size, _stream>>> (
 			_Vchannel.device,
 			_state.device,
 			_channel_base.device,
@@ -254,35 +272,3 @@ TYPE_ SolverChannels::GetValue(int index, FIELD::TYPE field)
 //	}
 	return 0;
 }
-
-#define LOCAL_TEST
-#ifdef LOCAL_TEST
-
-#include <iostream>
-#include <cstdlib>
-
-int main()
-{
-//	pn2s::models::ModelStatistic st;
-//	st.nChannels_all = 100;
-//
-//	SolverChannels ch;
-//	ch.AllocateMemory(st,NULL);
-//	double sp_number = 8;
-//		_threads=dim3(ceil(_m_statistic.nChannels_all/sp_number), 2);
-//		_blocks=dim3(sp_number);
-//
-//	advanceChannels <<<_blocks, dim3(ceil(100/8.0),2),0, _stream>>> (
-//				_Vchannel.device,
-//				_state.device,
-//				_channel_base.device,
-//				_channel_currents.device,
-//				_m_statistic.nChannels_all,
-//				_m_statistic.dt);
-
-
-	return 0;
-}
-
-
-#endif

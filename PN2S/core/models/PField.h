@@ -5,8 +5,7 @@
 //  Original author: Saeed Shariati
 ///////////////////////////////////////////////////////////
 
-#if !defined(A72EC9AE3_8C2D_45e3_AE47_0F3CC8B2E661__INCLUDED_)
-#define A72EC9AE3_8C2D_45e3_AE47_0F3CC8B2E661__INCLUDED_
+#pragma once
 
 #include "../../headers.h"
 #include <cuda_runtime.h>
@@ -110,4 +109,3 @@ private:
 }
 }
 
-#endif // !defined(A72EC9AE3_8C2D_45e3_AE47_0F3CC8B2E661__INCLUDED_)

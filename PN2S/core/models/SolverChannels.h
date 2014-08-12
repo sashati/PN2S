@@ -29,9 +29,9 @@ private:
 	PField<ChannelType, ARCH_>  _channel_base;
 	PField<ChannelCurrent, ARCH_>  _channel_currents;
 
-	dim3 _threads, _blocks;
 
 public:
+	dim3 _threads, _blocks;
 	SolverChannels();
 	~SolverChannels();
 	void AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);

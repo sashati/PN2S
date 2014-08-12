@@ -62,4 +62,4 @@ clean:
 	rm -rf $(OBJS) $(COBJS) $(TARGET)
 	
 test: $(TARGET)
-	 nvcc -G -O0 -Xcompiler -fopenmp -Xcompiler -fPIC -g -gencode arch=compute_30,code=compute_30 -x cu -I./libs -I./libs/tbb/include -o  SolverChannels SolverChannels.o
+	 nvcc -DLOCAL_TEST=1 -G -O3 -Xcompiler -fopenmp -Xcompiler -fPIC -g -gencode arch=compute_30,code=compute_30  -I./libs -I./libs/tbb/include -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -lm -lgomp  -o SolverChannels SolverChannels_test.cu $(TARGET)
