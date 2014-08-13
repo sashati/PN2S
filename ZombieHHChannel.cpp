@@ -235,22 +235,12 @@ ZombieHHChannel::ZombieHHChannel()
 
 void ZombieHHChannel::copyFields( Id chanId, HSolve* hsolve_ )
 {
-    Xpower_           = Field< double >::get( chanId, "Xpower" );
-    Ypower_           = Field< double >::get( chanId, "Ypower" );
-    Zpower_           = Field< double >::get( chanId, "Zpower" );
-    useConcentration_ = Field< double >::get( chanId, "useConcentration" );
-
-    hsolve_->setPowers( chanId, Xpower_, Ypower_, Zpower_ );
-
-    //Copy Gate's parameters
-    vector<Id> gateId_;
-    int nGates = HSolveUtils::gates( chanId, gateId_ );
-    if(nGates>0)
-    	hsolve_->setXparams(chanId,Field< vector< double > >::get( gateId_[0], "alphaParms" ));
-    if(nGates>1)
-       	hsolve_->setYparams(chanId,Field< vector< double > >::get( gateId_[1], "alphaParms" ));
-    if(nGates>2)
-        hsolve_->setZparams(chanId,Field< vector< double > >::get( gateId_[2], "alphaParms" ));
+    //~ Xpower_           = Field< double >::get( chanId, "Xpower" );
+    //~ Ypower_           = Field< double >::get( chanId, "Ypower" );
+    //~ Zpower_           = Field< double >::get( chanId, "Zpower" );
+    //~ useConcentration_ = Field< double >::get( chanId, "useConcentration" );
+    //~
+    //~ hsolve_->setPowers( chanId, Xpower_, Ypower_, Zpower_ );
 }
 
 ///////////////////////////////////////////////////

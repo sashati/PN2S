@@ -36,7 +36,7 @@ const Cinfo* ZombieCompartment::initCinfo()
    	static Dinfo< ZombieCompartment > dinfo;
     static Cinfo zombieCompartmentCinfo(
         "ZombieCompartment",
-        Neutral::initCinfo(),
+        CompartmentBase::initCinfo(),
 		0,
 		0,
         // compartmentFinfos,
@@ -68,13 +68,13 @@ ZombieCompartment::~ZombieCompartment()
 // Value Field access function definitions.
 void ZombieCompartment::vSetVm( const Eref& e , double Vm )
 {
-//    assert(hsolve_);
+    assert(hsolve_);
     hsolve_->setVm( e.id(), Vm );
 }
 
 double ZombieCompartment::vGetVm( const Eref& e  ) const
 {
-//    assert(hsolve_);
+    assert(hsolve_);
     return hsolve_->getVm( e.id() );
 }
 

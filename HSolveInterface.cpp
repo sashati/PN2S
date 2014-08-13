@@ -276,18 +276,17 @@ void HSolve::addInject( Id id, double value )
 
 void HSolve::addGkEk( Id id, double Gk, double Ek )
 {
-	//TODO:: NO
-//    unsigned int index = localIndex( id );
-//    assert( 2 * index + 1 < externalCurrent_.size() );
-//    externalCurrent_[ 2 * index ] += Gk;
-//    externalCurrent_[ 2 * index + 1 ] += Gk * Ek;
+    unsigned int index = localIndex( id );
+    assert( 2 * index + 1 < externalCurrent_.size() );
+    externalCurrent_[ 2 * index ] += Gk;
+    externalCurrent_[ 2 * index + 1 ] += Gk * Ek;
 }
 
 void HSolve::setPowers(
     Id id,
     double Xpower,
     double Ypower,
-    double Zpower)
+    double Zpower )
 {
     unsigned int index = localIndex( id );
     assert( index < channel_.size() );

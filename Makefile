@@ -8,7 +8,6 @@
 #** See the file COPYING.LIB for the full notice.
 #**********************************************************************/
 
-
 ifndef CXXFLAGS 
 	CXXFLAGS = -g -fpermissive -fno-strict-aliasing -fPIC -fno-inline-functions \
 	-Wall -Wno-long-long -pedantic -DDO_UNIT_TESTS -DUSE_GENESIS_PARSER -DSVN_REVISION=\"5340M\" \

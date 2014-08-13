@@ -91,6 +91,9 @@ void HSolvePassive::walkTree( Id seed )
             HSolveUtils::adjacent( current, above, cstack.back() );
         }
     }
+
+    // Compartments get ordered according to their hines' indices once this
+    // list is reversed.
     reverse( compartmentId_.begin(), compartmentId_.end() );
 }
 
@@ -310,8 +313,8 @@ void HSolvePassive::forwardEliminate()
 
     while ( ic < nCompt_ - 1 )
     {
-        *( ihs + 4 ) -= *( ihs + 1 ) / *ihs * *( ihs + 1 );
-        *( ihs + 7 ) -= *( ihs + 1 ) / *ihs * *( ihs + 3 );
+        *( ihs + 4 ) -= *( ihs + 1 ) / *ihs **( ihs + 1 );
+        *( ihs + 7 ) -= *( ihs + 1 ) / *ihs **( ihs + 3 );
 
         ++ic, ihs += 4;
     }

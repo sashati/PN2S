@@ -8,12 +8,10 @@
 **********************************************************************/
 
 #include "header.h"
-#include "../basecode/global.h"
 #include "HinesMatrix.h"
 #include <sstream>
 #include <iomanip>
 #include <stdexcept>
-#include "PN2S/HelperFunctions.h"
 
 HinesMatrix::HinesMatrix()
     :
@@ -139,7 +137,7 @@ void HinesMatrix::makeMatrix()
     // Setting up HS
     HS_.resize( 4 * nCompt_, 0.0 );
     for ( unsigned int i = 0; i < nCompt_; ++i )
-    	HS_[ 4 * i + 2 ] =
+        HS_[ 4 * i + 2 ] =
             node[ i ].Cm / ( dt_ / 2.0 ) +
             1.0 / node[ i ].Rm;
 
