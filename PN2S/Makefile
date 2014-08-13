@@ -55,13 +55,10 @@ $(SUBDIR): force
 .PHONY: force
 force :;
 
-#TODO: Remove test
-test: $(TARGET) 
-	$(CXX)  Test.cpp $(TARGET) -o Test -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -I/usr/local/cuda/include -I./libs -I./libs/tbb/include $(CXXFLAGS)
-
 benchmark: $(TARGET) force
 	$(CXX) -fopenmp $(CXXFLAGS) $(TARGET) -o benchmark -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -I/usr/local/cuda/include -I./libs -I./libs/tbb/include Benchmark.cpp  
 
 clean:
 	@(for i in $(SUBDIR) ; do $(MAKE) -C $$i clean;  done)
-	rm -rf $(OBJS) $(COBJS) $(TARGET) Test benchmark
+	rm -rf $(OBJS) $(COBJS) $(TARGET) Test benchmark test_perf
+	

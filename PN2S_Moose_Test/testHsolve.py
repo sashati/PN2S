@@ -308,15 +308,15 @@ def test_elec_alone():
     
     moose.reinit()    
     moose.start( Simulation_Time )
-    dump_plots( 'h_incuDoubleComplexcuComplexstab.plot' )
+    # dump_plots( 'h_incuDoubleComplexcuComplexstab.plot' )
 
 def main():
     test_elec_alone()
 
 Use_MasterHSolve    =   True
 # Use_MasterHSolve    =   False
-Simulation_Time     =   5e-3
-Number_Of_Cells     =   10
+Simulation_Time     =   1e-3
+Number_Of_Cells     =   1000
 Number_Of_Spines    =   2
 INJECT_CURRENT      =   1e-7
 

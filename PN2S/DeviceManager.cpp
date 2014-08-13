@@ -9,13 +9,14 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <cuda_profiler_api.h>
+#include <assert.h>
 
 using namespace pn2s;
 
 vector<Device> DeviceManager::_device;
 static bool _isInitialized = false;
 
-std::map< Id, pn2s::Location > locationMap;
+std::map< unsigned int, pn2s::Location > locationMap;
 
 int DeviceManager::CkeckAvailableDevices(){
 //	cudaProfilerStop();
@@ -59,7 +60,7 @@ Error_PN2S DeviceManager::Initialize(){
  * and assign memory for PFields
  */
 
-void DeviceManager::AllocateMemory(vector<Id > &m, double dt){
+void DeviceManager::AllocateMemory(vector<unsigned int > &ids, vector<int2 > &m, double dt){
 
 	assert(_device.size() > 0);
 
@@ -67,7 +68,7 @@ void DeviceManager::AllocateMemory(vector<Id > &m, double dt){
 	//TODO: Add Multidevice
 	Location dev_address;
 	int16_t device = 0;
-	_device[0].AllocateMemory(dt, m,(size_t)0,(size_t)m.size()-1, device);
+	_device[0].AllocateMemory(dt, ids, m,(size_t)0,(size_t)m.size()-1, device);
 
 }
 

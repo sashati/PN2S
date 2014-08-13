@@ -221,8 +221,15 @@ void HSolve::reinit( const Eref& hsolve, ProcPtr p )
     else
     {
     	vector<Id> _all_compartmentIds;
+		vector<int2> modelST;
+		map<unsigned int, Id> modelId_map;
+		vector<unsigned int> modelIds;
 
-    	for (vector< Id >::const_iterator i = seeds_.begin(); i != seeds_.end(); ++i )
+    	/**
+		 * Create statistic and Allocate memory for Modelpacks
+		 */
+
+		for (vector< Id >::const_iterator i = seeds_.begin(); i != seeds_.end(); ++i )
 		{
 			HSolve* h =
 					reinterpret_cast< HSolve* >( i->eref().data());
@@ -231,12 +238,21 @@ void HSolve::reinit( const Eref& hsolve, ProcPtr p )
 					_all_compartmentIds.end(),
 					h->compartmentId_.begin(),
 					h->compartmentId_.end());
+
+			int2 st;
+			st.x = h->nCompt_;
+			st.y = h->HSolveActive::channelId_.size();
+			modelST.push_back(st);
+
+			modelId_map[i->value()] = *i;
+			modelIds.push_back(i->value());
 		}
+
 		//Distribute model and Allocate memory
-		pn2s::DeviceManager::AllocateMemory(seeds_,dt_);
+		pn2s::DeviceManager::AllocateMemory(modelIds,modelST,dt_);
 
 		//Fill data
-		PN2S_Proxy::FillData();
+		PN2S_Proxy::FillData(modelId_map);
 
 		pn2s::DeviceManager::PrepareSolvers();
 

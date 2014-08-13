@@ -18,6 +18,7 @@ using namespace pn2s::models;
 
 SolverComps::SolverComps(): _stream(0)
 {
+
 }
 
 SolverComps::~SolverComps()
@@ -52,13 +53,13 @@ Error_PN2S SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t s
 	return Error_PN2S::NO_ERROR;
 }
 
-void SolverComps::PrepareSolver(PField<ChannelCurrent, ARCH_>*  channels_current, PField<TYPE_, ARCH_> * Vchannel)
+void SolverComps::PrepareSolver(PField<ChannelCurrent, ARCH_>*  channels_current)
 {
-	if(_statistic.nCompts_per_model == 0)
+	int model_dize = _statistic.nCompts_per_model * _statistic.nCompts_per_model;
+	if(model_dize == 0)
 		return;
 
 	_channels_current = channels_current;
-	_channels_voltage = Vchannel;
 
 	//Copy to GPU
 	_hm.Host2Device_Async(_stream);
@@ -69,12 +70,8 @@ void SolverComps::PrepareSolver(PField<ChannelCurrent, ARCH_>*  channels_current
 	_InjectBasal.Host2Device_Async(_stream);
 	_Constant.Host2Device_Async(_stream);
 
-//	//Create Cublas
-//	if ( cublasCreate(&_handle) != CUBLAS_STATUS_SUCCESS)
-//	{
-//		return Error_PN2S(Error_PN2S::CuBLASError,
-//				"CUBLAS initialization failed");
-//	}
+	_threads=dim3(128);
+	_blocks=dim3( model_dize / _threads.x + 1);
 }
 
 /**
@@ -113,25 +110,17 @@ __global__ void update_rhs(
 				GkEkSum += channels_current[pos+i]._gk * channels_current[pos+i]._ek;
 			}
     	}
-//    	// diagonal (a) = below (c) + GkSum
-//
-//    	unsigned int pos_c = pos_a - !!(pos_localIndex);//C is one back of the A,
-//    	    											//if A is the first item, then C is same as A
-//    	    											//With this trick we eliminate wrap division
+
     	//Find location of A and C in the matrix
-		unsigned int pos_matrix = (unsigned int)(idx / nCompt) * nCompt * nCompt;
-		unsigned int pos_localIndex = idx % nCompt;
+		unsigned int pos_a = idx * nCompt + idx % nCompt;
+    	hm[pos_a] = constants[idx] + GkSum;
 
-		unsigned int pos_a = pos_matrix + pos_localIndex * (nCompt+1) ;
-
-    	hm[pos_a] = constants[idx] + GkSum; //TODO: Check this value for more complex models
     	rhs[idx] = vm[idx] * cmByDt[idx] + emByRm[idx] + GkEkSum;
 
     	//Injects from basal or varying resources
     	rhs[idx] += inject_basal[idx] + inject_varying[idx];
     }
 }
-
 
 __global__ void update_vm(TYPE_* vm, int* channelIndex, TYPE_* channels_voltage, size_t size)
 {
@@ -155,17 +144,13 @@ void SolverComps::Process()
 {
 	uint vectorSize = _statistic.nModels * _statistic.nCompts_per_model;
 
-	dim3 threads, blocks;
-	threads=dim3(min((vectorSize&0xFFFFFFC0)|0x20,256), 1); //TODO: Check
-	blocks=dim3(max(vectorSize / threads.x,1), 1);
-
 //	_hm.print();
 //	_rhs.print();
 //	_Constant.print();
 //	_channels_current->Device2Host();
 //	_channels_current->print();
 
-	update_rhs <<<blocks, threads,0, _stream>>> (
+	update_rhs <<<_blocks, _threads,0, _stream>>> (
 			_hm.device,
 			_rhs.device,
 			_Vm.device,
@@ -187,8 +172,7 @@ void SolverComps::Process()
 //	_hm.print();
 //	_rhs.Device2Host();
 //	_rhs.print();
-	assert(!dsolve_batch_35(_hm.device, _rhs.device, _Vm.device,
-			_channelIndex.device, _channels_voltage->device,
+	assert(!dsolve_batch_fermi(_hm.device, _rhs.device, _Vm.device,
 			_statistic.nCompts_per_model, _statistic.nModels, _stream));
 
 //	_Vm.Device2Host();
@@ -196,11 +180,11 @@ void SolverComps::Process()
 //	_VMid.Device2Host();
 //	_VMid.print();
 
-	update_vm <<<blocks, threads,0, _stream>>> (
-				_Vm.device,
-				_channelIndex.device,
-				_channels_voltage->device,
-				vectorSize);
+//	update_vm <<<_blocks, _threads,0, _stream>>> (
+//				_Vm.device,
+//				_channelIndex.device,
+//				_InjectVarying.device,
+//				vectorSize);
 
 //	_Vm.Device2Host_Async(_stream);
 //	_Vm.print();

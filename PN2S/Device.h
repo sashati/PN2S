@@ -8,11 +8,11 @@
 #pragma once
 
 #include "headers.h"
-#include "./core/ModelPack.h"
+#include "core/ModelPack.h"
 #include <omp.h>
 
 //Moose models
-#include "../../basecode/header.h"
+//#include "../../basecode/header.h"
 
 namespace pn2s
 {
@@ -32,7 +32,8 @@ public:
 
 	//Generate model packs
 	Error_PN2S AllocateMemory(double dt,
-			vector<Id >& m,
+			vector<unsigned int>& ids,
+			vector<int2 >& m,
 			size_t start, size_t end,
 			int16_t device);
 	void PrepareSolvers();

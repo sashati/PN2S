@@ -37,7 +37,6 @@ private:
 	//Channel currents
 	PField<int, ARCH_>  _channelIndex; 	// (NumberOfChannels, Index in _current)
 	PField<ChannelCurrent, ARCH_>*  _channels_current;	// Refer to channel kernel
-	PField<TYPE_, ARCH_>*  _channels_voltage;			// Refer to channel kernel
 
 	void  makeHinesMatrix(models::Model *model, TYPE_ * matrix);// float** matrix, uint nCompt);
 	void getValues();
@@ -46,11 +45,12 @@ private:
 	void updateVm();
 
 public:
+	dim3 _threads, _blocks;
 
 	SolverComps();
 	~SolverComps();
 	Error_PN2S AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
-	void PrepareSolver(PField<ChannelCurrent, ARCH_>*  channels_current, PField<TYPE_, ARCH_> * Vchannel);
+	void PrepareSolver(PField<ChannelCurrent, ARCH_>*  channels_current);
 	void Input();
 	void Process();
 	void Output();
@@ -64,6 +64,7 @@ public:
 	void 	SetValue(int cmpt_index, FIELD::TYPE field, TYPE_ value);
 	TYPE_ 	GetValue(int cmpt_index, FIELD::TYPE field);
 	void ConnectChannel(int cmpt_index,  int ch_index);
+	PField<TYPE_, ARCH_> * GetFieldVm(){return & _Vm;}
 };
 
 }

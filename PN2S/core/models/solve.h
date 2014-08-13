@@ -36,7 +36,7 @@
 extern "C" {
 #endif
 
-int dsolve_batch_35 (double *A, double *b, double *x, int* ci, double *cv, int n, int batch, cudaStream_t stream);
+int dsolve_batch_fermi (double *A, double *b, double *x, int n, int batch, cudaStream_t stream);
 
 #ifdef __cplusplus
 }

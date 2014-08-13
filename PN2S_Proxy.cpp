@@ -28,10 +28,10 @@
 
 using namespace pn2s;
 
-extern std::map< Id, pn2s::Location > locationMap; //Locates in DeviceManager
+extern std::map< unsigned int, pn2s::Location > locationMap; //Locates in DeviceManager
 
 
-void PN2S_Proxy::FillData(){
+void PN2S_Proxy::FillData(map<unsigned int, Id> modelId_map){
 	for (uint dev_i = 0; dev_i < DeviceManager::Devices().size(); ++dev_i) {
 		pn2s::Device& dev = DeviceManager::Devices()[dev_i];
 		for (uint mp_i = 0; mp_i < dev.ModelPacks().size(); ++mp_i) {
@@ -39,10 +39,10 @@ void PN2S_Proxy::FillData(){
 			int cmpt_idx = 0;
 			int ch_idx = 0;
 			for (uint m_i = 0; m_i < mp.models.size(); ++m_i) {
-				Id model = mp.models[m_i];
+				Id model = modelId_map[mp.models[m_i]];
 
 				//Add index of HSolve object
-				locationMap[model] = Location(dev_i,mp_i);
+				locationMap[model.value()] = Location(dev_i,mp_i);
 
 				//Put model into solvers
 				HSolve* h =	reinterpret_cast< HSolve* >( model.eref().data());
@@ -64,7 +64,7 @@ void PN2S_Proxy::FillData(){
 				{
 					Id cc = h->HSolvePassive::compartmentId_[ ic ];
 					//Add to location map
-					locationMap[cc] = Location(dev_i,mp_i,cmpt_idx);
+					locationMap[cc.value()] = Location(dev_i,mp_i,cmpt_idx);
 
 					//Copy Data
 					mp.ComptSolver().SetValue(cmpt_idx,FIELD::VM,h->getVm(cc));
@@ -106,6 +106,8 @@ void PN2S_Proxy::FillData(){
 
 						//Connect the channel with the compartment
 						mp.ComptSolver().ConnectChannel(cmpt_idx,ch_idx);
+						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_COMPONENT_INDEX,cmpt_idx);
+
 					}
 				}
 			}
@@ -166,15 +168,16 @@ void PN2S_Proxy::Reinit(Eref hsolve){
 /**
  * Interface Set/Get functions
  */
-extern std::map< Id, pn2s::Location > locationMap;
-void PN2S_Proxy::setValue( Id id, TYPE_ value , FIELD::TYPE n)
+extern std::map< unsigned int, pn2s::Location > locationMap;
+
+void PN2S_Proxy::setValue( unsigned int id, TYPE_ value , FIELD::TYPE n)
 {
-	Location l = locationMap[id.value()];
+	Location l = locationMap[id];
 	DeviceManager::Devices()[l.device].ModelPacks()[l.pack]._compsSolver.SetValue(l.index,n,value);
 }
 
-TYPE_ PN2S_Proxy::getValue( Id id, FIELD::TYPE n)
+TYPE_ PN2S_Proxy::getValue( unsigned int id, FIELD::TYPE n)
 {
-	Location l = locationMap[id.value()];
+	Location l = locationMap[id];
 	return DeviceManager::Devices()[l.device].ModelPacks()[l.pack]._compsSolver.GetValue(l.index,n);
 }

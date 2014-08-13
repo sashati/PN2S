@@ -8,7 +8,7 @@
 #pragma once
 
 #include "Device.h"
-#include "../../basecode/header.h" //Moose header
+//#include "../../basecode/header.h" //Moose header
 
 /**
  * Create one thread per device and let it process tasks and when finished, add
@@ -26,7 +26,7 @@ public:
 	static Error_PN2S Initialize();
 
 	// Distribute model between devices
-	static void AllocateMemory(vector<Id > &m, double dt);
+	static void AllocateMemory(vector<unsigned int > &ids, vector<int2 > &m, double dt);
 	static void PrepareSolvers();
 	static void Process();
 	static void Close();

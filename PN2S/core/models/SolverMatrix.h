@@ -1,10 +1,3 @@
-///////////////////////////////////////////////////////////
-//  SolverComps.h
-//  Implementation of the Class SolverComps
-//  Created on:      27-Dec-2013 7:57:50 PM
-//  Original author: Saeed Shariati
-///////////////////////////////////////////////////////////
-
 #if !defined(EA_ABB95B66_E531_4681_AE2B_D1CE4B940FF6__INCLUDED_)
 #define EA_ABB95B66_E531_4681_AE2B_D1CE4B940FF6__INCLUDED_
 

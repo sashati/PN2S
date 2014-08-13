@@ -66,7 +66,7 @@ do{											\
 	if(isMasterHSolve_)						\
 	{										\
 		PN2S_Proxy::setValue				\
-			(id, value, NAME);				\
+			(id.value(), value, NAME);				\
 		return;								\
 	}										\
 }while(0)
@@ -76,7 +76,7 @@ do{											\
 	if(isMasterHSolve_)						\
 	{										\
 		return PN2S_Proxy::getValue			\
-				(id, NAME);					\
+				(id.value(), NAME);					\
 	}										\
 }while(0)
 

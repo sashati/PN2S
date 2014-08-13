@@ -13,20 +13,20 @@
 #include "./models/SolverChannels.h"
 #include "./models/SolverComps.h"
 
-#include "../../../basecode/header.h" //For seed vector
+//#include "../../../basecode/header.h" //For seed vector
 
 namespace pn2s
 {
 
 class ModelPack
 {
-
+	cudaStream_t _st;
 public:
 	models::SolverComps _compsSolver;
 	models::SolverChannels _chanSolver;
 
 	double _dt;
-	vector<Id> models;
+	vector<unsigned int> models;
 	models::ModelStatistic stat;
 
 	ModelPack();

@@ -13,3 +13,7 @@ all:	$(TARGET)
 
 clean:
 	rm -f $(OBJS) $(TARGET) *.plot
+
+test_performance:
+	 nvcc -G -O0 -Xcompiler -fopenmp -Xcompiler -fPIC -g -gencode arch=compute_30,code=compute_30 -I./libs -I./libs/tbb/include -L/usr/local/cuda/lib64 -lcuda -lcudart -lcublas -lm -lgomp  -o test_perf test_perf.cu ../PN2S/_pn2s.o
+	

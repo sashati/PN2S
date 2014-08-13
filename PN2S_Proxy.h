@@ -20,9 +20,9 @@ class PN2S_Proxy
 
 public:
 	static void Reinit(Eref hsolve);
-	static void FillData();
+	static void FillData(map<unsigned int, Id> modelId_map);
 
-	static void setValue( Id , TYPE_, pn2s::FIELD::TYPE);
-	static TYPE_ getValue( Id , pn2s::FIELD::TYPE);
+	static void setValue( unsigned int , TYPE_, pn2s::FIELD::TYPE);
+	static TYPE_ getValue( unsigned int , pn2s::FIELD::TYPE);
 
 };

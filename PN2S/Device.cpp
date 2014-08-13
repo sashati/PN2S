@@ -17,7 +17,7 @@
 #include <assert.h>
 #include "DeviceManager.h"
 //Moose models
-#include "../HSolve.h"
+//#include "../HSolve.h"
 
 using namespace pn2s;
 using namespace std;
@@ -26,7 +26,7 @@ using namespace tbb::flow;
 
 using namespace pn2s::models;
 
-extern std::map< Id, pn2s::Location > locationMap; //Locates in DeviceManager
+extern std::map< unsigned int, pn2s::Location > locationMap; //Locates in DeviceManager
 
 
 Device::Device(int _id): id(_id), _dt(1), nstreams(DEFAULT_STREAM_NUMBER){
@@ -68,11 +68,12 @@ void Device::Destroy(){
 //	cudaDeviceReset();
 }
 
-Error_PN2S Device::AllocateMemory(double dt, vector<Id >& m, size_t start, size_t end, int16_t device){
+Error_PN2S Device::AllocateMemory(double dt, vector<unsigned int>& ids, vector<int2>& statistic, size_t start, size_t end, int16_t device){
 	_dt = dt;
 
 	//Distribute model into packs
-	Id* m_start = &m[start];
+	int2* st_start = &statistic[start];
+	unsigned int* ids_start = &ids[start];
 	size_t nModel = end - start +1;
 
 	if(nModel <= 0)
@@ -101,24 +102,25 @@ Error_PN2S Device::AllocateMemory(double dt, vector<Id >& m, size_t start, size_
 		/**
 		 * Create statistic and Allocate memory for Modelpacks
 		 */
+
 		size_t nCompt = 0;
 		size_t numberOfChannels = 0;
 		for (int i = 0; i < nModel_in_pack; ++i) {
-			Id id = m_start[i];
-			HSolve* h =	reinterpret_cast< HSolve* >( m_start->eref().data());
 			if(nCompt == 0)
-				nCompt = ((HinesMatrix*)h)->nCompt_; //First set
+				nCompt = st_start[i].x; //First set
 			else
-				assert(nCompt == ((HinesMatrix*)h)->nCompt_); //Check for others
+				assert(nCompt == st_start[i].x); //Check for others
 
-			numberOfChannels+= h->HSolveActive::channelId_.size();
+			numberOfChannels += st_start[i].y;
 		}
+
 		ModelStatistic stat(dt, nModel_in_pack, nCompt, numberOfChannels);
 
 		_modelPacks[pack].AllocateMemory(stat,streams[pack%nstreams]);
-		_modelPacks[pack].models.assign(m_start,m_start+nModel_in_pack);
+		_modelPacks[pack].models.assign(ids_start,ids_start+nModel_in_pack);
 
-		m_start += nModel_in_pack;
+		st_start += nModel_in_pack;
+		ids_start += nModel_in_pack;
 	}
 	return Error_PN2S::NO_ERROR;
 }
@@ -191,7 +193,7 @@ void Device::Process()
 	scheduler.wait_for_all();
 #else
 
-	for (vector<ModelPack >::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
+	for (vector<ModelPack>::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
 	{
 		it->Input();
 	}
@@ -203,6 +205,7 @@ void Device::Process()
 	{
 		it->Output();
 	}
-//	cudaDeviceSynchronize();
+	cudaDeviceSynchronize();
+
 #endif
 }
