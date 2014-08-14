@@ -52,36 +52,39 @@ void HSolveActive::step( ProcPtr info )
         current_.resize( channel_.size() );
     }
 
+//    _printVector(VMid_);
+//    _printVector(V_);
+
     advanceChannels( info->dt );
     calculateChannelCurrents();
-//    cout << HS_.size() << endl<<flush;
-//    _printVector(HS_);
-//    for (int i = 0; i < nCompt_; ++i) {
-//    	for (int j = 0; j < nCompt_; ++j) {
-//    		cout << getA(i,j) << "\t";
-//		}
-//    	cout << endl << flush;
-//	}
+    cout << HS_.size() << endl<<flush;
+    _printVector(HS_);
+    for (int i = 0; i < nCompt_; ++i) {
+    	for (int j = 0; j < nCompt_; ++j) {
+    		cout << getA(i,j) << "\t";
+		}
+    	cout << endl << flush;
+	}
     updateMatrix();
-//    cout << HS_.size() << endl<<flush;
-//	for (int i = 0; i < nCompt_; ++i) {
-//		for (int j = 0; j < nCompt_; ++j) {
-//			cout << std::setprecision (std::numeric_limits< double >::digits10)<<getA(i,j) << "\t";
-//		}
-//		cout << endl << flush;
-//	}
-//	for (int i = 0; i < nCompt_; ++i) {
-//		cout << std::setprecision (std::numeric_limits< double >::digits10)<<getB(i) << "\t";
-//	}
-//	cout << endl << flush;
+    cout << HS_.size() << endl<<flush;
+	for (int i = 0; i < nCompt_; ++i) {
+		for (int j = 0; j < nCompt_; ++j) {
+			cout << std::setprecision (std::numeric_limits< double >::digits10)<<getA(i,j) << "\t";
+		}
+		cout << endl << flush;
+	}
+	for (int i = 0; i < nCompt_; ++i) {
+		cout << std::setprecision (std::numeric_limits< double >::digits10)<<getB(i) << "\t";
+	}
+	cout << endl << flush;
 
 //    _printVector(HS_);
     HSolvePassive::forwardEliminate();
 //    _printVector(HS_);
     HSolvePassive::backwardSubstitute();
 //    _printVector(HS_);
-//    _printVector(VMid_);
-//    _printVector(V_);
+    _printVector(VMid_);
+    _printVector(V_);
 
     advanceCalcium();
     advanceSynChans( info );
@@ -153,6 +156,7 @@ void HSolveActive::updateMatrix()
         unsigned int ic = inject->first;
     	InjectStruct& value = inject->second;
 
+//    	cout <<value.injectVarying << " "<< value.injectBasal<< endl <<flush;
         HS_[ 4 * ic + 3 ] += value.injectVarying + value.injectBasal;
 
         value.injectVarying = 0.0;
@@ -174,11 +178,11 @@ void HSolveActive::updateMatrix()
     vector< double >::iterator iec;
     for ( iec = externalCurrent_.begin(); iec != externalCurrent_.end(); iec += 2 )
     {
-    	assert(!(*( iec ) || *( iec + 1 )));
-//        cout <<*( iec )<< endl <<flush;
+//    	assert(!(*( iec ) || *( iec + 1 )));
         *ihs += *iec;
-//        cout <<*( iec + 1 )<< endl <<flush;
         *( 3 + ihs ) += *( iec + 1 );
+
+//        cout <<*( iec )<< " " << *( iec + 1 ) << endl <<flush;
 
         ihs += 4;
     }

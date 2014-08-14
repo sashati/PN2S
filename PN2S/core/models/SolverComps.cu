@@ -46,6 +46,7 @@ Error_PN2S SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t s
 	_EmByRm.AllocateMemory(vectorSize);
 	_InjectBasal.AllocateMemory(vectorSize);
 	_InjectVarying.AllocateMemory(vectorSize, 0);
+	_externalCurrent.AllocateMemory(vectorSize, 0);
 
 	//Connection to Channels
 	_channelIndex.AllocateMemory(vectorSize*2, 0); //Filled with zero
@@ -69,6 +70,7 @@ void SolverComps::PrepareSolver(PField<ChannelCurrent, ARCH_>*  channels_current
 	_Vm.Host2Device_Async(_stream);
 	_InjectBasal.Host2Device_Async(_stream);
 	_Constant.Host2Device_Async(_stream);
+	_externalCurrent.Host2Device_Async(_stream);
 
 	_threads=dim3(128);
 	_blocks=dim3( model_dize / _threads.x + 1);
@@ -91,6 +93,7 @@ __global__ void update_rhs(
 		TYPE_* emByRm,
 		TYPE_* inject_basal,
 		TYPE_* inject_varying,
+		ExternalCurrent* external_current,
 		int* channelIndex,
 		ChannelCurrent* channels_current,
 		unsigned int size,
@@ -98,6 +101,9 @@ __global__ void update_rhs(
 {
     unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size){ //For each compartment
+
+    	//Find location of A and C in the matrix
+		unsigned int pos_a = idx * nCompt + idx % nCompt;
 
     	TYPE_ GkSum   = 0.0;
     	TYPE_ GkEkSum = 0.0;
@@ -111,32 +117,36 @@ __global__ void update_rhs(
 			}
     	}
 
-    	//Find location of A and C in the matrix
-		unsigned int pos_a = idx * nCompt + idx % nCompt;
-    	hm[pos_a] = constants[idx] + GkSum;
 
+    	hm[pos_a] = constants[idx] + GkSum;
     	rhs[idx] = vm[idx] * cmByDt[idx] + emByRm[idx] + GkEkSum;
 
     	//Injects from basal or varying resources
     	rhs[idx] += inject_basal[idx] + inject_varying[idx];
+
+    	// add external current
+//    	hm[pos_a] += external_current[idx]._gk;
+//    	rhs[idx] += external_current[idx]._gkek;
     }
 }
 
 void SolverComps::Input()
 {
 	_InjectVarying.Host2Device_Async(_stream);
+	_externalCurrent.Host2Device_Async(_stream);
 }
 
 void SolverComps::Process()
 {
 	uint vectorSize = _statistic.nModels * _statistic.nCompts_per_model;
 
-//	_hm.print();
-//	_rhs.print();
+	_Vm.print();
+	_hm.print();
+	_rhs.print();
 //	_Constant.print();
 //	_channels_current->Device2Host();
 //	_channels_current->print();
-
+//	_externalCurrent.print();
 	update_rhs <<<_blocks, _threads,0, _stream>>> (
 			_hm.device,
 			_rhs.device,
@@ -147,6 +157,7 @@ void SolverComps::Process()
 			_EmByRm.device,
 			_InjectBasal.device,
 			_InjectVarying.device,
+			_externalCurrent.device,
 			_channelIndex.device,
 			_channels_current->device,
 			vectorSize,
@@ -155,10 +166,10 @@ void SolverComps::Process()
 
 //	cudaStreamSynchronize(_stream);
 
-//	_hm.Device2Host();
-//	_hm.print();
-//	_rhs.Device2Host();
-//	_rhs.print();
+	_hm.Device2Host();
+	_hm.print();
+	_rhs.Device2Host();
+	_rhs.print();
 	assert(!dsolve_batch_fermi(_hm.device, _rhs.device, _Vm.device,
 			_statistic.nCompts_per_model, _statistic.nModels, _stream));
 
@@ -173,13 +184,14 @@ void SolverComps::Process()
 //				_InjectVarying.device,
 //				vectorSize);
 
-//	_Vm.Device2Host_Async(_stream);
-//	_Vm.print();
+	_Vm.Device2Host_Async(_stream);
+	_Vm.print();
 //	_VMid.Device2Host();
 //	_VMid.print();
 
-
 	assert(cudaSuccess == cudaGetLastError());
+	//reset external channel
+
 //	cudaStreamSynchronize(_stream);
 }
 
@@ -187,7 +199,16 @@ void SolverComps::Process()
 void SolverComps::Output()
 {
 	_Vm.Device2Host_Async(_stream);
+	_externalCurrent.Fill(0.0);
+}
 
+/**
+ * 		Set/Get values
+ */
+void SolverComps::AddExternalCurrent( int index, TYPE_ Gk, TYPE_ GkEk)
+{
+	_externalCurrent[index]._gk += Gk;
+	_externalCurrent[index]._gkek += GkEk;
 }
 
 void SolverComps::SetValue(int index, FIELD::TYPE field, TYPE_ value)
@@ -217,6 +238,12 @@ void SolverComps::SetValue(int index, FIELD::TYPE field, TYPE_ value)
 			break;
 		case FIELD::CONSTANT:
 			_Constant[index] = value;
+			break;
+		case FIELD::EXT_CURRENT_GK:
+			_externalCurrent[index]._gk = value;
+			break;
+		case FIELD::EXT_CURRENT_EKGK:
+			_externalCurrent[index]._gkek = value;
 			break;
 	}
 }

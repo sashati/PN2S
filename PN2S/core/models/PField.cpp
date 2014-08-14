@@ -102,6 +102,12 @@ Error_PN2S PField<T,arch>::AllocateMemory(size_t size)
 }
 
 template <typename T, int arch>
+__inline__ void PField<T,arch>::Fill(TYPE_ value)
+{
+	memset(host,value, _size * sizeof(host[0]));
+}
+
+template <typename T, int arch>
 Error_PN2S PField<T,arch>::AllocateMemory(size_t size, TYPE_ host_defaultValue)
 {
 	_size = size;
@@ -162,7 +168,7 @@ template <typename T, int arch>
 void PField<T,arch>::print()
 {
 	for (int i = 0; i < _size; i+=host_inc) {
-		cout << std::setprecision (std::numeric_limits< double >::digits10)<<host[i] << "\t";
+		cout << std::setprecision (std::numeric_limits< double >::digits10)<< host[i] << "\t";
 	}
 	cout << endl << flush;
 }
@@ -172,3 +178,4 @@ template class PField<int, ARCH_SM30>;
 template class PField<unsigned char, ARCH_SM30>;
 template class PField<ChannelType, ARCH_SM30>;
 template class PField<ChannelCurrent, ARCH_SM30>;
+template class PField<ExternalCurrent, ARCH_SM30>;

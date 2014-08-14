@@ -316,7 +316,7 @@ def main():
 Use_MasterHSolve    =   True
 # Use_MasterHSolve    =   False
 Simulation_Time     =   1e-3
-Number_Of_Cells     =   1000
+Number_Of_Cells     =   10
 Number_Of_Spines    =   2
 INJECT_CURRENT      =   1e-7
 

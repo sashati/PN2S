@@ -34,6 +34,17 @@ namespace models
 #define PARAMS_MIN 11
 #define PARAMS_MAX 12
 
+struct ExternalCurrent{
+
+	TYPE_ _gk;
+	TYPE_ _gkek;
+	friend ostream& operator<<(ostream& out, const ExternalCurrent& obj)
+	{
+	    out << "(" << obj._gk<< ", " << obj._gkek << ")";
+	    return out;
+	}
+};
+
 struct ChannelCurrent{
 
 	TYPE_ _gk;
@@ -85,7 +96,8 @@ public:
 
 	Error_PN2S AllocateMemory(size_t size);
 	Error_PN2S AllocateMemory(size_t size, TYPE_ defaultValue);
-//	Error_PN2S AllocateMemory(size_t size, int inc);
+
+	__inline__ void Fill(TYPE_ value);
 	__inline__ Error_PN2S Host2Device_Async(cudaStream_t stream);
 	__inline__ Error_PN2S Host2Device();
 	__inline__ Error_PN2S Device2Host_Async(cudaStream_t stream);

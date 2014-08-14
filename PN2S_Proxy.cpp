@@ -170,6 +170,13 @@ void PN2S_Proxy::Reinit(Eref hsolve){
  */
 extern std::map< unsigned int, pn2s::Location > locationMap;
 
+
+void PN2S_Proxy::AddExternalCurrent( unsigned int id, TYPE_ Gk, TYPE_ GkEk)
+{
+	Location l = locationMap[id];
+	DeviceManager::Devices()[l.device].ModelPacks()[l.pack]._compsSolver.AddExternalCurrent(l.index,Gk, GkEk);
+}
+
 void PN2S_Proxy::setValue( unsigned int id, TYPE_ value , FIELD::TYPE n)
 {
 	Location l = locationMap[id];

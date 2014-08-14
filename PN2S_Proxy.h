@@ -25,4 +25,6 @@ public:
 	static void setValue( unsigned int , TYPE_, pn2s::FIELD::TYPE);
 	static TYPE_ getValue( unsigned int , pn2s::FIELD::TYPE);
 
+	static void AddExternalCurrent( unsigned int index, TYPE_ Gk, TYPE_ GkEk);
+
 };

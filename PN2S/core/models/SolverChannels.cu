@@ -183,6 +183,8 @@ void SolverChannels::Input()
 
 void SolverChannels::Process()
 {
+	if(_m_statistic.nChannels_all < 1)
+		return;
 	int smem_size = (sizeof(TYPE_) * _threads.x * _threads.y);
 	advanceChannels <<<_blocks, _threads,smem_size, _stream>>> (
 			_Vm->device,

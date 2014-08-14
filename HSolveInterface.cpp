@@ -242,11 +242,11 @@ void HSolve::setInject( Id id, double value )
 
 void HSolve::addInject( Id id, double value )
 {
-    unsigned int index = localIndex( id );
+    assert(0); //TODO: Should not come here! Test injectVarying!
+	unsigned int index = localIndex( id );
     // Not assert( index < inject_.size() ), because inject_ is a map.
     assert( index < nCompt_ );
     inject_[ index ].injectVarying += value;
-    assert(0); //Should not come here! Test injectVarying!
 }
 
 
@@ -276,7 +276,12 @@ void HSolve::addInject( Id id, double value )
 
 void HSolve::addGkEk( Id id, double Gk, double Ek )
 {
-    unsigned int index = localIndex( id );
+	if(isMasterHSolve_)
+	{
+		PN2S_Proxy::AddExternalCurrent(id.value(), Gk, Gk * Ek);
+		return;
+	}
+	unsigned int index = localIndex( id );
     assert( 2 * index + 1 < externalCurrent_.size() );
     externalCurrent_[ 2 * index ] += Gk;
     externalCurrent_[ 2 * index + 1 ] += Gk * Ek;

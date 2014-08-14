@@ -33,6 +33,7 @@ private:
 	PField<TYPE_, ARCH_>  _EmByRm;	// Em of the compartments
 	PField<TYPE_, ARCH_>  _InjectBasal;
 	PField<TYPE_, ARCH_>  _InjectVarying;
+	PField<ExternalCurrent, ARCH_>  _externalCurrent;
 
 	//Channel currents
 	PField<int, ARCH_>  _channelIndex; 	// (NumberOfChannels, Index in _current)
@@ -65,6 +66,7 @@ public:
 	TYPE_ 	GetValue(int cmpt_index, FIELD::TYPE field);
 	void ConnectChannel(int cmpt_index,  int ch_index);
 	PField<TYPE_, ARCH_> * GetFieldVm(){return & _Vm;}
+	void AddExternalCurrent( int index, TYPE_ Gk, TYPE_ GkEk);
 };
 
 }
