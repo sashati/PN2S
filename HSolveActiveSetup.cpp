@@ -49,6 +49,7 @@ void HSolveActive::reinit( ProcPtr info )
     reinitCalcium();
     reinitChannels();
     sendValues( info );
+    stage_ = 0;
 }
 
 void HSolveActive::reinitSpikeGens( ProcPtr info )

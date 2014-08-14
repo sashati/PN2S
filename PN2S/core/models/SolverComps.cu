@@ -141,8 +141,8 @@ void SolverComps::Process()
 	uint vectorSize = _statistic.nModels * _statistic.nCompts_per_model;
 
 	_Vm.print();
-	_hm.print();
-	_rhs.print();
+//	_hm.print();
+//	_rhs.print();
 //	_Constant.print();
 //	_channels_current->Device2Host();
 //	_channels_current->print();
@@ -166,15 +166,15 @@ void SolverComps::Process()
 
 //	cudaStreamSynchronize(_stream);
 
-	_hm.Device2Host();
-	_hm.print();
-	_rhs.Device2Host();
-	_rhs.print();
+//	_hm.Device2Host();
+//	_hm.print();
+//	_rhs.Device2Host();
+//	_rhs.print();
 	assert(!dsolve_batch_fermi(_hm.device, _rhs.device, _Vm.device,
 			_statistic.nCompts_per_model, _statistic.nModels, _stream));
 
-//	_Vm.Device2Host();
-//	_Vm.print();
+	_Vm.Device2Host();
+	_Vm.print();
 //	_VMid.Device2Host();
 //	_VMid.print();
 
@@ -184,8 +184,8 @@ void SolverComps::Process()
 //				_InjectVarying.device,
 //				vectorSize);
 
-	_Vm.Device2Host_Async(_stream);
-	_Vm.print();
+//	_Vm.Device2Host_Async(_stream);
+//	_Vm.print();
 //	_VMid.Device2Host();
 //	_VMid.print();
 
