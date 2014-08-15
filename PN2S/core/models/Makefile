@@ -32,13 +32,13 @@ OBJS +=		HHChannel.o \
 COBJS += SolverChannels.o	\
 		SolverComps.o	\
 		PField.o		\
-		solve.o	\
+		SolverMatrix.o	\
 
 .PHONY: all
 all: $(TARGET)
 default: all
 
-Model.o: Model.cpp Model.h HHChannel.cpp HHChannel.h Compartment.cpp Compartment.h Matrix.cpp Matrix.h 
+Model.o: Model.cpp Model.h HHChannel.cpp HHChannel.h Compartment.cpp Compartment.h 
 HHChannel.o: HHChannel.cpp HHChannel.h $
 Compartment.o: Compartment.cpp Compartment.h 
 CompartmentVector.o: CompartmentVector.cpp CompartmentVector.h 
@@ -47,8 +47,8 @@ Neuron.o: Neuron.cpp Neuron.h Compartment.o
 NeuronVector.o: NeuronVector.cpp NeuronVector.h
 PField.o: PField.cpp PField.h
 SolverChannels.o: SolverChannels.cu SolverChannels.h PField.cpp PField.h
-SolverComps.o: SolverComps.cu SolverComps.h PField.cpp PField.h
-solve.o: solve.cu solve.h operations.h
+SolverComps.o: SolverComps.cu SolverComps.h PField.cpp PField.h SolverMatrix.cu SolverMatrix.h
+SolverMatrix.o: SolverMatrix.cu SolverMatrix.h operations.h
 
 $(TARGET): $(OBJS) $(COBJS) 
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) 

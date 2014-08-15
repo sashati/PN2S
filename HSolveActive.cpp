@@ -53,26 +53,31 @@ void HSolveActive::step( ProcPtr info )
     }
 
 //    _printVector(VMid_);
-//    _printVector(V_);
+
+//    cout << "Vm:";   _printVector(V_);
+//	_printVector(HS_);
+//    cout << "hm0:"<< endl << flush;
+//	for (int i = 0; i < nCompt_; ++i) {
+//		for (int j = 0; j < nCompt_; ++j) {
+//			cout << getA(i,j) << "\t";
+//		}
+//		cout << endl << flush;
+//	}
 
     advanceChannels( info->dt );
     calculateChannelCurrents();
-//    cout << HS_.size() << endl<<flush;
-//    _printVector(HS_);
-//    for (int i = 0; i < nCompt_; ++i) {
-//    	for (int j = 0; j < nCompt_; ++j) {
-//    		cout << getA(i,j) << "\t";
-//		}
-//    	cout << endl << flush;
-//	}
+
     updateMatrix();
+
 //    cout << HS_.size() << endl<<flush;
+//    cout << "hm1:"<< endl << flush;
 //	for (int i = 0; i < nCompt_; ++i) {
 //		for (int j = 0; j < nCompt_; ++j) {
 //			cout << std::setprecision (std::numeric_limits< double >::digits10)<<getA(i,j) << "\t";
 //		}
 //		cout << endl << flush;
 //	}
+//    cout << "b:"<< endl << flush;
 //	for (int i = 0; i < nCompt_; ++i) {
 //		cout << std::setprecision (std::numeric_limits< double >::digits10)<<getB(i) << "\t";
 //	}
@@ -138,7 +143,7 @@ void HSolveActive::updateMatrix()
             GkEkSum += icurrent->Gk * icurrent->Ek;
         }
 
-//        cout <<" "<< *(2+ihs);
+//        cout <<" Const: "<< *(2+ihs) << GkSum << GkEkSum;
 
         *ihs = *( 2 + ihs ) + GkSum;
         *( 3 + ihs ) = *iv * ic->CmByDt + ic->EmByRm + GkEkSum;
@@ -155,6 +160,7 @@ void HSolveActive::updateMatrix()
 
         unsigned int ic = inject->first;
     	InjectStruct& value = inject->second;
+    	assert(!(value.injectVarying || value.injectBasal ));
 
 //    	cout <<value.injectVarying << " "<< value.injectBasal<< endl <<flush;
         HS_[ 4 * ic + 3 ] += value.injectVarying + value.injectBasal;
@@ -178,7 +184,7 @@ void HSolveActive::updateMatrix()
     vector< double >::iterator iec;
     for ( iec = externalCurrent_.begin(); iec != externalCurrent_.end(); iec += 2 )
     {
-//    	assert(!(*( iec ) || *( iec + 1 )));
+    	assert(!(*( iec ) || *( iec + 1 )));
         *ihs += *iec;
         *( 3 + ihs ) += *( iec + 1 );
 

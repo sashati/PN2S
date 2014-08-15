@@ -6,17 +6,15 @@
 ///////////////////////////////////////////////////////////
 
 #include "SolverComps.h"
-#include "solve.h"
+#include "SolverMatrix.h"
 
 #include <assert.h>
 #include <cuda_runtime.h>
 #include <cublas_v2.h>
 
 using namespace pn2s::models;
-//CuBLAS variables
-//cublasHandle_t _handle;
 
-SolverComps::SolverComps(): _stream(0)
+SolverComps::SolverComps(): _stream(0), _channels_current(0)
 {
 
 }
@@ -140,7 +138,7 @@ void SolverComps::Process()
 {
 	uint vectorSize = _statistic.nModels * _statistic.nCompts_per_model;
 
-	_Vm.print();
+//	_Vm.print();
 //	_hm.print();
 //	_rhs.print();
 //	_Constant.print();
@@ -164,35 +162,16 @@ void SolverComps::Process()
 			_statistic.dt);
 	assert(cudaSuccess == cudaGetLastError());
 
-//	cudaStreamSynchronize(_stream);
+//	_hm.Device2Host();	_hm.print();
+//	_rhs.Device2Host();	_rhs.print();
 
-//	_hm.Device2Host();
-//	_hm.print();
-//	_rhs.Device2Host();
-//	_rhs.print();
-	assert(!dsolve_batch_fermi(_hm.device, _rhs.device, _Vm.device,
-			_statistic.nCompts_per_model, _statistic.nModels, _stream));
-
-	_Vm.Device2Host();
-	_Vm.print();
-//	_VMid.Device2Host();
-//	_VMid.print();
-
-//	update_vm <<<_blocks, _threads,0, _stream>>> (
-//				_Vm.device,
-//				_channelIndex.device,
-//				_InjectVarying.device,
-//				vectorSize);
-
-//	_Vm.Device2Host_Async(_stream);
-//	_Vm.print();
-//	_VMid.Device2Host();
-//	_VMid.print();
-
+	SolverMatrix<TYPE_,ARCH_>::fast_solve(
+			_hm.device, _rhs.device, _Vm.device,
+			_statistic.nCompts_per_model, _statistic.nModels, _stream);
 	assert(cudaSuccess == cudaGetLastError());
-	//reset external channel
 
-//	cudaStreamSynchronize(_stream);
+//	_hm.Device2Host();	_hm.print();
+//	_rhs.Device2Host();	_rhs.print();
 }
 
 
@@ -225,8 +204,6 @@ void SolverComps::SetValue(int index, FIELD::TYPE field, TYPE_ value)
 			_Ra[index] = value;
 			break;
 		case FIELD::VM:
-			_Vm[index] = value;
-			break;
 		case FIELD::INIT_VM:
 			_Vm[index] = value;
 			break;
@@ -263,6 +240,7 @@ TYPE_ SolverComps::GetValue(int index, FIELD::TYPE field)
 		case FIELD::INIT_VM:
 			return _Vm[index];
 	}
+	return 0;
 }
 
 void SolverComps::SetHinesMatrix(int n, int row, int col, TYPE_ value)

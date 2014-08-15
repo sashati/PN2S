@@ -119,7 +119,7 @@ Error_PN2S PField<T,arch>::AllocateMemory(size_t size, TYPE_ host_defaultValue)
 }
 
 template <typename T, int arch>
-__inline__ Error_PN2S PField<T,arch>::Host2Device_Async(cudaStream_t stream)
+Error_PN2S PField<T,arch>::Host2Device_Async(cudaStream_t stream)
 {
 	CALL(sendVector<T>(_size, host,device, stream));
 	return Error_PN2S::NO_ERROR;
@@ -174,6 +174,7 @@ void PField<T,arch>::print()
 }
 
 template class PField<double, ARCH_SM30>;
+template class PField<float, ARCH_SM30>;
 template class PField<int, ARCH_SM30>;
 template class PField<unsigned char, ARCH_SM30>;
 template class PField<ChannelType, ARCH_SM30>;

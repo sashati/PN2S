@@ -49,20 +49,11 @@ struct FIELD{
 };
 
 struct Location{
-	union {
-		int64_t full;
-		struct {
-			union {
-				int32_t address;
-				struct {
-					int16_t pack;
-					int16_t device;
-				};
-			};
-			int32_t index;
-		};
-	};
-	Location():full(0){}
+	int16_t pack;
+	int16_t device;
+	int32_t index;
+
+	Location():pack(0), device(0), index(0){}
 	Location(int16_t _d): pack(0), device(_d), index(0){}
 	Location(int16_t _d, int16_t _p): pack(_p), device(_d), index(0){}
 	Location(int16_t _d,int16_t _p,int32_t _i): pack(_p), device(_d), index(_i){}

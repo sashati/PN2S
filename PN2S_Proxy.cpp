@@ -47,8 +47,8 @@ void PN2S_Proxy::FillData(map<unsigned int, Id> modelId_map){
 				//Put model into solvers
 				HSolve* h =	reinterpret_cast< HSolve* >( model.eref().data());
 
-				for(int i = 0; i<h->nCompt_;i++)
-					for(int j = 0; j<h->nCompt_;j++)
+				for(unsigned int  i = 0; i<h->nCompt_;i++)
+					for(unsigned int  j = 0; j<h->nCompt_;j++)
 						mp.ComptSolver().SetHinesMatrix(m_i,i,j, h->getA(i,j));
 
 				//Compartments and channels
