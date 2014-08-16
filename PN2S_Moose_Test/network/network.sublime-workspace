@@ -1,0 +1,660 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"add",
+				"add_syn"
+			],
+			[
+				"hs",
+				"hsolve"
+			],
+			[
+				"conn",
+				"connect_input_to_exc"
+			],
+			[
+				"ext_",
+				"ext_syn"
+			],
+			[
+				"in",
+				"inputs_sg"
+			],
+			[
+				"a",
+				"append"
+			],
+			[
+				"ex",
+				"ext"
+			],
+			[
+				"c1",
+				"c1_spikegen"
+			],
+			[
+				"1e",
+				"1e-6"
+			],
+			[
+				"syn",
+				"synapse"
+			],
+			[
+				"head",
+				"head0"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"contents": "\nimport sys\nsys.path.append('../../python')\nimport os\nos.environ['NUMPTHREADS'] = '1'\nimport pylab\nimport numpy\nimport math\n\nimport moose\nimport moose.utils\n\nEREST_ACT = -70e-3\n\n# Gate equations have the form:\n#\n# y(x) = (A + B * x) / (C + exp((x + D) / F))\n#\n# where x is membrane voltage and y is the rate constant for gate\n# closing or opening\n\nNa_m_params = [1e5 * (25e-3 + EREST_ACT),   # 'A_A':\n               -1e5,                       # 'A_B':\n               -1.0,                       # 'A_C':\n               -25e-3 - EREST_ACT,         # 'A_D':\n               -10e-3,                      # 'A_F':\n               4e3,                     # 'B_A':\n               0.0,                        # 'B_B':\n               0.0,                        # 'B_C':\n               0.0 - EREST_ACT,            # 'B_D':\n               18e-3                       # 'B_F':\n               ]\nNa_h_params = [70.0,                        # 'A_A':\n               0.0,                       # 'A_B':\n               0.0,                       # 'A_C':\n               0.0 - EREST_ACT,           # 'A_D':\n               0.02,                     # 'A_F':\n               1000.0,                       # 'B_A':\n               0.0,                       # 'B_B':\n               1.0,                       # 'B_C':\n               -30e-3 - EREST_ACT,        # 'B_D':\n               -0.01                    # 'B_F':\n               ]\nK_n_params = [1e4 * (10e-3 + EREST_ACT),  # 'A_A':\n              -1e4,  # 'A_B':\n              -1.0,  # 'A_C':\n              -10e-3 - EREST_ACT,  # 'A_D':\n              -10e-3,  # 'A_F':\n              0.125e3,  # 'B_A':\n              0.0,  # 'B_B':\n              0.0,  # 'B_C':\n              0.0 - EREST_ACT,  # 'B_D':\n              80e-3  # 'B_F':\n              ]\nVMIN = -30e-3 + EREST_ACT\nVMAX = 120e-3 + EREST_ACT\nVDIVS = 3000\n\n\ndef create_squid(parent):\n    \"\"\"Create a single compartment squid model.\"\"\"\n    compt = moose.SymCompartment(parent.path + '/compt')\n    Em = EREST_ACT + 10.613e-3\n    compt.Em = Em\n    compt.initVm = EREST_ACT\n    compt.Cm = 7.85e-9 * 0.5\n    compt.Rm = 4.2e5 * 5.0\n    compt.Ra = 7639.44e3\n\n    nachan = moose.HHChannel(parent.path + '/compt/Na')\n    nachan.Xpower = 3\n    xGate = moose.HHGate(nachan.path + '/gateX')\n    xGate.setupAlpha(Na_m_params + [VDIVS, VMIN, VMAX])\n    # This is important: one can run without it but the output will diverge.\n    xGate.useInterpolation = 1\n    nachan.Ypower = 1\n    yGate = moose.HHGate(nachan.path + '/gateY')\n    yGate.setupAlpha(Na_h_params + [VDIVS, VMIN, VMAX])\n    yGate.useInterpolation = 1\n    nachan.Gbar = 0.942e-3\n    nachan.Ek = 115e-3 + EREST_ACT\n    moose.connect(nachan, 'channel', compt, 'channel', 'OneToOne')\n    kchan = moose.HHChannel(parent.path + '/compt/K')\n    kchan.Xpower = 4.0\n    xGate = moose.HHGate(kchan.path + '/gateX')\n    xGate.setupAlpha(K_n_params + [VDIVS, VMIN, VMAX])\n    xGate.useInterpolation = 1\n    kchan.Gbar = 0.2836e-3\n    kchan.Ek = -12e-3 + EREST_ACT\n    moose.connect(kchan, 'channel', compt, 'channel', 'OneToOne')\n    return compt\n\n\ndef create_spine(parentCompt, parentObj, index, frac, length, dia, theta):\n    \"\"\"Create spine of specified dimensions and index\"\"\"\n    RA = 1.0\n    RM = 1.0\n    CM = 0.01\n    sname = 'shaft' + str(index)\n    hname = 'head' + str(index)\n    shaft = moose.SymCompartment(parentObj.path + '/' + sname)\n    #moose.connect( parentCompt, 'cylinder', shaft, 'proximalOnly','Single')\n    #moose.connect( parentCompt, 'distal', shaft, 'proximal','Single' )\n    moose.connect(parentCompt, 'sphere', shaft, 'proximalOnly', 'Single')\n    x = parentCompt.x0 + frac * (parentCompt.x - parentCompt.x0)\n    y = parentCompt.y0 + frac * (parentCompt.y - parentCompt.y0)\n    z = parentCompt.z0 + frac * (parentCompt.z - parentCompt.z0)\n    shaft.x0 = x\n    shaft.y0 = y\n    shaft.z0 = z\n    sy = y + length * math.cos(theta * math.pi / 180.0)\n    sz = z + length * math.sin(theta * math.pi / 180.0)\n    shaft.x = x\n    shaft.y = sy\n    shaft.z = sz\n    shaft.diameter = dia / 2.0\n    shaft.length = length\n    xa = math.pi * dia * dia / 400.0\n    circumference = math.pi * dia / 10.0\n    shaft.Ra = RA * length / xa\n    shaft.Rm = RM / (length * circumference)\n    shaft.Cm = CM * length * circumference\n    shaft.Em = EREST_ACT\n    shaft.initVm = EREST_ACT\n\n    head = moose.SymCompartment(parentObj.path + '/' + hname)\n    moose.connect(shaft, 'distal', head, 'proximal', 'Single')\n    head.x0 = x\n    head.y0 = sy\n    head.z0 = sz\n    hy = sy + length * math.cos(theta * math.pi / 180.0)\n    hz = sz + length * math.sin(theta * math.pi / 180.0)\n    head.x = x\n    head.y = hy\n    head.z = hz\n    head.diameter = dia\n    head.length = length\n    xa = math.pi * dia * dia / 4.0\n    circumference = math.pi * dia\n    head.Ra = RA * length / xa\n    head.Rm = RM / (length * circumference)\n    head.Cm = CM * length * circumference\n    head.Em = EREST_ACT\n    head.initVm = EREST_ACT\n    return head\n\n\ndef create_spine_with_receptor(compt, cell, index, frac):\n    FaradayConst = 96485.3415    # s A / mol\n    spineLength = 5.0e-6\n    spineDia = 4.0e-6\n    head = create_spine(compt, cell, index, frac, spineLength, spineDia, 0.0)\n    gluR = moose.SynChan(head.path + '/gluR')\n    # gluR.tau1 = 4e-3\n    # gluR.tau2 = 4e-3\n    # gluR.Gbar = 1e-6\n    # gluR.Ek= 10.0e-3 # Inhibitory -0.1\n    # moose.connect( head, 'channel', gluR, 'channel', 'Single' )\n\n    return gluR\n\n\ndef add_plot(objpath, field, plot):\n    assert moose.exists(objpath)\n    tab = moose.Table('/graphs/' + plot)\n    obj = moose.element(objpath)\n    moose.connect(tab, 'requestOut', obj, field)\n    return tab\n\n\ndef dump_plots():\n    # if ( os.path.exists( fname ) ):\n    #     os.remove( fname )\n    for x in moose.wildcardFind('/graphs/cpu/##[ISA=Table]'):\n        # print x.vector\n        t = numpy.arange(0, len(x.vector), 1)\n        pylab.plot(t, x.vector, label=(\"CPU:%s\" % x.name))\n    for x in moose.wildcardFind('/graphs/gpu/##[ISA=Table]'):\n        t = numpy.arange(0, len(x.vector), 1)\n        pylab.plot(t, x.vector, label=(\"GPU:%s\" % x.name))\n\n\ndef make_spiny_compt(root_path, number, synInput):\n    comptLength = 100e-6\n    comptDia = 4e-6\n    numSpines = number_of_spines\n    cell = moose.Neutral(root_path + \"/cell\" + str(number))\n\n    compt = create_squid(cell)\n    compt.inject = 0\n    compt.x0 = 0\n    compt.y0 = 0\n    compt.z0 = 0\n    compt.x = comptLength\n    compt.y = 0\n    compt.z = 0\n    compt.length = comptLength\n    compt.diameter = comptDia\n    for i in range(numSpines):\n        r = create_spine_with_receptor(compt, cell, i, i / float(numSpines))\n        r.synapse.num = 1\n        syn = moose.element(r.path + '/synapse')\n        # moose.connect( synInput, 'spikeOut', syn, 'addSpike', 'Single' )\n        syn.weight = 0.2\n        syn.delay = i * 1.0e-4\n\n\ndef createCells(net):\n    network = moose.Neutral(net)\n    synInput = moose.SpikeGen(\"%s/synInput\" % net)\n    synInput.refractT = 47e-3\n    synInput.threshold = -1.0\n    synInput.edgeTriggered = False\n    synInput.Vm(0)\n    for i in range(number_of_ext_cells):\n        make_spiny_compt(network.path, i, synInput)\n\n\ndef test_elec_alone():\n    createCells(\"/cpu\")\n   # make Hsolver and rerun\n    for i in range(number_of_ext_cells):\n        hsolve = moose.HSolve('/cpu/cell' + str(i) + '/hsolve')\n        hsolve.dt = dt\n        moose.useClock(1, '/cpu/cell' + str(i) + '/hsolve', 'process')\n        hsolve.target = '/cpu/cell' + str(i) + '/compt'\n\n    if (Use_MasterHSolve == True):\n        print \"*****************\"\n        createCells(\"/gpu\")\n        hsolve = moose.HSolve('/gpu/hsolve')\n        hsolve.dt = dt\n        moose.useClock(1, '/gpu/hsolve', 'process')\n        hsolve.target = '/gpu/#/hsolve'\n\n        for i in range(number_of_ext_cells):\n            hsolve = moose.HSolve('/gpu/cell' + str(i) + '/hsolve')\n            hsolve.dt = dt\n            moose.useClock(1, '/gpu/cell' + str(i) + '/hsolve', 'process')\n            hsolve.target = '/gpu/cell' + str(i) + '/compt'\n            moose.Neutral('/graphs')\n            moose.Neutral('/graphs/cpu')\n            moose.Neutral('/graphs/gpu')\n            add_plot(\"/cpu/cell0\" + '/compt', 'getVm', 'cpu/c0_comp')\n            # add_plot( \"/gpu/cell0\" +'/compt', 'getVm', 'gpu/c0_comp' )\n\n    moose.setClock(0, dt)\n    moose.setClock(1, dt)\n    moose.setClock(2, dt)\n    moose.setClock(8, 1e-4)\n    moose.useClock(0, '/##[ISA=Compartment]', 'init')\n    moose.useClock(1, '/##', 'process')\n    moose.useClock(1, '/graphs/##', 'process')\n\n    moose.reinit()\n    moose.start(Simulation_Time)\n    dump_plots()\n    pylab.legend()\n    pylab.show()\n\n\ndef main():\n    test_elec_alone()\n\n# Use_MasterHSolve    =   True\nUse_MasterHSolve = False\nSimulation_Time = 3e-2\n\nnumber_of_input_cells = 1\nnumber_of_ext_cells = 2\nnumber_of_inh_cells = 0\nnumber_of_spines = 1\n\nINJECT_CURRENT = 1e-7\ndt = 1e-6\n\nif __name__ == '__main__':\n    main()\n",
+			"file": "network.py",
+			"file_size": 8887,
+			"file_write_time": 130526149776680981,
+			"settings":
+			{
+				"buffer_size": 8887,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 306.0,
+		"selected_items":
+		[
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"remo",
+				"Package Control: Remove Package"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"push",
+				"Git: Push"
+			],
+			[
+				"comm",
+				"Git: Quick Commit"
+			],
+			[
+				"com",
+				"Git: Quick Commit"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"latex",
+				"LaTexTools: Delete temporary files"
+			],
+			[
+				"latextool",
+				"LaTexTools: Delete temporary files"
+			],
+			[
+				"upda",
+				"Package Control: Upgrade Package"
+			],
+			[
+				"ins",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Discover Packages"
+			],
+			[
+				"wrap",
+				"Snippet: Wrap selection in LaTeX command"
+			],
+			[
+				"mini",
+				"View: Toggle Minimap"
+			],
+			[
+				"fold",
+				"Code Folding: Unfold All"
+			],
+			[
+				"psuh",
+				"Git: Push"
+			],
+			[
+				"commit",
+				"Git: Quick Commit"
+			],
+			[
+				"reset",
+				"Git: Reset (unstage) Current File"
+			],
+			[
+				"stat",
+				"Git: Status"
+			],
+			[
+				"goog",
+				"Google Spell Check"
+			],
+			[
+				"pull",
+				"Git: Pull"
+			],
+			[
+				"pu",
+				"Git: Push"
+			],
+			[
+				"qu",
+				"Git: Quick Commit"
+			],
+			[
+				"pus",
+				"Git: Push"
+			],
+			[
+				"commi",
+				"Git: Amend Commit"
+			],
+			[
+				"ann",
+				"Git: Toggle Annotations"
+			],
+			[
+				"anno",
+				"Git: Toggle Annotations"
+			],
+			[
+				"git",
+				"Git: Gui"
+			],
+			[
+				"key",
+				"Preferences: Key Bindings - Default"
+			],
+			[
+				"keyb",
+				"Preferences: Key Bindings - Default"
+			],
+			[
+				"buil",
+				"Build: Build"
+			],
+			[
+				"bui",
+				"Build: Build"
+			],
+			[
+				"settin",
+				"Preferences: Settings - User"
+			],
+			[
+				"setting",
+				"Preferences: Settings - User"
+			],
+			[
+				"find",
+				"FindKeyConflicts: All Conflicts"
+			]
+		],
+		"width": 521.0
+	},
+	"console":
+	{
+		"height": 153.0,
+		"history":
+		[
+			"auto_wrap",
+			"wrap_lines",
+			"view.substr(sublime.Region(view.find_by_selector('entity.name.section.latex')[0].b+2,view.find_by_selector('entity.name.section.latex')[1].a-9))",
+			"view.find_by_selector('entity.name.section.latex')",
+			"view.substr(sublime.Region(view.find_by_selector('entity.name.section.latex')[0].b+2,view.find_by_selector('entity.name.section.latex')[1].a-9))",
+			"import sublime",
+			"view.substr(sublime.Region(view.find_by_selector('entity.name.section.latex')[0].b+2,view.find_by_selector('entity.name.section.latex')[1].a-9))",
+			"import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/network.sublime-project",
+		"/home/saeed/.config/sublime-text-3/Packages/Anaconda/Anaconda.sublime-settings",
+		"/home/saeed/.config/sublime-text-3/Packages/User/Preferences.sublime-settings",
+		"/home/saeed/.config/sublime-text-3/Packages/Anaconda/Default (Linux).sublime-keymap",
+		"/home/saeed/.config/sublime-text-3/Packages/Anaconda/README.md",
+		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/testSpike.py",
+		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/testHsolve.py",
+		"/src/saeed/cuda-workspace/async_gpu/tests/python/mus/nmda.py",
+		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/testHsolve.py",
+		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/settings.py",
+		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/nachannel.py",
+		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/kchannel.py",
+		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/intfire.py",
+		"/src/saeed/cuda-workspace/async_gpu/tests/python/mus/synapse.pyc",
+		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/HsolveInstability.py",
+		"/src/saeed/cuda-workspace/async_gpu/Demos/neuroml/CA1PyramidalCell/CA1.py",
+		"/src/saeed/cuda-workspace/async_gpu/tests/python/mus/rc19.py",
+		"/src/saeed/cuda-workspace/async_gpu/tests/python/Rallpacks/moose_vs_neuron/rallpack3/moose_sim.py",
+		"/src/saeed/cuda-workspace/async_gpu/tests/python/mus/active",
+		"/src/saeed/cuda-workspace/async_gpu/tests/python/mus/hsolve",
+		"/src/saeed/moose/Demos/snippets/testHsolve.py",
+		"/src/saeed/moose/Demos/snippets/MULTI/multi3.py",
+		"/src/saeed/moose/Demos/snippets/cubeMeshSigNeur.py",
+		"/src/saeed/moose/Demos/snippets/synapse.py",
+		"/src/saeed/moose/Demos/snippets/multiComptSigNeur.py",
+		"/home/saeed/Desktop/a.cpp",
+		"/src/saeed/moose/Demos/snippets/timetable.py",
+		"/src/saeed/moose/Demos/snippets/compartment_net.py",
+		"/home/saeed/Dropbox/Thesis/document/erad-ufabc/erad-ufabc-Saeed.tex",
+		"/home/saeed/Dropbox/Thesis/document/erad-ufabc/erad-poster.tex",
+		"/home/saeed/Downloads/tikzposter-example.tex",
+		"/home/saeed/Dropbox/Thesis/document/erad-ufabc/erad-ufabc-Saeed.sublime-workspace",
+		"/home/saeed/Dropbox/Thesis/document/dissertation/dissertation.toc",
+		"/home/saeed/Dropbox/Thesis/document/dissertation/chap0_abstract.tex",
+		"/home/saeed/Dropbox/Thesis/document/dissertation/dissertation.tex",
+		"/home/saeed/Dropbox/Thesis/document/dissertation/chap1_introduction.tex",
+		"/home/saeed/Dropbox/Thesis/document/dissertation/chap2_background.tex",
+		"/home/saeed/Dropbox/Thesis/document/dissertation/chap3_previousWorks.tex",
+		"/home/saeed/Dropbox/Thesis/document/dissertation/chap7_conclusion.tex",
+		"/home/saeed/Dropbox/Thesis/document/dissertation/chap6_results.tex",
+		"/home/saeed/Dropbox/Thesis/document/dissertation/dissertation.lot",
+		"/home/saeed/Dropbox/Thesis/document/dissertation/chap4_architecture.tex",
+		"/home/saeed/Dropbox/Thesis/document/dissertation/chap5_implementation.tex",
+		"/home/saeed/Downloads/tmp/tutorial4.g",
+		"/home/saeed/.config/sublime-text-3/Packages/User/Default (Linux).sublime-keymap",
+		"/home/saeed/Dropbox/Thesis/document/dissertation/.gitignore",
+		"/home/saeed/Dropbox/thesis/document/erad-ufabc/erad-ufabc-Saeed.tex",
+		"/home/saeed/Downloads/tmp/ge",
+		"/home/saeed/.config/sublime-text-3/Packages/Default/Default (Linux).sublime-keymap",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/chap2_background.tex",
+		"/home/saeed/.config/sublime-text-3/Packages/User/LaTeX.sublime-settings",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/chap1_introduction.tex",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/caption.tex",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Dissertation.tex",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Dissertation.sublime-project",
+		"/home/saeed/.config/sublime-text-3/Packages/LaTeXTools/builders/traditionalBuilder.py",
+		"/home/saeed/.config/sublime-text-3/Packages/LaTeXTools/evince/evince_backward_search",
+		"/home/saeed/.config/sublime-text-3/Packages/User/LaTeXTools.sublime-settings",
+		"/home/saeed/.config/sublime-text-3/Packages/LaTeXTools/makePDF.py",
+		"/home/saeed/.config/sublime-text-3/Packages/LaTeXTools/LaTeXTools",
+		"/home/saeed/.config/sublime-text-3/Packages/LaTeXTools/LaTeXTools Preferences.sublime-settings.OLD",
+		"/home/saeed/.config/sublime-text-3/Packages/Preferences.sublime-settings.OLD",
+		"/home/saeed/.config/sublime-text-3/Packages/User/LaTeXTools Preferences.sublime-settings",
+		"/home/saeed/.config/sublime-text-3/Packages/LaTeXTools/LaTeX.sublime-build.OLD",
+		"/home/saeed/.config/sublime-text-3/Packages/LaTeXTools/LaTeX.sublime-build",
+		"/home/saeed/.config/sublime-text-3/Packages/LaTeXTools/README.markdown",
+		"/home/saeed/.config/sublime-text-3/Packages/Default/Preferences.sublime-settings",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/chap3_previousWorks.tex",
+		"/home/saeed/Dropbox/src/CopyFromPlaylist/fetch.sh",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/chap5_implementation.tex",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Disseration (saeedBook's conflicted copy 2014-03-07).sublime-workspace",
+		"/home/saeed/.config/sublime-text-3/Packages/User/Git.sublime-settings",
+		"/home/saeed/.config/sublime-text-3/Packages/Git/Git.sublime-settings",
+		"/home/saeed/.config/sublime-text-3/Packages/LaTeXTools/LaTeXTools Preferences.sublime-settings",
+		"/home/saeed/.config/sublime-text-3/Packages/LaTeXTools/Preferences.sublime-settings",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/chap6_results.tex",
+		"/home/saeed/.config/sublime-text-3/Packages/LaTeXTools/evince/evince_sync",
+		"/home/saeed/.config/sublime-text-3/Packages/LaTeXTools/evince/evince_forward_search",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Disseration.sublime-project",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Disseration.PLIST-sublime-project",
+		"/home/saeed/Dropbox/Thesis/Archieve/FAPESP/report/report/FAPESP_Report.tex",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/chap4_architecture.tex",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Dissertation.aux",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Dissertation.blg",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Dissertation.log",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Dissertation.out",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Dissertation.toc",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/chap0_abstract.tex",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Dissertation.pdf",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/library.bib",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Disseration.blg",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Disseration.fdb_latexmk",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Disseration.log",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/chap7_conclusion.tex",
+		"/home/saeed/.config/sublime-text-3/Packages/User/JSON.sublime-settings",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/chap3_discussion.tex",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation (copy)/cognitiveProjec.tex",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/chap2_.tex",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/chap2_literatureReview.tex",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Disseration.tex",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/Conclusion.tex",
+		"/home/saeed/Dropbox/Thesis/Document/dissertation/cognitiveProjec.bbl"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			"."
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"moose",
+			"vector",
+			"/n",
+			"create_pool",
+			"connec",
+			"synapse",
+			"#",
+			"\n#",
+			"spikegen",
+			"synapse",
+			"synInput",
+			"create_spine_with_receptor",
+			"synapse",
+			"0.00785051835950267",
+			"The MOOSE, Multiscale Object-Oriented Simulation",
+			"latexmk",
+			"subl",
+			"latexmk",
+			"builder_settings",
+			"DEFAULT_COMMAND_LATEXMK",
+			"builder_settings",
+			"latexmk",
+			"command",
+			"latexmk",
+			"alt+q",
+			"wrap_lines",
+			"alt+q",
+			"previous_works",
+			"width=",
+			"\\ref",
+			"\\begin{figure}",
+			"NEURon",
+			"generation",
+			"they",
+			".\n",
+			"Threads",
+			"modelling",
+			"project",
+			"synctex",
+			"EDITORCMD",
+			"subsubsection",
+			"subsection",
+			"hucka_systems_2003",
+			"goddard_towards_2001",
+			"bhalla_multiscale_2011",
+			"mascagni_numerical_1998",
+			"crank_practical_1947",
+			"gerald_applied_1978",
+			"hines_efficient_1984",
+			"Davidson2011",
+			"avidson_auto-tuned_2011",
+			"bolz_sparse_2003",
+			"\\cite{hines_neuron_1997}",
+			"\\cite{kulakov_multiprocessing_2013}",
+			"kulakov_multiprocessing_2013",
+			"\\cite{nvidia_cublas_2008}",
+			"latex_ref_cite",
+			"auto",
+			"moose",
+			"Disseration",
+			"disseration",
+			"build",
+			"?",
+			"Are",
+			"Saeed",
+			"vspace",
+			"\n	",
+			"[\n",
+			"\n}",
+			"spell_check",
+			"copy",
+			"logoufabc.pdf"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"subsection",
+			"section",
+			"Hucka2003",
+			"Goddard2001",
+			"Bhalla2011",
+			"Mascagni1998",
+			"Crank1947",
+			"Gerald1978",
+			"Hines1984",
+			"Davidson2011",
+			"Bolz2003",
+			"\\cite{Hines1997}",
+			"\\cite{Kulakov2013}\n",
+			"Kulakov2013\n",
+			"\\cite{Nvidia2008}\n",
+			"dissertation\n",
+			"Dissertation\n",
+			"dissertation\n",
+			"?\n",
+			"\n",
+			"\\n"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "network.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8887,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5014,
+								5014
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"bh_regions":
+							[
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close"
+							],
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2483.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 35.0
+	},
+	"input":
+	{
+		"height": 35.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 242.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"project": "network.sublime-project",
+	"replace":
+	{
+		"height": 50.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+			[
+				"chap2",
+				"chap2_background.tex"
+			],
+			[
+				"",
+				"Dissertation.tex"
+			],
+			[
+				"cha",
+				"chap1_introduction.tex"
+			],
+			[
+				"ca",
+				"caption.tex"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 392.0,
+		"selected_items":
+		[
+			[
+				"",
+				"Aksari2012"
+			]
+		],
+		"width": 1120.0
+	},
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 204.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
