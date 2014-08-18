@@ -46,9 +46,9 @@ public:
 	double GetDt(){ return _m_statistic.dt;}
 	void SetDt(double dt){ _m_statistic.dt = dt;}
 
-	void 	SetGateXParams(int index, vector<double> params);
-	void 	SetGateYParams(int index, vector<double> params);
-	void 	SetGateZParams(int index, vector<double> params);
+	void 	SetGateXParams(int index, vector<double>& params);
+	void 	SetGateYParams(int index, vector<double>& params);
+	void 	SetGateZParams(int index, vector<double>& params);
 
 	void 	SetValue(int index, FIELD::TYPE field, TYPE_ value);
 	TYPE_ 	GetValue(int index, FIELD::TYPE field);

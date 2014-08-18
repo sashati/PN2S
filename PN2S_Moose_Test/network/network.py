@@ -18,7 +18,7 @@ EREST_ACT = -70e-3
 # where x is membrane voltage and y is the rate constant for gate
 # closing or opening
 
-Na_m_params = [10e5 * (25e-3 + EREST_ACT),   # 'A_A':
+Na_m_params = [1e5 * (25e-3 + EREST_ACT),   # 'A_A':
                -1e5,                       # 'A_B':
                -1.0,                       # 'A_C':
                -25e-3 - EREST_ACT,         # 'A_D':
@@ -185,7 +185,7 @@ def make_spiny_compt(root_path, number, synInput):
     cell = moose.Neutral(root_path + "/cell" + str(number))
 
     compt = create_squid(cell)
-    compt.inject = INJECT_CURRENT*1000000
+    compt.inject = INJECT_CURRENT
     compt.x0 = 0
     compt.y0 = 0
     compt.z0 = 0
@@ -252,7 +252,7 @@ def test_elec_alone():
     moose.Neutral('/graphs/cpu')
     moose.Neutral('/graphs/gpu')
     add_plot("/cpu/cell0" + '/head0', 'getVm', 'cpu/c0_head')
-    add_plot("/gpu/cell0" + '/head0', 'getVm', 'gpu/c0_head')
+    # add_plot("/gpu/cell0" + '/head0', 'getVm', 'gpu/c0_head')
     # add_plot("/cpu/cell0" + '/compt', 'getVm', 'cpu/c0_compt')
     # add_plot("/gpu/cell0" + '/compt', 'getVm', 'gpu/c0_compt')
 
@@ -271,7 +271,7 @@ def main():
 
 Use_MasterHSolve = True
 # Use_MasterHSolve = False
-Simulation_Time = 3e-6
+Simulation_Time = 3e-3
 
 number_of_input_cells = 1
 number_of_ext_cells = 2
@@ -279,7 +279,7 @@ number_of_inh_cells = 0
 number_of_spines = 1
 
 INJECT_CURRENT = 1e-7
-dt = 1e-6
+dt = 1e-3
 
 if __name__ == '__main__':
     main()

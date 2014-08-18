@@ -180,3 +180,12 @@ template class PField<unsigned char, ARCH_SM30>;
 template class PField<ChannelType, ARCH_SM30>;
 template class PField<ChannelCurrent, ARCH_SM30>;
 template class PField<ExternalCurrent, ARCH_SM30>;
+
+template class PField<double, ARCH_SM35>;
+template class PField<float, ARCH_SM35>;
+template class PField<int, ARCH_SM35>;
+template class PField<unsigned char, ARCH_SM35>;
+template class PField<ChannelType, ARCH_SM35>;
+template class PField<ChannelCurrent, ARCH_SM35>;
+template class PField<ExternalCurrent, ARCH_SM35>;
+

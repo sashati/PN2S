@@ -197,6 +197,7 @@ void SolverChannels::Process()
 			_channel_currents.device,
 			_m_statistic.nChannels_all,
 			_m_statistic.dt);
+
 	_channel_currents.Device2Host();
 	_channel_currents.print();
 	assert(cudaSuccess == cudaGetLastError());
@@ -211,17 +212,20 @@ void SolverChannels::Output()
  * Set/Get methods
  */
 
-void SolverChannels::SetGateXParams(int index, vector<double> params)
+void SolverChannels::SetGateXParams(int index, vector<double>& params)
 {
 	for (int i = 0; i < min((int)params.size(),13); ++i)
+	{
 		_channel_base[index]._xyz_params[0][i] = (TYPE_)params[i];
+		cout << params[i] << endl << flush;
+	}
 }
-void SolverChannels::SetGateYParams(int index, vector<double> params)
+void SolverChannels::SetGateYParams(int index, vector<double>& params)
 {
 	for (int i = 0; i < min((int)params.size(),13); ++i)
 		_channel_base[index]._xyz_params[1][i] = (TYPE_)params[i];
 }
-void SolverChannels::SetGateZParams(int index, vector<double> params)
+void SolverChannels::SetGateZParams(int index, vector<double>& params)
 {
 	for (int i = 0; i < min((int)params.size(),13); ++i)
 		_channel_base[index]._xyz_params[2][i] = (TYPE_)params[i];

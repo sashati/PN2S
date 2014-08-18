@@ -109,6 +109,15 @@ void inline _printVector(vector< double >& vec)
 	}
 	cout << endl<<flush;
 }
+void inline _printVector(vector< double >& vec, string n)
+{
+	vector< double >::iterator icc;
+	cout << n << ": " ;
+	for ( icc = vec.begin(); icc != vec.end(); ++icc ) {
+		cout << std::setprecision (std::numeric_limits< double >::digits10)<<*icc << "\t";
+	}
+	cout << endl<<flush;
+}
 void inline _printVector(vector< uint >& vec)
 {
 	vector< uint >::iterator icc;

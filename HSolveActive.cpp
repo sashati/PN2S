@@ -64,6 +64,7 @@ void HSolveActive::step( ProcPtr info )
 //		cout << endl << flush;
 //	}
 
+    _printVector(V_, "V");
     advanceChannels( info->dt );
     calculateChannelCurrents();
 
@@ -141,7 +142,7 @@ void HSolveActive::updateMatrix()
         {
             GkSum   += icurrent->Gk;
             GkEkSum += icurrent->Gk * icurrent->Ek;
-            cout << "\tGK: "<< icurrent->Gk<< " \tEk:"<< icurrent->Ek <<endl<<flush ;
+            cout << "\t( "<< icurrent->Gk<< ", "<< icurrent->Ek <<" )"<<endl<<flush ;
         }
 
         cout <<" Const: "<< std::setprecision (std::numeric_limits< double >::digits10) <<*(2+ihs) << "\t"<< GkSum << "\t"<< GkEkSum << endl<<flush;
