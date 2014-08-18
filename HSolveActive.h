@@ -140,6 +140,7 @@ private:
      */
     void readHHChannels();
     void readGates();
+    void readGateParams();
     void readCalcium();
     void readSynapses();
     void readExternalChannels();

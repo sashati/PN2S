@@ -22,6 +22,7 @@ void HSolveActive::setup( Id seed, double dt )
 
     readHHChannels();
     readGates();
+    readGateParams(); //Added for GPU execution
     readCalcium();
     createLookupTables();
     readSynapses(); // Reads SynChans, SpikeGens. Drops process msg for SpikeGens.
@@ -226,11 +227,61 @@ void HSolveActive::readGates()
     int useConcentration = 0;
     for ( ichan = channelId_.begin(); ichan != channelId_.end(); ++ichan )
     {
-        nGates = HSolveUtils::gates( *ichan, gateId_ );
+    	nGates = HSolveUtils::gates( *ichan, gateId_ );
         gCaDepend_.insert( gCaDepend_.end(), nGates, 0 );
         useConcentration = Field< int >::get( *ichan, "useConcentration" );
         if ( useConcentration )
             gCaDepend_.back() = 1;
+    }
+}
+
+void HSolveActive::readGateParams()
+{
+    vector< Id >::iterator ichan;
+    vector< ChannelStruct >::iterator ichan_st = channel_.begin();
+    for ( ichan = channelId_.begin(); ichan != channelId_.end(); ++ichan, ++ichan_st )
+    {
+    	static string gateName[] = {
+			string( "gateX[0]" ),
+			string( "gateY[0]" ),
+			string( "gateZ[0]" )
+		};
+
+		static string powerField[] = {
+			string( "Xpower" ),
+			string( "Ypower" ),
+			string( "Zpower" )
+		};
+
+		unsigned int nGates = 3; // Number of possible gates
+		for ( unsigned int i = 0; i < nGates; i++ ) {
+			double power  = Field< double >::get ( *ichan, powerField[i] );
+
+			if ( power > 0.0 ) {
+				string gatePath = moose::joinPath(ichan->path(), gateName[i]);
+				Id gate( gatePath );
+
+				string gPath = moose::fixPath(gate.path());
+				errorSS.str("");
+				errorSS << "Got " << gatePath << " expected " << gPath;
+				SIMPLE_ASSERT_MSG(gPath == gatePath, errorSS.str().c_str());
+
+				HHGate* g = reinterpret_cast< HHGate* >( gate.eref().data() );
+
+				switch(i)
+				{
+				case 0:
+					ichan_st->Xparams =	Field< vector< double >  >::get( g->originalGateId(), "AlphaParms" );
+					break;
+				case 1:
+					ichan_st->Yparams =	Field< vector< double >  >::get( g->originalGateId(), "AlphaParms" );
+					break;
+				case 2:
+					ichan_st->Zparams =	Field< vector< double >  >::get( g->originalGateId(), "AlphaParms" );
+					break;
+				}
+			}
+		}
     }
 }
 

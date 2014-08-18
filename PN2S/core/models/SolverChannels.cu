@@ -86,15 +86,15 @@ __global__ void advanceChannels(
 		return;
 
 	int i = threadIdx.y * 2 + threadIdx.x;
-
-	TYPE_ power = ch[idx]._xyz_power[threadIdx.x];
-	int cIdx = compIndex[idx];
-	TYPE_ x = v[cIdx];
-
 	data[i] = 1.0;
 
+	TYPE_ power = ch[idx]._xyz_power[threadIdx.x];
 	if ( power > 0.0 )
 	{
+		int cIdx = compIndex[idx];
+		TYPE_ x = v[cIdx];
+
+
 		temp = ch[idx]._xyz_params[threadIdx.x][PARAMS_MIN];
 		temp2 = ch[idx]._xyz_params[threadIdx.x][PARAMS_MAX];
 		// Check boundaries
@@ -186,8 +186,10 @@ void SolverChannels::Process()
 	if(_m_statistic.nChannels_all < 1)
 		return;
 	int smem_size = (sizeof(TYPE_) * _threads.x * _threads.y);
-	_Vm->Device2Host();
-	_Vm->print();
+//	_Vm->Device2Host();
+//	_Vm->print();
+//	_state.Device2Host();
+//	_state.print();
 
 	advanceChannels <<<_blocks, _threads,smem_size, _stream>>> (
 			_Vm->device,
@@ -198,8 +200,11 @@ void SolverChannels::Process()
 			_m_statistic.nChannels_all,
 			_m_statistic.dt);
 
-	_channel_currents.Device2Host();
-	_channel_currents.print();
+//	_state.Device2Host();
+//	_state.print();
+//
+//	_channel_currents.Device2Host();
+//	_channel_currents.print();
 	assert(cudaSuccess == cudaGetLastError());
 }
 
@@ -215,10 +220,7 @@ void SolverChannels::Output()
 void SolverChannels::SetGateXParams(int index, vector<double>& params)
 {
 	for (int i = 0; i < min((int)params.size(),13); ++i)
-	{
 		_channel_base[index]._xyz_params[0][i] = (TYPE_)params[i];
-		cout << params[i] << endl << flush;
-	}
 }
 void SolverChannels::SetGateYParams(int index, vector<double>& params)
 {

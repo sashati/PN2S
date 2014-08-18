@@ -185,7 +185,7 @@ def make_spiny_compt(root_path, number, synInput):
     cell = moose.Neutral(root_path + "/cell" + str(number))
 
     compt = create_squid(cell)
-    compt.inject = INJECT_CURRENT
+    compt.inject = 0
     compt.x0 = 0
     compt.y0 = 0
     compt.z0 = 0
@@ -200,14 +200,14 @@ def make_spiny_compt(root_path, number, synInput):
         r.synapse.num = 1
         syn = moose.element(r.path + '/synapse')
         moose.connect(synInput, 'spikeOut', syn, 'addSpike', 'Single')
-        syn.weight = 0.2
-        syn.delay = i * 1.0e-4
+        syn.weight = .5
+        syn.delay = i * 1.0e-6
 
 
 def createCells(net):
     network = moose.Neutral(net)
     synInput = moose.SpikeGen("%s/synInput" % net)
-    synInput.refractT = 2e-3
+    synInput.refractT = 20e-3
     synInput.threshold = -1.0
     synInput.edgeTriggered = False
     synInput.Vm(0)
@@ -252,7 +252,7 @@ def test_elec_alone():
     moose.Neutral('/graphs/cpu')
     moose.Neutral('/graphs/gpu')
     add_plot("/cpu/cell0" + '/head0', 'getVm', 'cpu/c0_head')
-    # add_plot("/gpu/cell0" + '/head0', 'getVm', 'gpu/c0_head')
+    add_plot("/cpu/synInput", 'getHasFired', 'cpu/sp')
     # add_plot("/cpu/cell0" + '/compt', 'getVm', 'cpu/c0_compt')
     # add_plot("/gpu/cell0" + '/compt', 'getVm', 'gpu/c0_compt')
 
@@ -269,9 +269,9 @@ def test_elec_alone():
 def main():
     test_elec_alone()
 
-Use_MasterHSolve = True
-# Use_MasterHSolve = False
-Simulation_Time = 3e-3
+# Use_MasterHSolve = True
+Use_MasterHSolve = False
+Simulation_Time = 1e-1
 
 number_of_input_cells = 1
 number_of_ext_cells = 2
@@ -279,7 +279,7 @@ number_of_inh_cells = 0
 number_of_spines = 1
 
 INJECT_CURRENT = 1e-7
-dt = 1e-3
+dt = 1e-6
 
 if __name__ == '__main__':
     main()

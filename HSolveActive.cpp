@@ -54,8 +54,7 @@ void HSolveActive::step( ProcPtr info )
 
 //    _printVector(VMid_);
 
-//    cout << "Vm:";   _printVector(V_);
-//	_printVector(HS_);
+//    _printVector(HS_);
 //    cout << "hm0:"<< endl << flush;
 //	for (int i = 0; i < nCompt_; ++i) {
 //		for (int j = 0; j < nCompt_; ++j) {
@@ -63,8 +62,8 @@ void HSolveActive::step( ProcPtr info )
 //		}
 //		cout << endl << flush;
 //	}
-
-    _printVector(V_, "V");
+//
+//    _printVector(V_, "V");
     advanceChannels( info->dt );
     calculateChannelCurrents();
 
@@ -90,7 +89,7 @@ void HSolveActive::step( ProcPtr info )
     HSolvePassive::backwardSubstitute();
 //    _printVector(HS_);
 //    _printVector(VMid_);
-    _printVector(V_);
+//    _printVector(V_);
 
     advanceCalcium();
     advanceSynChans( info );
@@ -142,10 +141,10 @@ void HSolveActive::updateMatrix()
         {
             GkSum   += icurrent->Gk;
             GkEkSum += icurrent->Gk * icurrent->Ek;
-            cout << "\t( "<< icurrent->Gk<< ", "<< icurrent->Ek <<" )"<<endl<<flush ;
+//            cout << "\t( "<< icurrent->Gk<< ", "<< icurrent->Ek <<" )"<<endl<<flush ;
         }
 
-        cout <<" Const: "<< std::setprecision (std::numeric_limits< double >::digits10) <<*(2+ihs) << "\t"<< GkSum << "\t"<< GkEkSum << endl<<flush;
+//        cout <<" Const: "<< std::setprecision (std::numeric_limits< double >::digits10) <<*(2+ihs) << "\t"<< GkSum << "\t"<< GkEkSum << endl<<flush;
 
         *ihs = *( 2 + ihs ) + GkSum;
         *( 3 + ihs ) = *iv * ic->CmByDt + ic->EmByRm + GkEkSum;
@@ -310,8 +309,8 @@ void HSolveActive::advanceChannels( double dt )
                     *istate = C1 / C2;
                 else
                 {
-                    double temp = 1.0 + dt / 2.0 * C2;
-                    *istate = ( *istate * ( 2.0 - temp ) + dt * C1 ) / temp;
+                	double temp = 1.0 + dt / 2.0 * C2;
+                    temp = ( *istate * ( 2.0 - temp ) + dt * C1 ) / temp;
                 }
 
                 ++icolumn, ++istate;
@@ -326,7 +325,7 @@ void HSolveActive::advanceChannels( double dt )
                     *istate = C1 / C2;
                 else
                 {
-                    double temp = 1.0 + dt / 2.0 * C2;
+                	double temp = 1.0 + dt / 2.0 * C2;
                     *istate = ( *istate * ( 2.0 - temp ) + dt * C1 ) / temp;
                 }
 

@@ -308,7 +308,7 @@ def test_elec_alone():
     
     moose.reinit()    
     moose.start( Simulation_Time )
-    # dump_plots( 'h_incuDoubleComplexcuComplexstab.plot' )
+    dump_plots( 'h_incuDoubleComplexcuComplexstab.plot' )
 
 def main():
     test_elec_alone()
