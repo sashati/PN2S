@@ -23,8 +23,8 @@ int DeviceManager::CkeckAvailableDevices(){
 	_device.clear();
 
 	int device_count = 0;
-	cudaGetDeviceCount(&device_count);
 	cudaDeviceReset();
+	cudaGetDeviceCount(&device_count);
 	device_count = min(MAX_DEVICE_NUMBER, device_count);
 	for(int i =0; i<device_count; i++)
 	{

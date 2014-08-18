@@ -138,12 +138,11 @@ void SolverComps::Process()
 {
 	uint vectorSize = _statistic.nModels * _statistic.nCompts_per_model;
 
-//	_Vm.print();
+	_Vm.print();
 //	_hm.print();
 //	_rhs.print();
 //	_Constant.print();
-//	_channels_current->Device2Host();
-//	_channels_current->print();
+	_channels_current->Device2Host();	_channels_current->print();
 //	_externalCurrent.print();
 	update_rhs <<<_blocks, _threads,0, _stream>>> (
 			_hm.device,
@@ -172,6 +171,10 @@ void SolverComps::Process()
 
 //	_hm.Device2Host();	_hm.print();
 //	_rhs.Device2Host();	_rhs.print();
+
+	_Vm.Device2Host();
+	_Vm.print();
+
 }
 
 
@@ -179,6 +182,7 @@ void SolverComps::Output()
 {
 	_Vm.Device2Host_Async(_stream);
 	_externalCurrent.Fill(0.0);
+	_InjectVarying.Fill(0.0);
 }
 
 /**

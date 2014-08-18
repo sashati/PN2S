@@ -89,7 +89,7 @@ void HSolveActive::step( ProcPtr info )
     HSolvePassive::backwardSubstitute();
 //    _printVector(HS_);
 //    _printVector(VMid_);
-//    _printVector(V_);
+    _printVector(V_);
 
     advanceCalcium();
     advanceSynChans( info );
@@ -141,9 +141,10 @@ void HSolveActive::updateMatrix()
         {
             GkSum   += icurrent->Gk;
             GkEkSum += icurrent->Gk * icurrent->Ek;
+            cout << "\tGK: "<< icurrent->Gk<< " \tEk:"<< icurrent->Ek <<endl<<flush ;
         }
 
-//        cout <<" Const: "<< *(2+ihs) << GkSum << GkEkSum;
+        cout <<" Const: "<< std::setprecision (std::numeric_limits< double >::digits10) <<*(2+ihs) << "\t"<< GkSum << "\t"<< GkEkSum << endl<<flush;
 
         *ihs = *( 2 + ihs ) + GkSum;
         *( 3 + ihs ) = *iv * ic->CmByDt + ic->EmByRm + GkEkSum;
@@ -160,7 +161,7 @@ void HSolveActive::updateMatrix()
 
         unsigned int ic = inject->first;
     	InjectStruct& value = inject->second;
-    	assert(!(value.injectVarying || value.injectBasal ));
+    	assert(!(value.injectVarying));
 
 //    	cout <<value.injectVarying << " "<< value.injectBasal<< endl <<flush;
         HS_[ 4 * ic + 3 ] += value.injectVarying + value.injectBasal;

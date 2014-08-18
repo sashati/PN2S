@@ -51,7 +51,7 @@ struct ChannelCurrent{
 	TYPE_ _ek;
 	friend ostream& operator<<(ostream& out, const ChannelCurrent& obj) // output
 	{
-	    out << "(" << obj._gk<< ", " << obj._ek << ")";
+	    out << "(" <<std::setprecision (std::numeric_limits< double >::digits10) << obj._gk<< ", " << std::setprecision (std::numeric_limits< double >::digits10)<<obj._ek << ")";
 	    return out;
 	}
 };

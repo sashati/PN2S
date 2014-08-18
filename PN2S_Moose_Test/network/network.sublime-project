@@ -1,4 +1,22 @@
 {
+	"build_systems":
+	[
+		{
+			"name": "Anaconda Python Builder",
+			"selector": "source.python",
+			"shell_cmd": "python -u \"$file\""
+		}
+	],
+	"enable_telemetry": false,
+	"ensure_newline_at_eof_on_save": true,
+	"folder_exclude_patterns":
+	[
+		".svn",
+		".git",
+		".hg",
+		"CVS",
+		"__pycache__"
+	],
 	"folders":
 	[
 		{
@@ -6,26 +24,15 @@
 			"path": "."
 		}
 	],
-	"ensure_newline_at_eof_on_save": true,
-    "folder_exclude_patterns":
-    [
-        ".svn",
-        ".git",
-        ".hg",
-        "CVS",
-        "__pycache__"
-    ],
-    "indent_to_bracket": true,
-    "rulers":
-    [
-        79
-    ],
-    "shift_tab_unindent": true,
-    "translate_tabs_to_spaces": false,
-    "trim_trailing_white_space_on_save": true,
-    "wrap_width": 80,
-    "enable_telemetry": false,
-    "preview_on_click": false,
-    "shift_tab_unindent": true,
-    "show_panel_on_build": false,
+	"indent_to_bracket": true,
+	"preview_on_click": false,
+	"rulers":
+	[
+		79
+	],
+	"shift_tab_unindent": true,
+	"show_panel_on_build": false,
+	"translate_tabs_to_spaces": false,
+	"trim_trailing_white_space_on_save": true,
+	"wrap_width": 80
 }

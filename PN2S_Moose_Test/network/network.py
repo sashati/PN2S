@@ -18,7 +18,7 @@ EREST_ACT = -70e-3
 # where x is membrane voltage and y is the rate constant for gate
 # closing or opening
 
-Na_m_params = [1e5 * (25e-3 + EREST_ACT),   # 'A_A':
+Na_m_params = [10e5 * (25e-3 + EREST_ACT),   # 'A_A':
                -1e5,                       # 'A_B':
                -1.0,                       # 'A_C':
                -25e-3 - EREST_ACT,         # 'A_D':
@@ -66,27 +66,27 @@ def create_squid(parent):
     compt.Rm = 4.2e5 * 5.0
     compt.Ra = 7639.44e3
 
-    # nachan = moose.HHChannel(parent.path + '/compt/Na')
-    # nachan.Xpower = 3
-    # xGate = moose.HHGate(nachan.path + '/gateX')
-    # xGate.setupAlpha(Na_m_params + [VDIVS, VMIN, VMAX])
-    # # This is important: one can run without it but the output will diverge.
-    # xGate.useInterpolation = 1
-    # nachan.Ypower = 1
-    # yGate = moose.HHGate(nachan.path + '/gateY')
-    # yGate.setupAlpha(Na_h_params + [VDIVS, VMIN, VMAX])
-    # yGate.useInterpolation = 1
-    # nachan.Gbar = 0.942e-3
-    # nachan.Ek = 115e-3 + EREST_ACT
-    # moose.connect(nachan, 'channel', compt, 'channel', 'OneToOne')
-    # kchan = moose.HHChannel(parent.path + '/compt/K')
-    # kchan.Xpower = 4.0
-    # xGate = moose.HHGate(kchan.path + '/gateX')
-    # xGate.setupAlpha(K_n_params + [VDIVS, VMIN, VMAX])
-    # xGate.useInterpolation = 1
-    # kchan.Gbar = 0.2836e-3
-    # kchan.Ek = -12e-3 + EREST_ACT
-    # moose.connect(kchan, 'channel', compt, 'channel', 'OneToOne')
+    nachan = moose.HHChannel(parent.path + '/compt/Na')
+    nachan.Xpower = 3
+    xGate = moose.HHGate(nachan.path + '/gateX')
+    xGate.setupAlpha(Na_m_params + [VDIVS, VMIN, VMAX])
+    # This is important: one can run without it but the output will diverge.
+    xGate.useInterpolation = 1
+    nachan.Ypower = 1
+    yGate = moose.HHGate(nachan.path + '/gateY')
+    yGate.setupAlpha(Na_h_params + [VDIVS, VMIN, VMAX])
+    yGate.useInterpolation = 1
+    nachan.Gbar = 0.942e-3
+    nachan.Ek = 115e-3 + EREST_ACT
+    moose.connect(nachan, 'channel', compt, 'channel', 'OneToOne')
+    kchan = moose.HHChannel(parent.path + '/compt/K')
+    kchan.Xpower = 4.0
+    xGate = moose.HHGate(kchan.path + '/gateX')
+    xGate.setupAlpha(K_n_params + [VDIVS, VMIN, VMAX])
+    xGate.useInterpolation = 1
+    kchan.Gbar = 0.2836e-3
+    kchan.Ek = -12e-3 + EREST_ACT
+    moose.connect(kchan, 'channel', compt, 'channel', 'OneToOne')
     return compt
 
 
@@ -149,11 +149,11 @@ def create_spine_with_receptor(compt, cell, index, frac):
     spineDia = 4.0e-6
     head = create_spine(compt, cell, index, frac, spineLength, spineDia, 0.0)
     gluR = moose.SynChan(head.path + '/gluR')
-    # gluR.tau1 = 4e-3
-    # gluR.tau2 = 4e-3
-    # gluR.Gbar = 1e-6
-    # gluR.Ek= 10.0e-3 # Inhibitory -0.1
-    # moose.connect( head, 'channel', gluR, 'channel', 'Single' )
+    gluR.tau1 = 4e-3
+    gluR.tau2 = 4e-3
+    gluR.Gbar = 1e-6
+    gluR.Ek = 10.0e-3  # Inhibitory -0.1
+    moose.connect(head, 'channel', gluR, 'channel', 'Single')
 
     return gluR
 
@@ -185,7 +185,7 @@ def make_spiny_compt(root_path, number, synInput):
     cell = moose.Neutral(root_path + "/cell" + str(number))
 
     compt = create_squid(cell)
-    compt.inject = 0
+    compt.inject = INJECT_CURRENT*1000000
     compt.x0 = 0
     compt.y0 = 0
     compt.z0 = 0
@@ -194,11 +194,12 @@ def make_spiny_compt(root_path, number, synInput):
     compt.z = 0
     compt.length = comptLength
     compt.diameter = comptDia
+
     for i in range(numSpines):
         r = create_spine_with_receptor(compt, cell, i, i / float(numSpines))
         r.synapse.num = 1
         syn = moose.element(r.path + '/synapse')
-        # moose.connect( synInput, 'spikeOut', syn, 'addSpike', 'Single' )
+        moose.connect(synInput, 'spikeOut', syn, 'addSpike', 'Single')
         syn.weight = 0.2
         syn.delay = i * 1.0e-4
 
@@ -206,7 +207,7 @@ def make_spiny_compt(root_path, number, synInput):
 def createCells(net):
     network = moose.Neutral(net)
     synInput = moose.SpikeGen("%s/synInput" % net)
-    synInput.refractT = 47e-3
+    synInput.refractT = 2e-3
     synInput.threshold = -1.0
     synInput.edgeTriggered = False
     synInput.Vm(0)
@@ -250,8 +251,12 @@ def test_elec_alone():
     moose.Neutral('/graphs')
     moose.Neutral('/graphs/cpu')
     moose.Neutral('/graphs/gpu')
-    add_plot("/cpu/cell0" + '/compt', 'getVm', 'cpu/c0_comp')
-    add_plot("/gpu/cell0" + '/compt', 'getVm', 'gpu/c0_comp')
+    add_plot("/cpu/cell0" + '/head0', 'getVm', 'cpu/c0_head')
+    add_plot("/gpu/cell0" + '/head0', 'getVm', 'gpu/c0_head')
+    # add_plot("/cpu/cell0" + '/compt', 'getVm', 'cpu/c0_compt')
+    # add_plot("/gpu/cell0" + '/compt', 'getVm', 'gpu/c0_compt')
+
+    # add_plot("/gpu/cell0" + '/head0', 'getVm', 'gpu/c0_comp')
     moose.useClock(1, '/graphs/##', 'process')
 
     moose.reinit()
@@ -266,7 +271,7 @@ def main():
 
 Use_MasterHSolve = True
 # Use_MasterHSolve = False
-Simulation_Time = 2e-1
+Simulation_Time = 3e-6
 
 number_of_input_cells = 1
 number_of_ext_cells = 2
