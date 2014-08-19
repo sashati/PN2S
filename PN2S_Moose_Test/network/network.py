@@ -207,7 +207,7 @@ def make_spiny_compt(root_path, number, synInput):
 def createCells(net):
     network = moose.Neutral(net)
     synInput = moose.SpikeGen("%s/synInput" % net)
-    synInput.refractT = 20e-3
+    synInput.refractT = 10e-3
     synInput.threshold = -1.0
     synInput.edgeTriggered = False
     synInput.Vm(0)
@@ -220,10 +220,11 @@ def test_elec_alone():
     moose.setClock(1, dt)
     moose.setClock(2, dt)
     moose.setClock(8, 1e-4)
-    moose.useClock(0, '/cpu/##[ISA=Compartment]', 'init')
-    moose.useClock(1, '/cpu/##', 'process')
 
     createCells("/cpu")
+
+    moose.useClock(0, '/cpu/##', 'init')
+    moose.useClock(1, '/cpu/##', 'process')
 
     for i in range(number_of_ext_cells):
         hsolve = moose.HSolve('/cpu/cell' + str(i) + '/hsolve')
@@ -252,7 +253,7 @@ def test_elec_alone():
     moose.Neutral('/graphs/cpu')
     moose.Neutral('/graphs/gpu')
     add_plot("/cpu/cell0" + '/head0', 'getVm', 'cpu/c0_head')
-    add_plot("/cpu/synInput", 'getHasFired', 'cpu/sp')
+    # add_plot("/cpu/synInput", 'getHasFired', 'cpu/sp')
     # add_plot("/cpu/cell0" + '/compt', 'getVm', 'cpu/c0_compt')
     # add_plot("/gpu/cell0" + '/compt', 'getVm', 'gpu/c0_compt')
 
@@ -271,7 +272,7 @@ def main():
 
 # Use_MasterHSolve = True
 Use_MasterHSolve = False
-Simulation_Time = 1e-1
+Simulation_Time = 2e-1
 
 number_of_input_cells = 1
 number_of_ext_cells = 2
