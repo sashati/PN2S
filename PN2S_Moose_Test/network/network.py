@@ -186,7 +186,7 @@ def make_spiny_compt(root_path, number, synInput):
     cell = moose.Neutral(root_path + "/cell" + str(number))
 
     compt = create_squid(cell)
-    compt.inject = 0
+    compt.inject = INJECT_CURRENT
     compt.x0 = 0
     compt.y0 = 0
     compt.z0 = 0
@@ -200,7 +200,7 @@ def make_spiny_compt(root_path, number, synInput):
         r = create_spine_with_receptor(compt, cell, i, i / float(numSpines))
         r.synapse.num = 1
         syn = moose.element(r.path + '/synapse')
-        moose.connect(synInput, 'spikeOut', syn, 'addSpike', 'Single')
+        # moose.connect(synInput, 'spikeOut', syn, 'addSpike', 'Single')
         syn.weight = .5
         syn.delay = i * 1.0e-6
 
@@ -224,17 +224,15 @@ def test_elec_alone():
 
     createCells("/cpu")
 
-    moose.useClock(0, '/cpu/##', 'init')
-    moose.useClock(1, '/cpu/##', 'process')
 
     # for i in range(number_of_ext_cells):
     #     hsolve = moose.HSolve('/cpu/cell' + str(i) + '/hsolve')
     #     hsolve.dt = dt
-    #     moose.useClock(1, '/cpu/cell' + str(i) + '/hsolve', 'process')
+    #     # moose.useClock(1, '/cpu/cell' + str(i) + '/hsolve', 'process')
     #     hsolve.target = '/cpu/cell' + str(i) + '/compt'
 
-    # moose.useClock(0, '/cpu/##[ISA=Compartment]', 'init')
-
+    moose.useClock(0, '/cpu/##', 'init')
+    moose.useClock(1, '/cpu/##', 'process')
     # if Use_MasterHSolve:
     #     print "*****************"
     #     createCells("/gpu")

@@ -185,11 +185,12 @@ void HSolveActive::updateMatrix()
     vector< double >::iterator iec;
     for ( iec = externalCurrent_.begin(); iec != externalCurrent_.end(); iec += 2 )
     {
-    	assert(!(*( iec ) || *( iec + 1 )));
-        *ihs += *iec;
+//    	if(*( iec ) > 0 || *( iec + 1 ) > 0)
+//			cout <<"SPIKEEEEEEEEEEEEE"<<*( iec )<< " " << *( iec + 1 ) << endl <<flush;
+
+    	*ihs += *iec;
         *( 3 + ihs ) += *( iec + 1 );
 
-//        cout <<*( iec )<< " " << *( iec + 1 ) << endl <<flush;
 
         ihs += 4;
     }
