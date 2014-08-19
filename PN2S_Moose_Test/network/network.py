@@ -153,7 +153,7 @@ def create_spine_with_receptor(compt, cell, index, frac):
     gluR.tau1 = 4e-3
     gluR.tau2 = 4e-3
     gluR.Gbar = 1e-6
-    gluR.Ek =  10.0e-3  # Inhibitory -0.1
+    gluR.Ek = 10.0e-3  # Inhibitory -0.1
     moose.connect(head, 'channel', gluR, 'channel', 'Single')
 
     return gluR
@@ -216,13 +216,17 @@ def createCells(net):
         make_spiny_compt(network.path, i, synInput)
 
 
+def createNetwork(parent):
+    createCells(parent+"/input")
+
+
 def test_elec_alone():
     moose.setClock(0, dt)
     moose.setClock(1, dt)
     moose.setClock(2, dt)
     moose.setClock(8, 1e-4)
 
-    createCells("/cpu")
+    createNetwork("/cpu")
 
     for i in range(number_of_ext_cells):
         hsolve = moose.HSolve('/cpu/cell' + str(i) + '/hsolve')
@@ -253,15 +257,15 @@ def test_elec_alone():
 
     add_plot("/cpu/cell0" + '/head0', 'getVm', 'cpu/c0_head')
     add_plot("/cpu/cell0" + '/compt', 'getVm', 'cpu/c0_compt')
-    # add_plot("/gpu/cell0" + '/head0', 'getVm', 'gpu/c0_head')
-    # # add_plot("/cpu/cell0" + '/shaft0', 'getVm', 'cpu/c0_shaft0')
-    # add_plot("/gpu/cell0" + '/compt', 'getVm', 'gpu/g0_compt')
+    add_plot("/gpu/cell0" + '/head0', 'getVm', 'gpu/c0_head')
+    # add_plot("/cpu/cell0" + '/shaft0', 'getVm', 'cpu/c0_shaft0')
+    add_plot("/gpu/cell0" + '/compt', 'getVm', 'gpu/g0_compt')
     # add_plot("/cpu/synInput", 'getHasFired', 'cpu/sp')
     # add_plot("/cpu/cell0" + '/compt', 'getVm', 'cpu/c0_compt')
     # add_plot("/gpu/cell0" + '/compt', 'getVm', 'gpu/c0_compt')
 
     # add_plot("/gpu/cell0" + '/head0', 'getVm', 'gpu/c0_comp')
-    moose.useClock(1, '/graphs/##', 'process')
+    moose.useClock(8, '/graphs/##', 'process')
 
     moose.reinit()
     moose.start(Simulation_Time)
@@ -273,14 +277,14 @@ def test_elec_alone():
 def main():
     test_elec_alone()
 
-# Use_MasterHSolve = True
-Use_MasterHSolve = False
-Simulation_Time = 1e-1
+Use_MasterHSolve = True
+# Use_MasterHSolve = False
+Simulation_Time = 2e-1
 
 number_of_input_cells = 1
-number_of_ext_cells = 2
+number_of_ext_cells = 1
 number_of_inh_cells = 0
-number_of_spines = 2
+number_of_spines = 1
 
 INJECT_CURRENT = 1e-7
 dt = 1e-6
