@@ -123,8 +123,8 @@ __global__ void update_rhs(
     	rhs[idx] += inject_basal[idx] + inject_varying[idx];
 
     	// add external current
-//    	hm[pos_a] += external_current[idx]._gk;
-//    	rhs[idx] += external_current[idx]._gkek;
+    	hm[pos_a] += external_current[idx]._gk;
+    	rhs[idx] += external_current[idx]._gkek;
     }
 }
 
@@ -138,12 +138,6 @@ void SolverComps::Process()
 {
 	uint vectorSize = _statistic.nModels * _statistic.nCompts_per_model;
 
-//	_Vm.print();
-//	_hm.print();
-//	_rhs.print();
-//	_Constant.print();
-//	_channels_current->Device2Host();	_channels_current->print();
-//	_externalCurrent.print();
 	update_rhs <<<_blocks, _threads,0, _stream>>> (
 			_hm.device,
 			_rhs.device,
@@ -161,18 +155,10 @@ void SolverComps::Process()
 			_statistic.dt);
 	assert(cudaSuccess == cudaGetLastError());
 
-//	_hm.Device2Host();	_hm.print();
-//	_rhs.Device2Host();	_rhs.print();
-
 	SolverMatrix<TYPE_,ARCH_>::fast_solve(
 			_hm.device, _rhs.device, _Vm.device,
 			_statistic.nCompts_per_model, _statistic.nModels, _stream);
 	assert(cudaSuccess == cudaGetLastError());
-
-//	_hm.Device2Host();	_hm.print();
-//	_rhs.Device2Host();	_rhs.print();
-
-//	_Vm.Device2Host();	_Vm.print();
 
 }
 

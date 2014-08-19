@@ -311,7 +311,7 @@ void HSolveActive::advanceChannels( double dt )
                 else
                 {
                 	double temp = 1.0 + dt / 2.0 * C2;
-                    temp = ( *istate * ( 2.0 - temp ) + dt * C1 ) / temp;
+                	*istate = ( *istate * ( 2.0 - temp ) + dt * C1 ) / temp;
                 }
 
                 ++icolumn, ++istate;

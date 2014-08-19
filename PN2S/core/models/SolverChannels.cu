@@ -186,10 +186,6 @@ void SolverChannels::Process()
 	if(_m_statistic.nChannels_all < 1)
 		return;
 	int smem_size = (sizeof(TYPE_) * _threads.x * _threads.y);
-//	_Vm->Device2Host();
-//	_Vm->print();
-//	_state.Device2Host();
-//	_state.print();
 
 	advanceChannels <<<_blocks, _threads,smem_size, _stream>>> (
 			_Vm->device,
@@ -200,11 +196,6 @@ void SolverChannels::Process()
 			_m_statistic.nChannels_all,
 			_m_statistic.dt);
 
-//	_state.Device2Host();
-//	_state.print();
-//
-//	_channel_currents.Device2Host();
-//	_channel_currents.print();
 	assert(cudaSuccess == cudaGetLastError());
 }
 
