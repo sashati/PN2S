@@ -4,6 +4,18 @@
 		"selected_items":
 		[
 			[
+				"inje",
+				"INJECT_CURRENT	statement"
+			],
+			[
+				"in",
+				"inject"
+			],
+			[
+				"1e-",
+				"1e-4"
+			],
+			[
 				"In",
 				"inject"
 			],
@@ -26,10 +38,6 @@
 			[
 				"ext_",
 				"ext_syn"
-			],
-			[
-				"in",
-				"inputs_sg"
 			],
 			[
 				"a",
@@ -60,23 +68,36 @@
 	"buffers":
 	[
 		{
-			"contents": "import sys\nsys.path.append('../../../python')\nimport os\nos.environ['NUMPTHREADS'] = '1'\nimport pylab\nimport numpy\nimport math\n\nimport moose\nimport moose.utils\n\nEREST_ACT = -70e-3\n\n# Gate equations have the form:\n#\n# y(x) = (A + B * x) / (C + exp((x + D) / F))\n#\n# where x is membrane voltage and y is the rate constant for gate\n# closing or opening\n\nNa_m_params = [1e5 * (25e-3 + EREST_ACT),   # 'A_A':\n               -1e5,                       # 'A_B':\n               -1.0,                       # 'A_C':\n               -25e-3 - EREST_ACT,         # 'A_D':\n               -10e-3,                      # 'A_F':\n               4e3,                     # 'B_A':\n               0.0,                        # 'B_B':\n               0.0,                        # 'B_C':\n               0.0 - EREST_ACT,            # 'B_D':\n               18e-3                       # 'B_F':\n               ]\nNa_h_params = [70.0,                        # 'A_A':\n               0.0,                       # 'A_B':\n               0.0,                       # 'A_C':\n               0.0 - EREST_ACT,           # 'A_D':\n               0.02,                     # 'A_F':\n               1000.0,                       # 'B_A':\n               0.0,                       # 'B_B':\n               1.0,                       # 'B_C':\n               -30e-3 - EREST_ACT,        # 'B_D':\n               -0.01                    # 'B_F':\n               ]\nK_n_params = [1e4 * (10e-3 + EREST_ACT),  # 'A_A':\n              -1e4,  # 'A_B':\n              -1.0,  # 'A_C':\n              -10e-3 - EREST_ACT,  # 'A_D':\n              -10e-3,  # 'A_F':\n              0.125e3,  # 'B_A':\n              0.0,  # 'B_B':\n              0.0,  # 'B_C':\n              0.0 - EREST_ACT,  # 'B_D':\n              80e-3  # 'B_F':\n              ]\nVMIN = -30e-3 + EREST_ACT\nVMAX = 120e-3 + EREST_ACT\nVDIVS = 3000\n\n\ndef create_squid(parent):\n    \"\"\"Create a single compartment squid model.\"\"\"\n    compt = moose.SymCompartment(parent.path + '/compt')\n    Em = EREST_ACT + 10.613e-3\n    compt.Em = Em\n    compt.initVm = EREST_ACT\n    compt.Cm = 7.85e-9 * 0.5\n    compt.Rm = 4.2e5 * 5.0\n    compt.Ra = 7639.44e3\n\n    nachan = moose.HHChannel(parent.path + '/compt/Na')\n    nachan.Xpower = 3\n    xGate = moose.HHGate(nachan.path + '/gateX')\n    xGate.setupAlpha(Na_m_params + [VDIVS, VMIN, VMAX])\n    # This is important: one can run without it but the output will diverge.\n    xGate.useInterpolation = 1\n    nachan.Ypower = 1\n    yGate = moose.HHGate(nachan.path + '/gateY')\n    yGate.setupAlpha(Na_h_params + [VDIVS, VMIN, VMAX])\n    yGate.useInterpolation = 1\n    nachan.Gbar = 0.942e-3\n    nachan.Ek = 115e-3 + EREST_ACT\n    moose.connect(nachan, 'channel', compt, 'channel', 'OneToOne')\n    kchan = moose.HHChannel(parent.path + '/compt/K')\n    kchan.Xpower = 4.0\n    xGate = moose.HHGate(kchan.path + '/gateX')\n    xGate.setupAlpha(K_n_params + [VDIVS, VMIN, VMAX])\n    xGate.useInterpolation = 1\n    kchan.Gbar = 0.2836e-3\n    kchan.Ek = -12e-3 + EREST_ACT\n    moose.connect(kchan, 'channel', compt, 'channel', 'OneToOne')\n    return compt\n\n\ndef create_spine(parentCompt, parentObj, index, frac, length, dia, theta):\n    \"\"\"Create spine of specified dimensions and index\"\"\"\n    RA = 1.0\n    RM = 1.0\n    CM = 0.01\n    sname = 'shaft' + str(index)\n    hname = 'head' + str(index)\n    shaft = moose.SymCompartment(parentObj.path + '/' + sname)\n    #moose.connect( parentCompt, 'cylinder', shaft, 'proximalOnly','Single')\n    #moose.connect( parentCompt, 'distal', shaft, 'proximal','Single' )\n    moose.connect(parentCompt, 'sphere', shaft, 'proximalOnly', 'Single')\n    x = parentCompt.x0 + frac * (parentCompt.x - parentCompt.x0)\n    y = parentCompt.y0 + frac * (parentCompt.y - parentCompt.y0)\n    z = parentCompt.z0 + frac * (parentCompt.z - parentCompt.z0)\n    shaft.x0 = x\n    shaft.y0 = y\n    shaft.z0 = z\n    sy = y + length * math.cos(theta * math.pi / 180.0)\n    sz = z + length * math.sin(theta * math.pi / 180.0)\n    shaft.x = x\n    shaft.y = sy\n    shaft.z = sz\n    shaft.diameter = dia / 2.0\n    shaft.length = length\n    xa = math.pi * dia * dia / 400.0\n    circumference = math.pi * dia / 10.0\n    shaft.Ra = RA * length / xa\n    shaft.Rm = RM / (length * circumference)\n    shaft.Cm = CM * length * circumference\n    shaft.Em = EREST_ACT\n    shaft.initVm = EREST_ACT\n\n    head = moose.SymCompartment(parentObj.path + '/' + hname)\n    moose.connect(shaft, 'distal', head, 'proximal', 'Single')\n    head.x0 = x\n    head.y0 = sy\n    head.z0 = sz\n    hy = sy + length * math.cos(theta * math.pi / 180.0)\n    hz = sz + length * math.sin(theta * math.pi / 180.0)\n    head.x = x\n    head.y = hy\n    head.z = hz\n    head.diameter = dia\n    head.length = length\n    xa = math.pi * dia * dia / 4.0\n    circumference = math.pi * dia\n    head.Ra = RA * length / xa\n    head.Rm = RM / (length * circumference)\n    head.Cm = CM * length * circumference\n    head.Em = EREST_ACT\n    head.initVm = EREST_ACT\n    return head\n\n\ndef create_spine_with_receptor(compt, cell, index, frac):\n    spineLength = 5.0e-6\n    spineDia = 4.0e-6\n    head = create_spine(compt, cell, index, frac, spineLength, spineDia, 0.0)\n    gluR = moose.SynChan(head.path + '/gluR')\n    gluR.tau1 = 4e-3\n    gluR.tau2 = 4e-3\n    gluR.Gbar = 1e-6\n    gluR.Ek = 10.0e-3  # Inhibitory -0.1\n    moose.connect(head, 'channel', gluR, 'channel', 'Single')\n\n    return gluR\n\n\ndef add_plot(objpath, field, plot):\n    assert moose.exists(objpath)\n    tab = moose.Table('/graphs/' + plot)\n    obj = moose.element(objpath)\n    moose.connect(tab, 'requestOut', obj, field)\n    return tab\n\n\ndef dump_plots():\n    # if ( os.path.exists( fname ) ):\n    #     os.remove( fname )\n    for x in moose.wildcardFind('/graphs/cpu/##[ISA=Table]'):\n        # print x.vector\n        t = numpy.arange(0, len(x.vector), 1)\n        pylab.plot(t, x.vector, label=(\"CPU:%s\" % x.name))\n    for x in moose.wildcardFind('/graphs/gpu/##[ISA=Table]'):\n        t = numpy.arange(0, len(x.vector), 1)\n        pylab.plot(t, x.vector, label=(\"GPU:%s\" % x.name))\n\n\ndef make_spiny_compt(root_path, number, synInput):\n    comptLength = 100e-6\n    comptDia = 4e-6\n    numSpines = number_of_spines\n    cell = moose.Neutral(root_path + \"/cell\" + str(number))\n\n    compt = create_squid(cell)\n    compt.inject = INJECT_CURRENT\n    compt.x0 = 0\n    compt.y0 = 0\n    compt.z0 = 0\n    compt.x = comptLength\n    compt.y = 0\n    compt.z = 0\n    compt.length = comptLength\n    compt.diameter = comptDia\n\n    for i in range(numSpines):\n        r = create_spine_with_receptor(compt, cell, i, i / float(numSpines))\n        r.synapse.num = 1\n        syn = moose.element(r.path + '/synapse')\n        moose.connect(synInput, 'spikeOut', syn, 'addSpike', 'Single')\n        syn.weight = 0.2\n        syn.delay = i * 1.0e-4\n\n\ndef createCells(net):\n    network = moose.Neutral(net)\n    synInput = moose.SpikeGen(\"%s/synInput\" % net)\n    synInput.refractT = 2e-3\n    synInput.threshold = -1.0\n    synInput.edgeTriggered = False\n    synInput.Vm(0)\n    for i in range(number_of_ext_cells):\n        make_spiny_compt(network.path, i, synInput)\n\n\ndef test_elec_alone():\n    moose.setClock(0, dt)\n    moose.setClock(1, dt)\n    moose.setClock(2, dt)\n    moose.setClock(8, 1e-4)\n    moose.useClock(0, '/cpu/##[ISA=Compartment]', 'init')\n    moose.useClock(1, '/cpu/##', 'process')\n\n    createCells(\"/cpu\")\n\n    for i in range(number_of_ext_cells):\n        hsolve = moose.HSolve('/cpu/cell' + str(i) + '/hsolve')\n        hsolve.dt = dt\n        moose.useClock(1, '/cpu/cell' + str(i) + '/hsolve', 'process')\n        hsolve.target = '/cpu/cell' + str(i) + '/compt'\n\n    moose.useClock(0, '/cpu/##[ISA=Compartment]', 'init')\n\n    if Use_MasterHSolve:\n        print \"*****************\"\n        createCells(\"/gpu\")\n        moose.useClock(0, '/gpu/##[ISA=Compartment]', 'init')\n        moose.useClock(1, '/gpu/##', 'process')\n        for i in range(number_of_ext_cells):\n            hsolve = moose.HSolve('/gpu/cell' + str(i) + '/hsolve')\n            hsolve.dt = dt\n            moose.useClock(1, '/gpu/cell' + str(i) + '/hsolve', 'process')\n            hsolve.target = '/gpu/cell' + str(i) + '/compt'\n        hsolve = moose.HSolve('/gpu/hsolve')\n        hsolve.dt = dt\n        moose.useClock(1, '/gpu/hsolve', 'process')\n        hsolve.target = '/gpu/#/hsolve'\n\n    moose.Neutral('/graphs')\n    moose.Neutral('/graphs/cpu')\n    moose.Neutral('/graphs/gpu')\n    add_plot(\"/cpu/cell0\" + '/head0', 'getVm', 'cpu/c0_head')\n    add_plot(\"/gpu/cell0\" + '/head0', 'getVm', 'gpu/c0_head')\n    # add_plot(\"/cpu/cell0\" + '/compt', 'getVm', 'cpu/c0_compt')\n    # add_plot(\"/gpu/cell0\" + '/compt', 'getVm', 'gpu/c0_compt')\n\n    # add_plot(\"/gpu/cell0\" + '/head0', 'getVm', 'gpu/c0_comp')\n    moose.useClock(1, '/graphs/##', 'process')\n\n    moose.reinit()\n    moose.start(Simulation_Time)\n    dump_plots()\n    pylab.legend()\n    pylab.show()\n\n\ndef main():\n    test_elec_alone()\n\nUse_MasterHSolve = True\n# Use_MasterHSolve = False\nSimulation_Time = 1e-4\n\nnumber_of_input_cells = 1\nnumber_of_ext_cells = 2\nnumber_of_inh_cells = 0\nnumber_of_spines = 1\n\nINJECT_CURRENT = 1e-7\ndt = 1e-6\n\nif __name__ == '__main__':\n    main()\n",
 			"file": "network.py",
-			"file_size": 9130,
-			"file_write_time": 130528630278825729,
 			"settings":
 			{
-				"buffer_size": 9130,
+				"buffer_size": 9572,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"contents": "V: -1.965774412334792\n\n	GK: -0.0949322605565012 	Ek:0.045\n		-0.101087025692778, 0.045\n	GK: 2.88642813759779e-06 	Ek:-0.082\n	    2.88834354472372e-06\n Const: 0.00785051835950267	-0.0949293741283636	-0.00427218841214983\n",
+			"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/testHsolve.py",
 			"settings":
 			{
-				"buffer_size": 218,
+				"buffer_size": 10778,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "testSpike.py",
+			"settings":
+			{
+				"buffer_size": 3037,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "V	-0.055844798787862554\n\nC1	223.56372458457909	70.000000000011553\nC2 	4223.5637245853131	117.42587317756343\nSt1 0.052932485257228955	0.59612075350857563\n	0.052932485257228955	0.596120753508576\n\nSt2 0.052932485257229 	0.596120753508576 	0.317676914060647		\n	0.0529324852572569	0.596120753508563	0.317676914060655	\n\n\n\n	( 8.32821637847331e-08, 0.045 )\n	( 2.88834354472372e-06, -0.082 )\n Const: 8.36835950266903e-06	2.97162570850845e-06	-2.33096473297032e-07\n\n\n\n\n\nC1	553.89942808535227\n\n\nC2	2375.8262840117304\n	1996.9641329617032\n\nSt1	0.052932485257228955 	0.59612075350857563		0.31767691406064674\n	0.052932485257256946\n\nSt2	0.24861714481398234		0.51673740352338071		0.36268692094502392\n\n\n\n\n0.052932485257229		0.596120753508576	0	0.317676914060647	0	0	\n0.052932485257229		0.596120753508576	0	0.317676914060647	0	0	\n\n\n\n\nV: -0.0566588046147089	-0.0563050961720564	-0.0558447987878626	\n   											-0.055844798787862554\n\nC1: 553.89942808535227\nC2: 2375.8262840117304 204.6543438663503 226.93946676826491\n	2375.8254564628742									 226.93944577873526\n	2375.8254564628742\n2.1879131420058653\n\n   \nSTEP 2\n\n	( 7.48021404374044e-06, 0.045 )\n	( 4.90720051957867e-06, -0.082 )\n Const: 8.36835950266903e-06	1.23874145633191e-05	-6.57808106371311e-08\n\n(8.32821637848635e-08, 0.045)	(2.88834354472403e-06, -0.082)	(8.32821637848635e-08, 0.045)	(2.88834354472403e-06, -0.082)	\n]\n\n\n5.10872733278114e-08	-4.97678044133036e-08	0	\n5.10872733278114e-08	-4.97678044133036e-08	0	\n\n-4.97678044133036e-08	9.20687777833074e-08	-4.2169026478553e-08	\n-4.97678044133036e-08	9.20687777833074e-08	-4.2169026478553e-08	\n\n0	-4.2169026478553e-08	8.45164166645376e-06	\n0	-4.2169026478553e-08	1.13399852111775e-05	\n\n\n-9.23628240155399e-11	-9.23628240155399e-12	-4.74031826439211e-07	-9.23628240155399e-11	-9.23628240155399e-12	-4.74031826439211e-07	\n-9.23628240155399e-11	-9.23628240155399e-12	-7.10875997106556e-07	\n\nb:\n\n	( 8.32821637847331e-08, 0.045 )\n\n	( 2.88834354472372e-06, -0.082 )\n\n Const: 8.36835950266903e-06	2.97162570850845e-06	-2.33096473297032e-07\n\n\nV2: -0.0566588046147089	-0.0563050961720564	-0.0558447987878626	\n	-0.0566588046147089	-0.0563050961720564	-0.0558447987878626	-0.0566588046147089	-0.0563050961720564	-0.0558447987878626	\n\n",
+			"settings":
+			{
+				"buffer_size": 2218,
 				"line_ending": "Unix",
-				"name": "V: -1.965774412334792"
+				"name": "V	-0.055844798787862554"
 			}
 		}
 	],
@@ -259,13 +280,19 @@
 	},
 	"file_history":
 	[
+		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/synapse_tutorial.py",
+		"/src/saeed/cuda-workspace/moose/Demos/snippets/testHsolve.py",
+		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/synapse.py",
+		"/src/saeed/cuda-workspace/moose/Demos/snippets/synapse.py",
+		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/synapse_tutorial",
+		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/Main.py",
+		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/testHsolve.py",
 		"/home/saeed/.config/sublime-text-3/Packages/Anaconda/Default (Linux).sublime-keymap",
 		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/network.sublime-project",
 		"/home/saeed/.config/sublime-text-3/Packages/Anaconda/Anaconda.sublime-settings",
 		"/home/saeed/.config/sublime-text-3/Packages/User/Preferences.sublime-settings",
 		"/home/saeed/.config/sublime-text-3/Packages/Anaconda/README.md",
 		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/testSpike.py",
-		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/testHsolve.py",
 		"/src/saeed/cuda-workspace/async_gpu/tests/python/mus/nmda.py",
 		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/testHsolve.py",
 		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/settings.py",
@@ -379,6 +406,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"init",
 			"moose",
 			"vector",
 			"/n",
@@ -489,7 +517,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -498,15 +526,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 9130,
+						"buffer_size": 9572,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								8961,
-								8961
+								7227,
+								7227
 							]
 						],
 						"settings":
@@ -514,46 +542,6 @@
 							"BracketHighlighterBusy": false,
 							"bh_regions":
 							[
-								"bh_c_define",
-								"bh_c_define_center",
-								"bh_c_define_open",
-								"bh_c_define_close",
-								"bh_c_define_content",
-								"bh_square",
-								"bh_square_center",
-								"bh_square_open",
-								"bh_square_close",
-								"bh_square_content",
-								"bh_double_quote",
-								"bh_double_quote_center",
-								"bh_double_quote_open",
-								"bh_double_quote_close",
-								"bh_double_quote_content",
-								"bh_default",
-								"bh_default_center",
-								"bh_default_open",
-								"bh_default_close",
-								"bh_default_content",
-								"bh_round",
-								"bh_round_center",
-								"bh_round_open",
-								"bh_round_close",
-								"bh_round_content",
-								"bh_unmatched",
-								"bh_unmatched_center",
-								"bh_unmatched_open",
-								"bh_unmatched_close",
-								"bh_unmatched_content",
-								"bh_tag",
-								"bh_tag_center",
-								"bh_tag_open",
-								"bh_tag_close",
-								"bh_tag_content",
-								"bh_single_quote",
-								"bh_single_quote_center",
-								"bh_single_quote_open",
-								"bh_single_quote_close",
-								"bh_single_quote_content",
 								"bh_curly",
 								"bh_curly_center",
 								"bh_curly_open",
@@ -564,60 +552,21 @@
 								"bh_angle_open",
 								"bh_angle_close",
 								"bh_angle_content",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_default_content",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_round_content",
 								"bh_regex",
 								"bh_regex_center",
 								"bh_regex_open",
 								"bh_regex_close",
-								"bh_regex_content"
-							],
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 4827.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 218,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								133,
-								133
-							]
-						],
-						"settings":
-						{
-							"BracketHighlighterBusy": false,
-							"auto_name": "V: -1.965774412334792",
-							"bh_regions":
-							[
-								"bh_curly",
-								"bh_curly_center",
-								"bh_curly_open",
-								"bh_curly_close",
-								"bh_curly_content",
-								"bh_unmatched",
-								"bh_unmatched_center",
-								"bh_unmatched_open",
-								"bh_unmatched_close",
-								"bh_unmatched_content",
-								"bh_c_define",
-								"bh_c_define_center",
-								"bh_c_define_open",
-								"bh_c_define_close",
-								"bh_c_define_content",
+								"bh_regex_content",
 								"bh_tag",
 								"bh_tag_center",
 								"bh_tag_open",
@@ -628,6 +577,16 @@
 								"bh_double_quote_open",
 								"bh_double_quote_close",
 								"bh_double_quote_content",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_c_define_content",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_unmatched_content",
 								"bh_single_quote",
 								"bh_single_quote_center",
 								"bh_single_quote_open",
@@ -637,22 +596,269 @@
 								"bh_square_center",
 								"bh_square_open",
 								"bh_square_close",
-								"bh_square_content",
-								"bh_round",
-								"bh_round_center",
-								"bh_round_open",
-								"bh_round_close",
-								"bh_round_content",
+								"bh_square_content"
+							],
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3705.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/testHsolve.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10778,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								10194,
+								10644
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"bh_regions":
+							[
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_curly_content",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_angle_content",
 								"bh_default",
 								"bh_default_center",
 								"bh_default_open",
 								"bh_default_close",
 								"bh_default_content",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_round_content",
 								"bh_regex",
 								"bh_regex_center",
 								"bh_regex_open",
 								"bh_regex_close",
 								"bh_regex_content",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_tag_content",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_double_quote_content",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_c_define_content",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_unmatched_content",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close",
+								"bh_single_quote_content",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_square_content"
+							],
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 5215.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "testSpike.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3037,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2110,
+								2110
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"bh_regions":
+							[
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_curly_content",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_angle_content",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_default_content",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_round_content",
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_regex_content",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_tag_content",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_double_quote_content",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_c_define_content",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_unmatched_content",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close",
+								"bh_single_quote_content",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_square_content"
+							],
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1162.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2218,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2135,
+								2135
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"auto_name": "V	-0.055844798787862554",
+							"bh_regions":
+							[
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_curly_content",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_default_content",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_tag_content",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close",
+								"bh_single_quote_content",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_double_quote_content",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_c_define_content",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_round_content",
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_regex_content",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_square_content",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_unmatched_content",
 								"bh_angle",
 								"bh_angle_center",
 								"bh_angle_open",
@@ -662,10 +868,10 @@
 							"syntax": "Packages/Text/Plain text.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1311.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 3,
 					"type": "text"
 				}
 			]

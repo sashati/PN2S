@@ -92,7 +92,7 @@ def create_squid(parent):
 
 def create_spine(parentCompt, parentObj, index, frac, length, dia, theta):
     """Create spine of specified dimensions and index"""
-    RA = 1.0
+    RA = 1.0 / 10
     RM = 1.0
     CM = 0.01
     sname = 'shaft' + str(index)
@@ -122,6 +122,7 @@ def create_spine(parentCompt, parentObj, index, frac, length, dia, theta):
     shaft.Em = EREST_ACT
     shaft.initVm = EREST_ACT
 
+    print shaft.Ra
     head = moose.SymCompartment(parentObj.path + '/' + hname)
     moose.connect(shaft, 'distal', head, 'proximal', 'Single')
     head.x0 = x
@@ -207,7 +208,7 @@ def make_spiny_compt(root_path, number, synInput):
 def createCells(net):
     network = moose.Neutral(net)
     synInput = moose.SpikeGen("%s/synInput" % net)
-    synInput.refractT = 10e-3
+    synInput.refractT = 74e-3
     synInput.threshold = -1.0
     synInput.edgeTriggered = False
     synInput.Vm(0)
@@ -226,33 +227,35 @@ def test_elec_alone():
     moose.useClock(0, '/cpu/##', 'init')
     moose.useClock(1, '/cpu/##', 'process')
 
-    for i in range(number_of_ext_cells):
-        hsolve = moose.HSolve('/cpu/cell' + str(i) + '/hsolve')
-        hsolve.dt = dt
-        moose.useClock(1, '/cpu/cell' + str(i) + '/hsolve', 'process')
-        hsolve.target = '/cpu/cell' + str(i) + '/compt'
+    # for i in range(number_of_ext_cells):
+    #     hsolve = moose.HSolve('/cpu/cell' + str(i) + '/hsolve')
+    #     hsolve.dt = dt
+    #     moose.useClock(1, '/cpu/cell' + str(i) + '/hsolve', 'process')
+    #     hsolve.target = '/cpu/cell' + str(i) + '/compt'
 
-    moose.useClock(0, '/cpu/##[ISA=Compartment]', 'init')
+    # moose.useClock(0, '/cpu/##[ISA=Compartment]', 'init')
 
-    if Use_MasterHSolve:
-        print "*****************"
-        createCells("/gpu")
-        moose.useClock(0, '/gpu/##[ISA=Compartment]', 'init')
-        moose.useClock(1, '/gpu/##', 'process')
-        for i in range(number_of_ext_cells):
-            hsolve = moose.HSolve('/gpu/cell' + str(i) + '/hsolve')
-            hsolve.dt = dt
-            moose.useClock(1, '/gpu/cell' + str(i) + '/hsolve', 'process')
-            hsolve.target = '/gpu/cell' + str(i) + '/compt'
-        hsolve = moose.HSolve('/gpu/hsolve')
-        hsolve.dt = dt
-        moose.useClock(1, '/gpu/hsolve', 'process')
-        hsolve.target = '/gpu/#/hsolve'
+    # if Use_MasterHSolve:
+    #     print "*****************"
+    #     createCells("/gpu")
+    #     moose.useClock(0, '/gpu/##[ISA=Compartment]', 'init')
+    #     moose.useClock(1, '/gpu/##', 'process')
+    #     for i in range(number_of_ext_cells):
+    #         hsolve = moose.HSolve('/gpu/cell' + str(i) + '/hsolve')
+    #         hsolve.dt = dt
+    #         moose.useClock(1, '/gpu/cell' + str(i) + '/hsolve', 'process')
+    #         hsolve.target = '/gpu/cell' + str(i) + '/compt'
+    #     hsolve = moose.HSolve('/gpu/hsolve')
+    #     hsolve.dt = dt
+    #     moose.useClock(1, '/gpu/hsolve', 'process')
+    #     hsolve.target = '/gpu/#/hsolve'
 
     moose.Neutral('/graphs')
     moose.Neutral('/graphs/cpu')
     moose.Neutral('/graphs/gpu')
-    add_plot("/cpu/cell0" + '/head0', 'getVm', 'cpu/c0_head')
+    # add_plot("/cpu/cell0" + '/head0', 'getVm', 'cpu/c0_head')
+    # add_plot("/cpu/cell0" + '/shaft0', 'getVm', 'cpu/c0_shaft0')
+    add_plot("/cpu/cell0" + '/compt', 'getVm', 'cpu/c0_compt')
     # add_plot("/cpu/synInput", 'getHasFired', 'cpu/sp')
     # add_plot("/cpu/cell0" + '/compt', 'getVm', 'cpu/c0_compt')
     # add_plot("/gpu/cell0" + '/compt', 'getVm', 'gpu/c0_compt')
