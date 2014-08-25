@@ -343,15 +343,25 @@ Id HSolve::getSeed() const
 
 void HSolve::setPath( const Eref& hsolve, string path )
 {
-    if ( dt_ == 0.0 )
-    {
-        cerr << "Error: HSolve::setPath(): Must set 'dt' first.\n";
-        return;
-    }
+	if ( dt_ == 0.0 )
+	{
+		cerr << "Error: HSolve::setPath(): Must set 'dt' first.\n";
+		return;
+	}
 
     //Find all objects with the path address
     vector<ObjId> ids;
-    wildcardFind(path, ids);
+
+    Id seed = Id( path );
+	if(seed.element()->cinfo()->isA( "Compartment" ))
+	{
+		ids.push_back(seed);
+	}
+	else if(seed.element()->cinfo()->isA( "Neutral" ))
+	{
+		path += "/##[ISA=HSolve]";
+		wildcardFind(path, ids);
+	}
 
     seeds_.clear();
     if (ids.size() > 0)
@@ -368,10 +378,14 @@ void HSolve::setPath( const Eref& hsolve, string path )
     		isMasterHSolve_ = true;
     		for(vector<ObjId>::iterator ic = ids.begin(); ic != ids.end() ; ++ic )
 			{
-				Id seed = deepSearchFor( ic->id , "HSolve");
+				Id s = deepSearchFor( ic->id , "HSolve");
 				//Just add ones that are correct
-				if ( seed != Id() )
-					seeds_.push_back(seed);
+				if ( s != Id() )
+				{
+					HSolve* h =	reinterpret_cast< HSolve* >( s.eref().data());
+					if( h != this)
+						seeds_.push_back(s);
+				}
 			}
 
     		if(pn2s::DeviceManager::IsInitialized())
