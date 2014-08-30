@@ -239,6 +239,7 @@ def test_elec_alone():
             hsolve.dt = dt
             moose.useClock(1, '/gpu/cell' + str(i) + '/hsolve', 'process')
             hsolve.target = '/gpu/cell' + str(i) + '/compt'
+            
         hsolve = moose.HSolve('/gpu/hsolve')
         hsolve.dt = dt
         moose.useClock(1, '/gpu/hsolve', 'process')
