@@ -1,16 +1,16 @@
 #!/usr/bin/env python
-# testHsolve.py --- 
+# testHsolve.py ---
 # Upi Bhalla, NCBS Bangalore, 9 June 2013.
 #
-# Commentary: 
+# Commentary:
 #
-# A small compartmental model that demonstrates 
+# A small compartmental model that demonstrates
 # a) how to set up a multicompartmental model using SymCompartments
 # b) Solving this with the default Exponential Euler (EE) method
 # c) Solving this with the Hsolver.
 # d) What happens at different timesteps.
-# 
-# 
+#
+#
 # Also have a look at what happens without the useInterpolate flag for
 # the ion channels, even though the voltage range is subdivided into 3000
 # intervals.
@@ -19,17 +19,17 @@
 # modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation; either version 3, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; see the file COPYING.  If not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street, Fifth
 # Floor, Boston, MA 02110-1301, USA.
-# 
+#
 
 # Code:
 
@@ -49,7 +49,7 @@ EREST_ACT = -70e-3
 # Gate equations have the form:
 #
 # y(x) = (A + B * x) / (C + exp((x + D) / F))
-# 
+#
 # where x is membrane voltage and y is the rate constant for gate
 # closing or opening
 
@@ -62,7 +62,7 @@ Na_m_params = [1e5 * (25e-3 + EREST_ACT),   # 'A_A':
                 0.0,                        # 'B_B':
                 0.0,                        # 'B_C':
                 0.0 - EREST_ACT,            # 'B_D':
-                18e-3                       # 'B_F':    
+                18e-3                       # 'B_F':
                ]
 Na_h_params = [ 70.0,                        # 'A_A':
                 0.0,                       # 'A_B':
@@ -73,8 +73,8 @@ Na_h_params = [ 70.0,                        # 'A_A':
                 0.0,                       # 'B_B':
                 1.0,                       # 'B_C':
                 -30e-3 - EREST_ACT,        # 'B_D':
-                -0.01                    # 'B_F':       
-                ]        
+                -0.01                    # 'B_F':
+                ]
 K_n_params = [ 1e4 * (10e-3 + EREST_ACT),   #  'A_A':
                -1e4,                      #  'A_B':
                -1.0,                       #  'A_C':
@@ -84,7 +84,7 @@ K_n_params = [ 1e4 * (10e-3 + EREST_ACT),   #  'A_A':
                0.0,                        #  'B_B':
                0.0,                        #  'B_C':
                0.0 - EREST_ACT,            #  'B_D':
-               80e-3                       #  'B_F':  
+               80e-3                       #  'B_F':
                ]
 VMIN = -30e-3 + EREST_ACT
 VMAX = 120e-3 + EREST_ACT
@@ -102,7 +102,7 @@ def create_squid(parent):
 
     nachan = moose.HHChannel( parent.path+'/compt/Na' )
     nachan.Xpower = 3
-    xGate = moose.HHGate(nachan.path + '/gateX')    
+    xGate = moose.HHGate(nachan.path + '/gateX')
     xGate.setupAlpha(Na_m_params + [VDIVS, VMIN, VMAX])
     #This is important: one can run without it but the output will diverge.
     xGate.useInterpolation = 1
@@ -116,7 +116,7 @@ def create_squid(parent):
 
     kchan = moose.HHChannel( parent.path+'/compt/K' )
     kchan.Xpower = 4.0
-    xGate = moose.HHGate(kchan.path + '/gateX')    
+    xGate = moose.HHGate(kchan.path + '/gateX')
     xGate.setupAlpha(K_n_params + [VDIVS, VMIN, VMAX])
     xGate.useInterpolation = 1
     kchan.Gbar = 0.2836e-3
@@ -230,7 +230,7 @@ def make_spiny_compt(root_path, number,synInput):
     comptDia = 4e-6
     numSpines = Number_Of_Spines
     cell = moose.Neutral (root_path+"/cell"+str(number))
-    
+
     compt = create_squid(cell)
     compt.inject = INJECT_CURRENT
     compt.x0 = 0
@@ -241,7 +241,7 @@ def make_spiny_compt(root_path, number,synInput):
     compt.z = 0
     compt.length = comptLength
     compt.diameter = comptDia
-    
+
     for i in range( numSpines ):
         r = create_spine_with_receptor( compt, cell, i, i/float(numSpines) )
         r.synapse.num = 1
@@ -279,7 +279,7 @@ def test_elec_alone():
     dt = 1e-6
 
     createCells(Number_Of_Cells)
- 
+
     make_elec_plots("/n/cell0")
 
     moose.setClock( 0, dt )
@@ -299,22 +299,22 @@ def test_elec_alone():
         hsolve.dt = dt
         moose.useClock( 1, '/n/cell'+str(i)+'/hsolve', 'process' )
         hsolve.target = '/n/cell'+str(i)+'/compt'
-    
+
     if Use_MasterHSolve == True and Number_Of_Cells > 1:
         hsolve = moose.HSolve( '/n/hsolve' )
         hsolve.dt = dt
         moose.useClock( 1, '/n/hsolve', 'process' )
         hsolve.target = '/n/#/hsolve'
-    
-    moose.reinit()    
+
+    moose.reinit()
     moose.start( Simulation_Time )
     dump_plots( 'h_incuDoubleComplexcuComplexstab.plot' )
 
 def main():
     test_elec_alone()
 
-Use_MasterHSolve    =   True
-# Use_MasterHSolve    =   False
+#Use_MasterHSolve    =   True
+Use_MasterHSolve    =   False
 Simulation_Time     =   1e-3
 Number_Of_Cells     =   10
 Number_Of_Spines    =   2
