@@ -71,6 +71,38 @@
 	},
 	"buffers":
 	[
+		{
+			"file": "single.py",
+			"settings":
+			{
+				"buffer_size": 9440,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/testHsolve.py",
+			"settings":
+			{
+				"buffer_size": 10550,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "testSpike.py",
+			"settings":
+			{
+				"buffer_size": 3037,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/RandSpikeStats.py",
+			"settings":
+			{
+				"buffer_size": 3483,
+				"line_ending": "Unix"
+			}
+		}
 	],
 	"build_system": "",
 	"command_palette":
@@ -385,6 +417,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"RandSpike",
 			"init",
 			"moose",
 			"vector",
@@ -496,8 +529,129 @@
 	"groups":
 	[
 		{
+			"selected": 2,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "single.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 9440,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3221,
+								3221
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1586.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/testHsolve.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10550,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6911,
+								6911
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2736.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "testSpike.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3037,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1668,
+								1668
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 969.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/RandSpikeStats.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3483,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1736,
+								1736
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 513.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				}
 			]
 		}
 	],

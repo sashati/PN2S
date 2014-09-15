@@ -92,7 +92,7 @@ def create_squid(parent):
 
 def create_spine(parentCompt, parentObj, index, frac, length, dia, theta):
     """Create spine of specified dimensions and index"""
-    RA = 1.0 / 10
+    RA = 1.0 
     RM = 1.0
     CM = 0.01
     sname = 'shaft' + str(index)
@@ -156,6 +156,10 @@ def create_spine_with_receptor(compt, cell, index, frac):
     gluR.Ek =  10.0e-3  # Inhibitory -0.1
     moose.connect(head, 'channel', gluR, 'channel', 'Single')
 
+    synHandler = moose.SimpleSynHandler(head.path + '/gluR/handler')
+    synHandler.synapse.num = 1
+    moose.connect(synHandler, 'activationOut', gluR, 'activation', 'Single')
+
     return gluR
 
 
@@ -198,8 +202,8 @@ def make_spiny_compt(root_path, number, synInput):
 
     for i in range(numSpines):
         r = create_spine_with_receptor(compt, cell, i, i / float(numSpines))
-        r.synapse.num = 1
-        syn = moose.element(r.path + '/synapse')
+        #r.synapse.num = 1
+        syn = moose.element(r.path + '/handler/synapse')
         moose.connect(synInput, 'spikeOut', syn, 'addSpike', 'Single')
         syn.weight = .5
         syn.delay = i * 1.0e-6
@@ -276,7 +280,7 @@ def main():
 
 Use_MasterHSolve = True
 # Use_MasterHSolve = False
-Simulation_Time = 1e-4
+Simulation_Time = 1e-2
 
 number_of_input_cells = 1
 number_of_ext_cells = 2

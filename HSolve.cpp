@@ -21,6 +21,7 @@
 #include "ZombieCaConc.h"
 #include "../biophysics/HHGate.h"
 #include "../biophysics/ChanBase.h"
+#include "../biophysics/ChanCommon.h"
 #include "../biophysics/HHChannel.h"
 #include "ZombieHHChannel.h"
 #include "../shell/Wildcard.h"
@@ -291,6 +292,30 @@ void HSolve::zombify( Eref hsolve ) const
 	Shell::dropClockMsgs( temp, "process" );
     for ( i = channelId_.begin(); i != channelId_.end(); ++i )
         ZombieHHChannel::zombify( hsolve.element(), i->eref().element() );
+/*
+   vector< Id >::const_iterator i;
+	vector< ObjId > temp;
+
+    for ( i = compartmentId_.begin(); i != compartmentId_.end(); ++i )
+		temp.push_back( ObjId( *i, 0 ) );
+    for ( i = compartmentId_.begin(); i != compartmentId_.end(); ++i )
+        CompartmentBase::zombify( i->eref().element(),
+					   ZombieCompartment::initCinfo(), hsolve.id() );
+
+	temp.clear();
+    for ( i = caConcId_.begin(); i != caConcId_.end(); ++i )
+		temp.push_back( ObjId( *i, 0 ) );
+	// Shell::dropClockMsgs( temp, "process" );
+    for ( i = caConcId_.begin(); i != caConcId_.end(); ++i )
+        CaConcBase::zombify( i->eref().element(), ZombieCaConc::initCinfo(), hsolve.id() );
+
+	temp.clear();
+    for ( i = channelId_.begin(); i != channelId_.end(); ++i )
+		temp.push_back( ObjId( *i, 0 ) );
+    for ( i = channelId_.begin(); i != channelId_.end(); ++i )
+        HHChannelBase::zombify( i->eref().element(), 
+						ZombieHHChannel::initCinfo(), hsolve.id() );
+*/
 }
 
 void HSolve::setup( Eref hsolve )
