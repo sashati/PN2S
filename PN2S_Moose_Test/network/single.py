@@ -92,7 +92,7 @@ def create_squid(parent):
 
 def create_spine(parentCompt, parentObj, index, frac, length, dia, theta):
     """Create spine of specified dimensions and index"""
-    RA = 1.0 
+    RA = 1.0
     RM = 1.0
     CM = 0.01
     sname = 'shaft' + str(index)

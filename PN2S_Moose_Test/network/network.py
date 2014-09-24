@@ -92,7 +92,7 @@ def create_squid(parent):
 
 def create_spine(parentCompt, parentObj, index, frac, length, dia, theta):
     """Create spine of specified dimensions and index"""
-    RA = 1.0 / 10
+    RA = 1.0
     RM = 1.0
     CM = 0.01
     sname = 'shaft' + str(index)
@@ -156,6 +156,10 @@ def create_spine_with_receptor(compt, cell, index, frac):
     gluR.Ek = 10.0e-3  # Inhibitory -0.1
     moose.connect(head, 'channel', gluR, 'channel', 'Single')
 
+    synHandler = moose.SimpleSynHandler(head.path + '/gluR/handler')
+    synHandler.synapse.num = 1
+    moose.connect(synHandler, 'activationOut', gluR, 'activation', 'Single')
+
     return gluR
 
 
@@ -198,8 +202,8 @@ def make_spiny_compt(root_path, number, synInput):
 
     for i in range(numSpines):
         r = create_spine_with_receptor(compt, cell, i, i / float(numSpines))
-        r.synapse.num = 1
-        syn = moose.element(r.path + '/synapse')
+        #r.synapse.num = 1
+        syn = moose.element(r.path + '/handler/synapse')
         moose.connect(synInput, 'spikeOut', syn, 'addSpike', 'Single')
         syn.weight = .5
         syn.delay = i * 1.0e-6
@@ -216,17 +220,13 @@ def createCells(net):
         make_spiny_compt(network.path, i, synInput)
 
 
-def createNetwork(parent):
-    createCells(parent+"/input")
-
-
 def test_elec_alone():
     moose.setClock(0, dt)
     moose.setClock(1, dt)
     moose.setClock(2, dt)
     moose.setClock(8, 1e-4)
 
-    createNetwork("/cpu")
+    createCells("/cpu")
 
     for i in range(number_of_ext_cells):
         hsolve = moose.HSolve('/cpu/cell' + str(i) + '/hsolve')
@@ -241,25 +241,28 @@ def test_elec_alone():
         for i in range(number_of_ext_cells):
             hsolve = moose.HSolve('/gpu/cell' + str(i) + '/hsolve')
             hsolve.dt = dt
-            moose.useClock(1, '/gpu/cell' + str(i) + '/hsolve', 'process')
+            moose.useClock(i%3, '/gpu/cell' + str(i) + '/hsolve', 'process')
             hsolve.target = '/gpu/cell' + str(i) + '/compt'
+
         hsolve = moose.HSolve('/gpu/hsolve')
         hsolve.dt = dt
         moose.useClock(1, '/gpu/hsolve', 'process')
-        hsolve.target = '/gpu/#/hsolve'
+        hsolve.target = '/gpu'
 
     moose.useClock(0, '/cpu/##', 'init')
-    moose.useClock(1, '/cpu/##', 'process')
+    moose.useClock(1, '/cpu/cell0/##', 'process')
+    moose.useClock(2, '/cpu/cell1/##', 'process')
 
     moose.Neutral('/graphs')
     moose.Neutral('/graphs/cpu')
     moose.Neutral('/graphs/gpu')
 
     add_plot("/cpu/cell0" + '/head0', 'getVm', 'cpu/c0_head')
-    add_plot("/cpu/cell0" + '/compt', 'getVm', 'cpu/c0_compt')
-    add_plot("/gpu/cell0" + '/head0', 'getVm', 'gpu/c0_head')
+    add_plot("/cpu/cell1" + '/head0', 'getVm', 'cpu/c1_head')
+    # add_plot("/cpu/cell0" + '/compt', 'getVm', 'cpu/c0_compt')
+    # add_plot("/gpu/cell0" + '/head0', 'getVm', 'gpu/c0_head')
     # add_plot("/cpu/cell0" + '/shaft0', 'getVm', 'cpu/c0_shaft0')
-    add_plot("/gpu/cell0" + '/compt', 'getVm', 'gpu/g0_compt')
+    # add_plot("/gpu/cell0" + '/compt', 'getVm', 'gpu/g0_compt')
     # add_plot("/cpu/synInput", 'getHasFired', 'cpu/sp')
     # add_plot("/cpu/cell0" + '/compt', 'getVm', 'cpu/c0_compt')
     # add_plot("/gpu/cell0" + '/compt', 'getVm', 'gpu/c0_compt')
@@ -275,16 +278,31 @@ def test_elec_alone():
 
 
 def main():
+    # avgFiringRate = 10
+    # spike_refractT = 0.05
+
+    # stim = moose.StimulusTable('stim')
+    # stim.vector = [avgFiringRate]
+    # stim.startTime = 0
+    # stim.stopTime = 1
+    # stim.loopTime = 1
+    # stim.stepSize = 0
+    # stim.stepPosition = 0
+    # stim.doLoop = 1
+
+    # spike = moose.RandSpike('spike')
+    # spike.refractT = spike_refractT
+
     test_elec_alone()
 
-Use_MasterHSolve = True
-# Use_MasterHSolve = False
-Simulation_Time = 2e-1
+# Use_MasterHSolve = True
+Use_MasterHSolve = False
+Simulation_Time = 5
 
-number_of_input_cells = 1
-number_of_ext_cells = 1
+number_of_input_cells = 2
+number_of_ext_cells = 2
 number_of_inh_cells = 0
-number_of_spines = 1
+number_of_spines = 2
 
 INJECT_CURRENT = 1e-7
 dt = 1e-6
