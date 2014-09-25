@@ -5,6 +5,7 @@ os.environ['NUMPTHREADS'] = '1'
 import pylab
 import numpy
 import math
+from numpy import random as nprand
 
 import moose
 import moose.utils
@@ -14,7 +15,7 @@ EREST_ACT = -70e-3
 # Gate equations have the form:
 #
 # y(x) = (A + B * x) / (C + exp((x + D) / F))
-#
+
 # where x is membrane voltage and y is the rate constant for gate
 # closing or opening
 
@@ -90,49 +91,14 @@ def create_squid(parent):
     return compt
 
 
-def create_spine(parentCompt, parentObj, index, frac, length, dia, theta):
+def create_dendrit(parentCompt, parentObj, index, frac, length, dia, theta):
     """Create spine of specified dimensions and index"""
     RA = 1.0
     RM = 1.0
     CM = 0.01
-    sname = 'shaft' + str(index)
     hname = 'head' + str(index)
-    shaft = moose.SymCompartment(parentObj.path + '/' + sname)
-    #moose.connect( parentCompt, 'cylinder', shaft, 'proximalOnly','Single')
-    #moose.connect( parentCompt, 'distal', shaft, 'proximal','Single' )
-    moose.connect(parentCompt, 'sphere', shaft, 'proximalOnly', 'Single')
-    x = parentCompt.x0 + frac * (parentCompt.x - parentCompt.x0)
-    y = parentCompt.y0 + frac * (parentCompt.y - parentCompt.y0)
-    z = parentCompt.z0 + frac * (parentCompt.z - parentCompt.z0)
-    shaft.x0 = x
-    shaft.y0 = y
-    shaft.z0 = z
-    sy = y + length * math.cos(theta * math.pi / 180.0)
-    sz = z + length * math.sin(theta * math.pi / 180.0)
-    shaft.x = x
-    shaft.y = sy
-    shaft.z = sz
-    shaft.diameter = dia / 2.0
-    shaft.length = length
-    xa = math.pi * dia * dia / 400.0
-    circumference = math.pi * dia / 10.0
-    shaft.Ra = RA * length / xa
-    shaft.Rm = RM / (length * circumference)
-    shaft.Cm = CM * length * circumference
-    shaft.Em = EREST_ACT
-    shaft.initVm = EREST_ACT
-
-    print shaft.Ra
     head = moose.SymCompartment(parentObj.path + '/' + hname)
-    moose.connect(shaft, 'distal', head, 'proximal', 'Single')
-    head.x0 = x
-    head.y0 = sy
-    head.z0 = sz
-    hy = sy + length * math.cos(theta * math.pi / 180.0)
-    hz = sz + length * math.sin(theta * math.pi / 180.0)
-    head.x = x
-    head.y = hy
-    head.z = hz
+#     moose.connect(parentCompt, 'distal', head, 'proximal', 'Single')
     head.diameter = dia
     head.length = length
     xa = math.pi * dia * dia / 4.0
@@ -143,24 +109,6 @@ def create_spine(parentCompt, parentObj, index, frac, length, dia, theta):
     head.Em = EREST_ACT
     head.initVm = EREST_ACT
     return head
-
-
-def create_spine_with_receptor(compt, cell, index, frac):
-    spineLength = 5.0e-6
-    spineDia = 4.0e-6
-    head = create_spine(compt, cell, index, frac, spineLength, spineDia, 0.0)
-    gluR = moose.SynChan(head.path + '/gluR')
-    gluR.tau1 = 4e-3
-    gluR.tau2 = 4e-3
-    gluR.Gbar = 1e-6
-    gluR.Ek = 10.0e-3  # Inhibitory -0.1
-    moose.connect(head, 'channel', gluR, 'channel', 'Single')
-
-    synHandler = moose.SimpleSynHandler(head.path + '/gluR/handler')
-    synHandler.synapse.num = 1
-    moose.connect(synHandler, 'activationOut', gluR, 'activation', 'Single')
-
-    return gluR
 
 
 def add_plot(objpath, field, plot):
@@ -178,15 +126,14 @@ def dump_plots():
         # print x.vector
         t = numpy.arange(0, len(x.vector), 1)
         pylab.plot(t, x.vector, label=("CPU:%s" % x.name))
-    for x in moose.wildcardFind('/graphs/gpu/##[ISA=Table]'):
-        t = numpy.arange(0, len(x.vector), 1)
-        pylab.plot(t, x.vector, label=("GPU:%s" % x.name))
+    # for x in moose.wildcardFind('/graphs/gpu/##[ISA=Table]'):
+    #     t = numpy.arange(0, len(x.vector), 1)
+    #     pylab.plot(t, x.vector, label=("GPU:%s" % x.name))
 
 
-def make_spiny_compt(root_path, number, synInput):
+def make_spiny_compt(root_path, number):
     comptLength = 100e-6
     comptDia = 4e-6
-    numSpines = number_of_spines
     cell = moose.Neutral(root_path + "/cell" + str(number))
 
     compt = create_squid(cell)
@@ -200,76 +147,102 @@ def make_spiny_compt(root_path, number, synInput):
     compt.length = comptLength
     compt.diameter = comptDia
 
-    for i in range(numSpines):
-        r = create_spine_with_receptor(compt, cell, i, i / float(numSpines))
-        #r.synapse.num = 1
-        syn = moose.element(r.path + '/handler/synapse')
-        moose.connect(synInput, 'spikeOut', syn, 'addSpike', 'Single')
-        syn.weight = .5
-        syn.delay = i * 1.0e-6
+    #Excitatory
+    spineLength = 5.0e-6
+    spineDia = 4.0e-6
+    head = create_dendrit(compt, cell, 0, 0, spineLength, spineDia, 0.0)
+    gluR = moose.SynChan(head.path + '/gluR')
+    gluR.tau1 = 4e-3
+    gluR.tau2 = 4e-3
+    gluR.Gbar = 1e-6
+    gluR.Ek = 10.0e-3  # Inhibitory -0.1
+    moose.connect(head, 'channel', gluR, 'channel', 'Single')
 
+    synHandler = moose.SimpleSynHandler(head.path + '/gluR/handler')
+    synHandler.synapse.num = 1
+    moose.connect(synHandler, 'activationOut', gluR, 'activation', 'Single')
+    
+    
+    return gluR
+#     syn = moose.element(r.path + '/handler/synapse')
+#     moose.connect(synInput, 'spikeOut', syn, 'addSpike', 'Single')
+#     syn.weight = .5
+#     syn.delay = 0
+        
+#     #Inhibitory
+#     r = create_spine_with_receptor(compt, cell, 1, 0.5)
+#     syn = moose.element(r.path + '/handler/synapse')
+#     moose.connect(synInput, 'spikeOut', syn, 'addSpike', 'Single')
+#     syn.weight = .5
+#     syn.delay = 0 * 1.0e-6 #??
+        
+        
 
-def createCells(net):
+def createCells(net, input_layer):
     network = moose.Neutral(net)
-    synInput = moose.SpikeGen("%s/synInput" % net)
-    synInput.refractT = 74e-3
-    synInput.threshold = -1.0
-    synInput.edgeTriggered = False
-    synInput.Vm(0)
+    
     for i in range(number_of_ext_cells):
-        make_spiny_compt(network.path, i, synInput)
+        r = make_spiny_compt(network.path, i)
+#         rnd = nprand.rand(1)
+        
+        for j in range(number_of_input_cells):
+#         if( rnd >  IC):
+            syn = moose.element(r.path + '/handler/synapse')
+#             index = nprand.randint(number_of_input_cells)
+            moose.connect(input_layer[j], 'spikeOut', syn, 'addSpike', 'Single')
+            syn.weight = .1
+            syn.delay = 5e-3 #random
+        
 
 
-def test_elec_alone():
+def make_input_layer(avgFiringRate=10, spike_refractT=74e-4):
+    _input = moose.Neutral('/in')
+
+    stim = moose.StimulusTable(_input.path + '/stim')
+    stim.vector = [avgFiringRate]
+    stim.startTime = 0
+    stim.stopTime = 1
+    stim.loopTime = 1
+    stim.stepSize = 0
+    stim.stepPosition = 0
+    stim.doLoop = 1
+
+    input_layer = []
+    for i in range(number_of_input_cells):
+        spike = moose.RandSpike(_input.path + '/sp'+ str(i))
+        spike.refractT = spike_refractT
+        moose.connect(stim, 'output', spike, 'setRate')
+        input_layer.append(spike)
+
+    return input_layer
+
+
+def main():
+    moose.Neutral('/graphs')
+    moose.Neutral('/graphs/cpu')
+    moose.Neutral('/graphs/gpu')
+
     moose.setClock(0, dt)
     moose.setClock(1, dt)
     moose.setClock(2, dt)
     moose.setClock(8, 1e-4)
 
-    createCells("/cpu")
+    input_layer = make_input_layer()
+
+    createCells("/cpu", input_layer)
 
     for i in range(number_of_ext_cells):
-        hsolve = moose.HSolve('/cpu/cell' + str(i) + '/hsolve')
-        hsolve.dt = dt
-        hsolve.target = '/cpu/cell' + str(i) + '/compt'
-
-    if Use_MasterHSolve:
-        print "*****************"
-        createCells("/gpu")
-        moose.useClock(0, '/gpu/##[ISA=Compartment]', 'init')
-        moose.useClock(1, '/gpu/##', 'process')
-        for i in range(number_of_ext_cells):
-            hsolve = moose.HSolve('/gpu/cell' + str(i) + '/hsolve')
-            hsolve.dt = dt
-            moose.useClock(i%3, '/gpu/cell' + str(i) + '/hsolve', 'process')
-            hsolve.target = '/gpu/cell' + str(i) + '/compt'
-
-        hsolve = moose.HSolve('/gpu/hsolve')
-        hsolve.dt = dt
-        moose.useClock(1, '/gpu/hsolve', 'process')
-        hsolve.target = '/gpu'
+        add_plot("/cpu/cell" + str(i) + '/head0', 'getVm', 'cpu/c'+ str(i)+'_head')
+        add_plot("/cpu/cell" + str(i) + '/compt', 'getVm', 'cpu/c'+ str(i)+'_cmpt')
+    
+#     add_plot("/cpu/stim" , 'getOutputValue', 'cpu/stim')
+    
 
     moose.useClock(0, '/cpu/##', 'init')
-    moose.useClock(1, '/cpu/cell0/##', 'process')
-    moose.useClock(2, '/cpu/cell1/##', 'process')
-
-    moose.Neutral('/graphs')
-    moose.Neutral('/graphs/cpu')
-    moose.Neutral('/graphs/gpu')
-
-    add_plot("/cpu/cell0" + '/head0', 'getVm', 'cpu/c0_head')
-    add_plot("/cpu/cell1" + '/head0', 'getVm', 'cpu/c1_head')
-    # add_plot("/cpu/cell0" + '/compt', 'getVm', 'cpu/c0_compt')
-    # add_plot("/gpu/cell0" + '/head0', 'getVm', 'gpu/c0_head')
-    # add_plot("/cpu/cell0" + '/shaft0', 'getVm', 'cpu/c0_shaft0')
-    # add_plot("/gpu/cell0" + '/compt', 'getVm', 'gpu/g0_compt')
-    # add_plot("/cpu/synInput", 'getHasFired', 'cpu/sp')
-    # add_plot("/cpu/cell0" + '/compt', 'getVm', 'cpu/c0_compt')
-    # add_plot("/gpu/cell0" + '/compt', 'getVm', 'gpu/c0_compt')
-
-    # add_plot("/gpu/cell0" + '/head0', 'getVm', 'gpu/c0_comp')
+    moose.useClock(1, '/cpu/##', 'process')
+    moose.useClock(1, '/in/stim', 'process')
+    moose.useClock(1, '/in/sp#', 'process')    
     moose.useClock(8, '/graphs/##', 'process')
-
     moose.reinit()
     moose.start(Simulation_Time)
     dump_plots()
@@ -277,34 +250,19 @@ def test_elec_alone():
     pylab.show()
 
 
-def main():
-    # avgFiringRate = 10
-    # spike_refractT = 0.05
-
-    # stim = moose.StimulusTable('stim')
-    # stim.vector = [avgFiringRate]
-    # stim.startTime = 0
-    # stim.stopTime = 1
-    # stim.loopTime = 1
-    # stim.stepSize = 0
-    # stim.stepPosition = 0
-    # stim.doLoop = 1
-
-    # spike = moose.RandSpike('spike')
-    # spike.refractT = spike_refractT
-
-    test_elec_alone()
-
 # Use_MasterHSolve = True
 Use_MasterHSolve = False
-Simulation_Time = 5
+Simulation_Time = 1
 
-number_of_input_cells = 2
-number_of_ext_cells = 2
-number_of_inh_cells = 0
-number_of_spines = 2
+number_of_input_cells = 1
+number_of_ext_cells = 1
+number_of_inh_cells = 2
 
-INJECT_CURRENT = 1e-7
+
+IC = .5 #Input connection probability
+
+
+INJECT_CURRENT = 1e-6
 dt = 1e-6
 
 if __name__ == '__main__':

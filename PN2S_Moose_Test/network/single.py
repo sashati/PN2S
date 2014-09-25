@@ -90,7 +90,7 @@ def create_squid(parent):
     return compt
 
 
-def create_spine(parentCompt, parentObj, index, frac, length, dia, theta):
+def create_dendrit(parentCompt, parentObj, index, frac, length, dia, theta):
     """Create spine of specified dimensions and index"""
     RA = 1.0
     RM = 1.0
@@ -148,7 +148,7 @@ def create_spine(parentCompt, parentObj, index, frac, length, dia, theta):
 def create_spine_with_receptor(compt, cell, index, frac):
     spineLength = 5.0e-6
     spineDia = 4.0e-6
-    head = create_spine(compt, cell, index, frac, spineLength, spineDia, 0.0)
+    head = create_dendrit(compt, cell, index, frac, spineLength, spineDia, 0.0)
     gluR = moose.SynChan(head.path + '/gluR')
     gluR.tau1 = 4e-3
     gluR.tau2 = 4e-3

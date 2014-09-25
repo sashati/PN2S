@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"1e",
+				"1e5"
+			],
+			[
+				"add",
+				"add_plot"
+			],
+			[
 				"create",
 				"createNetwork"
 			],
@@ -26,10 +34,6 @@
 			[
 				"com",
 				"compt	statement"
-			],
-			[
-				"add",
-				"add_syn"
 			],
 			[
 				"hs",
@@ -56,10 +60,6 @@
 				"c1_spikegen"
 			],
 			[
-				"1e",
-				"1e-6"
-			],
-			[
 				"syn",
 				"synapse"
 			],
@@ -72,10 +72,18 @@
 	"buffers":
 	[
 		{
-			"file": "/home/saeed/Dropbox/Solentech/Navitech/Slides/middelware.tex",
+			"file": "network.py",
 			"settings":
 			{
-				"buffer_size": 8957,
+				"buffer_size": 10234,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/RandSpikeStats.py",
+			"settings":
+			{
+				"buffer_size": 2844,
 				"line_ending": "Unix"
 			}
 		}
@@ -263,11 +271,12 @@
 	],
 	"file_history":
 	[
+		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/network.py",
+		"/home/saeed/Dropbox/Solentech/Navitech/Slides/middelware.tex",
 		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/single.py",
 		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/testHsolve.py",
 		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/testSpike.py",
 		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/RandSpikeStats.py",
-		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/network.py",
 		"/src/saeed/cuda-workspace/moose/hsolve/HSolve.cpp",
 		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/synapse_tutorial.py",
 		"/src/saeed/cuda-workspace/moose/Demos/snippets/testHsolve.py",
@@ -511,32 +520,62 @@
 			[
 				{
 					"buffer": 0,
-					"file": "/home/saeed/Dropbox/Solentech/Navitech/Slides/middelware.tex",
+					"file": "network.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8957,
+						"buffer_size": 10234,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								963,
-								963
+								9423,
+								9423
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/LaTeXing/support/LaTeX Beamer.tmLanguage",
-							"tab_size": 2,
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 6136.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/RandSpikeStats.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2844,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1715,
+								1715
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 414.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
 					"type": "text"
 				}
 			]
@@ -639,7 +678,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 204.0,
+	"side_bar_width": 191.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{
