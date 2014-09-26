@@ -1,11 +1,12 @@
 import sys
+from single import dt
 sys.path.append('../../../python')
 import os
-os.environ['NUMPTHREADS'] = '1'
+os.environ['NUMPTHREADS'] = '8'
 import pylab
 import numpy
 import math
-from numpy import random as nprand
+from numpy import random as nprand, where
 
 import moose
 import moose.utils
@@ -59,15 +60,15 @@ VDIVS = 3000
 
 def create_squid(parent):
     """Create a single compartment squid model."""
-    compt = moose.SymCompartment(parent.path + '/compt')
+    soma = moose.SymCompartment(parent.path + '/soma')
     Em = EREST_ACT + 10.613e-3
-    compt.Em = Em
-    compt.initVm = EREST_ACT
-    compt.Cm = 7.85e-9 * 0.5
-    compt.Rm = 4.2e5 * 5.0
-    compt.Ra = 7639.44e3
+    soma.Em = Em
+    soma.initVm = EREST_ACT
+    soma.Cm = 7.85e-9 * 0.5
+    soma.Rm = 4.2e5 * 5.0
+    soma.Ra = 7639.44e3
 
-    nachan = moose.HHChannel(parent.path + '/compt/Na')
+    nachan = moose.HHChannel(parent.path + '/soma/Na')
     nachan.Xpower = 3
     xGate = moose.HHGate(nachan.path + '/gateX')
     xGate.setupAlpha(Na_m_params + [VDIVS, VMIN, VMAX])
@@ -79,36 +80,17 @@ def create_squid(parent):
     yGate.useInterpolation = 1
     nachan.Gbar = 0.942e-3
     nachan.Ek = 115e-3 + EREST_ACT
-    moose.connect(nachan, 'channel', compt, 'channel', 'OneToOne')
-    kchan = moose.HHChannel(parent.path + '/compt/K')
+    moose.connect(nachan, 'channel', soma, 'channel', 'OneToOne')
+    kchan = moose.HHChannel(parent.path + '/soma/K')
     kchan.Xpower = 4.0
     xGate = moose.HHGate(kchan.path + '/gateX')
     xGate.setupAlpha(K_n_params + [VDIVS, VMIN, VMAX])
     xGate.useInterpolation = 1
     kchan.Gbar = 0.2836e-3
     kchan.Ek = -12e-3 + EREST_ACT
-    moose.connect(kchan, 'channel', compt, 'channel', 'OneToOne')
-    return compt
+    moose.connect(kchan, 'channel', soma, 'channel', 'OneToOne')
+    return soma
 
-
-def create_dendrit(parentCompt, parentObj, index, frac, length, dia, theta):
-    """Create spine of specified dimensions and index"""
-    RA = 1.0
-    RM = 1.0
-    CM = 0.01
-    hname = 'head' + str(index)
-    head = moose.SymCompartment(parentObj.path + '/' + hname)
-#     moose.connect(parentCompt, 'distal', head, 'proximal', 'Single')
-    head.diameter = dia
-    head.length = length
-    xa = math.pi * dia * dia / 4.0
-    circumference = math.pi * dia
-    head.Ra = RA * length / xa
-    head.Rm = RM / (length * circumference)
-    head.Cm = CM * length * circumference
-    head.Em = EREST_ACT
-    head.initVm = EREST_ACT
-    return head
 
 
 def add_plot(objpath, field, plot):
@@ -131,70 +113,147 @@ def dump_plots():
     #     pylab.plot(t, x.vector, label=("GPU:%s" % x.name))
 
 
-def make_spiny_compt(root_path, number):
-    comptLength = 100e-6
+def create_dendrit(name, parentCompt, parentObj, length, dia):
+    RA = 1.0
+    RM = 1.0
+    CM = 0.01
+    
+    d = moose.SymCompartment(parentObj.path + '/' + name)
+    moose.connect(parentCompt, 'distal', d, 'proximal', 'Single')
+    d.diameter = dia
+    d.length = length
+    d.Ra = RA * length / (math.pi * d.diameter * d.diameter / 4.0)
+    d.Rm = RM / (length * math.pi * d.diameter)
+    d.Cm = CM * length * math.pi * d.diameter
+    d.Em = EREST_ACT
+    d.initVm = EREST_ACT
+
+    return d
+
+def make_spiny_compt(root_path, number, isExcitatory):
+    comptLength = 200e-6
     comptDia = 4e-6
-    cell = moose.Neutral(root_path + "/cell" + str(number))
+    
+    if isExcitatory:
+        name = root_path + "/cell" + str(number)
+    else:
+        name = root_path + "/cell_in" + str(number)
+    cell = moose.Neutral(name)
 
-    compt = create_squid(cell)
-    compt.inject = 0
-    compt.x0 = 0
-    compt.y0 = 0
-    compt.z0 = 0
-    compt.x = comptLength
-    compt.y = 0
-    compt.z = 0
-    compt.length = comptLength
-    compt.diameter = comptDia
+    soma = create_squid(cell)
+    soma.inject = 0
+    soma.x0 = 0
+    soma.y0 = 0
+    soma.z0 = 0
+    soma.x = comptLength
+    soma.y = 0
+    soma.z = 0
+    soma.length = comptLength
+    soma.diameter = comptDia
 
+    # Create Dendrits
+    spineLength = 100.0e-6
+    spineDia = 10.0e-6
+    d1 = create_dendrit('d1', soma, cell, spineLength, spineDia)
+    d2 = create_dendrit('d2', d1, cell, spineLength, spineDia)
+    d3 = create_dendrit('d3', d2, cell, spineLength, spineDia/2)
+    if isExcitatory:
+        d4 = create_dendrit('d4', d2, cell, spineLength, spineDia/2)
+    
     #Excitatory
-    spineLength = 5.0e-6
-    spineDia = 4.0e-6
-    head = create_dendrit(compt, cell, 0, 0, spineLength, spineDia, 0.0)
-    gluR = moose.SynChan(head.path + '/gluR')
-    gluR.tau1 = 4e-3
-    gluR.tau2 = 4e-3
-    gluR.Gbar = 1e-6
-    gluR.Ek = 10.0e-3  # Inhibitory -0.1
-    moose.connect(head, 'channel', gluR, 'channel', 'Single')
-
-    synHandler = moose.SimpleSynHandler(head.path + '/gluR/handler')
+    gluR_Ex = moose.SynChan(d3.path + '/gluR')
+    gluR_Ex.tau1 = 4e-3
+    gluR_Ex.tau2 = 4e-3
+    gluR_Ex.Gbar = 1e-6
+    gluR_Ex.Ek = 10.0e-3  # Inhibitory -0.1
+    moose.connect(d3, 'channel', gluR_Ex, 'channel', 'Single')
+    synHandler = moose.SimpleSynHandler(d3.path + '/gluR/handler')
     synHandler.synapse.num = 1
-    moose.connect(synHandler, 'activationOut', gluR, 'activation', 'Single')
+    moose.connect(synHandler, 'activationOut', gluR_Ex, 'activation', 'Single')
     
     
-    return gluR
-#     syn = moose.element(r.path + '/handler/synapse')
-#     moose.connect(synInput, 'spikeOut', syn, 'addSpike', 'Single')
-#     syn.weight = .5
-#     syn.delay = 0
-        
-#     #Inhibitory
-#     r = create_spine_with_receptor(compt, cell, 1, 0.5)
-#     syn = moose.element(r.path + '/handler/synapse')
-#     moose.connect(synInput, 'spikeOut', syn, 'addSpike', 'Single')
-#     syn.weight = .5
-#     syn.delay = 0 * 1.0e-6 #??
-        
+    #Inhibitory
+    if isExcitatory:
+        gluR_In = moose.SynChan(d4.path + '/gluR')
+        gluR_In.tau1 = 4e-3
+        gluR_In.tau2 = 4e-3
+        gluR_In.Gbar = 1e-6
+        gluR_In.Ek = -10.0e-2  # Inhibitory -0.1
+        moose.connect(d4, 'channel', gluR_In, 'channel', 'Single')
+        synHandler = moose.SimpleSynHandler(d4.path + '/gluR/handler')
+        synHandler.synapse.num = 1
+        moose.connect(synHandler, 'activationOut', gluR_In, 'activation', 'Single')
+    
+    return [cell, soma]
         
 
-def createCells(net, input_layer):
+def create_cells(net, input_layer):
     network = moose.Neutral(net)
     
+    # Create Ex cells
     for i in range(number_of_ext_cells):
-        r = make_spiny_compt(network.path, i)
-#         rnd = nprand.rand(1)
-        
-        for j in range(number_of_input_cells):
-#         if( rnd >  IC):
-            syn = moose.element(r.path + '/handler/synapse')
-#             index = nprand.randint(number_of_input_cells)
+        [cell, soma]  = make_spiny_compt(network.path, i, True)
+        spike = moose.SpikeGen(cell.path + '/spike')
+        spike.refractT = 47e-3
+        spike.threshold = 0
+        spike.edgeTriggered = True
+        spike.Vm(0)
+        moose.connect(soma, 'VmOut', spike, 'Vm')
+            
+        #Add Excitatory Connections
+        rnd = nprand.rand(1, number_of_input_cells)
+        indices = where(rnd <= IC)
+        for j in indices[1]:
+            syn = moose.element('/cpu/cell' + str(i) + '/d3/gluR/handler/synapse')
             moose.connect(input_layer[j], 'spikeOut', syn, 'addSpike', 'Single')
-            syn.weight = .1
+            syn.weight = 1
+            syn.delay = 5e-3 #random
+    
+    # Create Inh cells
+    for i in range(number_of_inh_cells):
+        [cell, soma]  = make_spiny_compt(network.path, i, False)
+        spike = moose.SpikeGen(cell.path + '/spike')
+        spike.refractT = 47e-3
+        spike.threshold = 0
+        spike.edgeTriggered = True
+        spike.Vm(0)
+        moose.connect(soma, 'VmOut', spike, 'Vm')
+            
+        #P2: Ex -> Inh
+        syn = moose.element('/cpu/cell_in' + str(i) + '/d3/gluR/handler/synapse')
+        rnd = nprand.rand(1, number_of_ext_cells)
+        indices = where(rnd <= P2)
+        for j in indices[1]:
+            spike = moose.element('/cpu/cell' + str(j) + '/spike')
+            moose.connect(spike, 'spikeOut', syn, 'addSpike', 'Single')
+            syn.weight = 0.8
             syn.delay = 5e-3 #random
         
+    # P3: Inh -> Ex 
+    for i in range(number_of_ext_cells):
+        syn = moose.element('/cpu/cell' + str(i) + '/d4/gluR/handler/synapse')
+        rnd = nprand.rand(1, number_of_inh_cells)
+        indices = where(rnd <= P1)
+        for j in indices[1]:
+            spike = moose.element('/cpu/cell_in' + str(j) + '/spike')
+            moose.connect(spike, 'spikeOut', syn, 'addSpike', 'Single')
+            syn.weight = 0.8
+            syn.delay = 5e-3 #random
 
+    # P1: Ex -> Ex
+    for i in range(number_of_ext_cells):
+        syn = moose.element('/cpu/cell' + str(i) + '/d3/gluR/handler/synapse')
+        rnd = nprand.rand(1, number_of_ext_cells)
+        indices = where(rnd <= P1)
+        for j in indices[1]:
+            if i == j:
+                continue
+            spike = moose.element('/cpu/cell' + str(j) + '/spike')
+            moose.connect(spike, 'spikeOut', syn, 'addSpike', 'Single')
+            syn.weight = 0.5
+            syn.delay = 5e-3 #random
 
+        
 def make_input_layer(avgFiringRate=10, spike_refractT=74e-4):
     _input = moose.Neutral('/in')
 
@@ -229,12 +288,25 @@ def main():
 
     input_layer = make_input_layer()
 
-    createCells("/cpu", input_layer)
+    create_cells("/cpu", input_layer)
 
-    for i in range(number_of_ext_cells):
-        add_plot("/cpu/cell" + str(i) + '/head0', 'getVm', 'cpu/c'+ str(i)+'_head')
-        add_plot("/cpu/cell" + str(i) + '/compt', 'getVm', 'cpu/c'+ str(i)+'_cmpt')
+#     for i in range(number_of_ext_cells):
+#         hsolve = moose.HSolve('/cpu/cell' + str(i) + '/hsolve')
+#         moose.useClock(1, '/n/hsolve', 'process')
+#         hsolve.dt = dt
+#         hsolve.target = '/cpu/cell' + str(i)
     
+    
+    
+#     for i in range(number_of_ext_cells):
+#         add_plot("/cpu/cell" + str(i) + '/soma', 'getVm', 'cpu/c'+ str(i)+'_soma')
+#         add_plot("/cpu/cell" + str(i) + '/d4', 'getVm', 'cpu/c'+ str(i)+'_d4')
+#         add_plot("/cpu/cell" + str(i) + '/d3', 'getVm', 'cpu/c'+ str(i)+'_d3')
+#         add_plot("/cpu/cell" + str(i) + '/d2', 'getVm', 'cpu/c'+ str(i)+'_d2')
+#         add_plot("/cpu/cell" + str(i) + '/d1', 'getVm', 'cpu/c'+ str(i)+'_d1')
+   
+    for i in range(number_of_inh_cells):
+        add_plot("/cpu/cell_in" + str(i) + '/soma', 'getVm', 'cpu/c'+ str(i)+'_soma_inh')
 #     add_plot("/cpu/stim" , 'getOutputValue', 'cpu/stim')
     
 
@@ -254,13 +326,15 @@ def main():
 Use_MasterHSolve = False
 Simulation_Time = 1
 
-number_of_input_cells = 1
-number_of_ext_cells = 1
+number_of_input_cells = 10
+number_of_ext_cells = 10
 number_of_inh_cells = 2
 
 
-IC = .5 #Input connection probability
-
+IC = .3     #Input connection probability
+P1 = .5     #Exitatory to Excitatory connection probability
+P2 = .5     #Exitatory to Inhibitory connection probability
+P3 = .8     #Inhibitory to Excitatory connection probability
 
 INJECT_CURRENT = 1e-6
 dt = 1e-6
