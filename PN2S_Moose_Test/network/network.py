@@ -151,19 +151,19 @@ def make_spiny_compt(root_path, number, isExcitatory):
 
     # Create Dendrits
     spineLength = 100.0e-6
-    spineDia = 10.0e-6
+    spineDia = 20.0e-6
     d1 = create_dendrit('d1', soma, cell, spineLength, spineDia)
     d2 = create_dendrit('d2', d1, cell, spineLength, spineDia)
     d3 = create_dendrit('d3', d2, cell, spineLength, spineDia / 2)
     if isExcitatory:
-        d4 = create_dendrit('d4', d2, cell, spineLength, spineDia / 2)
+        d4 = create_dendrit('d4', d2, cell, spineLength, spineDia/2)
 
     # Excitatory
     gluR_Ex = moose.SynChan(d3.path + '/gluR')
     gluR_Ex.tau1 = 4e-3
     gluR_Ex.tau2 = 4e-3
     gluR_Ex.Gbar = 1e-6
-    gluR_Ex.Ek = 10.0e-3  # Inhibitory -0.1
+    gluR_Ex.Ek = 25.0e-3  
     moose.connect(d3, 'channel', gluR_Ex, 'channel', 'Single')
     synHandler = moose.SimpleSynHandler(d3.path + '/gluR/handler')
     synHandler.synapse.num = 1
@@ -175,7 +175,7 @@ def make_spiny_compt(root_path, number, isExcitatory):
         gluR_In.tau1 = 4e-3
         gluR_In.tau2 = 4e-3
         gluR_In.Gbar = 1e-6
-        gluR_In.Ek = -10.0e-2  # Inhibitory -0.1
+        gluR_In.Ek = -20.0e-2  # Inhibitory -0.1
         moose.connect(d4, 'channel', gluR_In, 'channel', 'Single')
         synHandler = moose.SimpleSynHandler(d4.path + '/gluR/handler')
         synHandler.synapse.num = number_of_input_cells + number_of_ext_cells + number_of_inh_cells
@@ -205,8 +205,8 @@ def create_cells(net, input_layer):
             syn = moose.element(
                 '/cpu/cell' + str(i) + '/d3/gluR/handler/synapse')
             moose.connect(input_layer[j], 'spikeOut', syn, 'addSpike')
-            syn.weight = 1
-            syn.delay = 5e-3  # random
+            syn.weight = 1.0 / number_of_input_cells
+            syn.delay = 2e-3 + (8e-3 - 2e-3) * nprand.random_sample()  # random
 
     # Create Inh cells
     for i in range(number_of_inh_cells):
@@ -226,18 +226,18 @@ def create_cells(net, input_layer):
         for j in indices[1]:
             spike = moose.element('/cpu/cell' + str(j) + '/spike')
             moose.connect(spike, 'spikeOut', syn, 'addSpike', 'Single')
-            syn.weight = 0.8
+            syn.weight = 1.0 / number_of_ext_cells
             syn.delay = 2e-3 + (8e-3 - 2e-3) * nprand.random_sample()  # random
 
     # P3: Inh -> Ex
     for i in range(number_of_ext_cells):
         syn = moose.element('/cpu/cell' + str(i) + '/d4/gluR/handler/synapse')
         rnd = nprand.rand(1, number_of_inh_cells)
-        indices = where(rnd <= P1)
+        indices = where(rnd <= P3)
         for j in indices[1]:
             spike = moose.element('/cpu/cell_in' + str(j) + '/spike')
             moose.connect(spike, 'spikeOut', syn, 'addSpike')
-            syn.weight = 0.8
+            syn.weight = 1.0 / number_of_inh_cells
             syn.delay = 2e-3 + (8e-3 - 2e-3) * nprand.random_sample()  # random
 
     # P1: Ex -> Ex
@@ -250,9 +250,9 @@ def create_cells(net, input_layer):
                 continue
             spike = moose.element('/cpu/cell' + str(j) + '/spike')
             moose.connect(spike, 'spikeOut', syn, 'addSpike')
-            syn.weight = 0.5
+            syn.weight = 1.0 / number_of_ext_cells
             syn.delay = 2e-3 + (8e-3 - 2e-3) * nprand.random_sample()  # random
-
+ 
     # Assign HSolve objects
     for i in range(number_of_ext_cells):
         hsolve = moose.HSolve('/cpu/cell' + str(i) + '/hsolve')
@@ -300,6 +300,8 @@ def main():
 
     create_cells("/cpu", input_layer)
 
+#     add_plot("/cpu/cell0/soma",'getVm', 'cpu/c0_soma')
+#     add_plot("/cpu/cell0/d4",'getVm', 'cpu/c0_d4')
     for i in range(number_of_ext_cells):
         add_plot("/cpu/cell" + str(i) + '/soma','getVm', 'cpu/c' + str(i) + '_soma')
 #         add_plot("/cpu/cell" + str(i) + '/d4', 'getVm', 'cpu/c'+ str(i)+'_d4')
@@ -327,15 +329,15 @@ def main():
 Use_MasterHSolve = False
 Simulation_Time = 1e-1
 
-number_of_input_cells = 4
-number_of_ext_cells = 2
-number_of_inh_cells = 0
+number_of_input_cells = 5
+number_of_ext_cells = 10
+number_of_inh_cells = 2
 
 
-IC = 1  # Input connection probability
-P1 = 1  # Exitatory to Excitatory connection probability
-P2 = 1  # Exitatory to Inhibitory connection probability
-P3 = 1  # Inhibitory to Excitatory connection probability
+IC = 0.6  # Input connection probability
+P1 = 0.3  # Exitatory to Excitatory connection probability
+P2 = 0.3  # Exitatory to Inhibitory connection probability
+P3 = 0.5  # Inhibitory to Excitatory connection probability
 
 INJECT_CURRENT = 0
 dt = 2e-6
