@@ -15,9 +15,9 @@ int main()
 {
 	Py_Initialize();
 
-	FILE *file = fopen("network/single.py", "r+");
+	FILE *file = fopen("network/testHsolve.py", "r+");
 	if(file != NULL) {
-	     PyRun_SimpleFile(file, "network/single.py");
+	     PyRun_SimpleFile(file, "network/testHsolve.py");
 	}
 
 	fclose(file);

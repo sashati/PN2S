@@ -1,6 +1,4 @@
 import sys
-from single import dt
-sys.path.append('../../../python')
 import os
 os.environ['NUMPTHREADS'] = '8'
 import pylab
@@ -92,7 +90,6 @@ def create_squid(parent):
     return soma
 
 
-
 def add_plot(objpath, field, plot):
     assert moose.exists(objpath)
     tab = moose.Table('/graphs/' + plot)
@@ -117,7 +114,7 @@ def create_dendrit(name, parentCompt, parentObj, length, dia):
     RA = 1.0
     RM = 1.0
     CM = 0.01
-    
+
     d = moose.SymCompartment(parentObj.path + '/' + name)
     moose.connect(parentCompt, 'distal', d, 'proximal', 'Single')
     d.diameter = dia
@@ -130,15 +127,10 @@ def create_dendrit(name, parentCompt, parentObj, length, dia):
 
     return d
 
-def make_spiny_compt(root_path, number, isExcitatory):
+
+def make_spiny_compt(cell, number, isExcitatory):
     comptLength = 200e-6
     comptDia = 4e-6
-    
-    if isExcitatory:
-        name = root_path + "/cell" + str(number)
-    else:
-        name = root_path + "/cell_in" + str(number)
-    cell = moose.Neutral(name)
 
     soma = create_squid(cell)
     soma.inject = 0
@@ -156,11 +148,11 @@ def make_spiny_compt(root_path, number, isExcitatory):
     spineDia = 10.0e-6
     d1 = create_dendrit('d1', soma, cell, spineLength, spineDia)
     d2 = create_dendrit('d2', d1, cell, spineLength, spineDia)
-    d3 = create_dendrit('d3', d2, cell, spineLength, spineDia/2)
+    d3 = create_dendrit('d3', d2, cell, spineLength, spineDia / 2)
     if isExcitatory:
-        d4 = create_dendrit('d4', d2, cell, spineLength, spineDia/2)
-    
-    #Excitatory
+        d4 = create_dendrit('d4', d2, cell, spineLength, spineDia / 2)
+
+    # Excitatory
     gluR_Ex = moose.SynChan(d3.path + '/gluR')
     gluR_Ex.tau1 = 4e-3
     gluR_Ex.tau2 = 4e-3
@@ -168,11 +160,10 @@ def make_spiny_compt(root_path, number, isExcitatory):
     gluR_Ex.Ek = 10.0e-3  # Inhibitory -0.1
     moose.connect(d3, 'channel', gluR_Ex, 'channel', 'Single')
     synHandler = moose.SimpleSynHandler(d3.path + '/gluR/handler')
-    synHandler.synapse.num = 1
+    synHandler.synapse.num = number_of_input_cells
     moose.connect(synHandler, 'activationOut', gluR_Ex, 'activation', 'Single')
-    
-    
-    #Inhibitory
+
+    # Inhibitory
     if isExcitatory:
         gluR_In = moose.SynChan(d4.path + '/gluR')
         gluR_In.tau1 = 4e-3
@@ -182,78 +173,99 @@ def make_spiny_compt(root_path, number, isExcitatory):
         moose.connect(d4, 'channel', gluR_In, 'channel', 'Single')
         synHandler = moose.SimpleSynHandler(d4.path + '/gluR/handler')
         synHandler.synapse.num = 1
-        moose.connect(synHandler, 'activationOut', gluR_In, 'activation', 'Single')
-    
-    return [cell, soma]
-        
+        moose.connect(
+            synHandler, 'activationOut', gluR_In, 'activation', 'Single')
+
+    return soma
+
 
 def create_cells(net, input_layer):
-    network = moose.Neutral(net)
-    
+    moose.Neutral(net)
     # Create Ex cells
+    cells = moose.Neutral(net+'/cells',number_of_ext_cells)
     for i in range(number_of_ext_cells):
-        [cell, soma]  = make_spiny_compt(network.path, i, True)
-        spike = moose.SpikeGen(cell.path + '/spike')
-        spike.refractT = 47e-3
-        spike.threshold = 0
-        spike.edgeTriggered = True
-        spike.Vm(0)
-        moose.connect(soma, 'VmOut', spike, 'Vm')
-            
-        #Add Excitatory Connections
-        rnd = nprand.rand(1, number_of_input_cells)
-        indices = where(rnd <= IC)
-        for j in indices[1]:
-            syn = moose.element('/cpu/cell' + str(i) + '/d3/gluR/handler/synapse')
-            moose.connect(input_layer[j], 'spikeOut', syn, 'addSpike', 'Single')
-            syn.weight = 1
-            syn.delay = 5e-3 #random
+        make_spiny_compt(cells.vec[i], i, True)
     
-    # Create Inh cells
-    for i in range(number_of_inh_cells):
-        [cell, soma]  = make_spiny_compt(network.path, i, False)
-        spike = moose.SpikeGen(cell.path + '/spike')
-        spike.refractT = 47e-3
-        spike.threshold = 0
-        spike.edgeTriggered = True
-        spike.Vm(0)
-        moose.connect(soma, 'VmOut', spike, 'Vm')
-            
-        #P2: Ex -> Inh
-        syn = moose.element('/cpu/cell_in' + str(i) + '/d3/gluR/handler/synapse')
-        rnd = nprand.rand(1, number_of_ext_cells)
-        indices = where(rnd <= P2)
-        for j in indices[1]:
-            spike = moose.element('/cpu/cell' + str(j) + '/spike')
-            moose.connect(spike, 'spikeOut', syn, 'addSpike', 'Single')
-            syn.weight = 0.8
-            syn.delay = 5e-3 #random
+    spike = moose.SpikeGen(cells.path + '/spike', number_of_ext_cells )
+    spike.refractT = 47e-3
+    spike.threshold = 0
+    spike.edgeTriggered = True
+    spike.Vm(0)
+    somas = moose.element(cells.path + '#/soma')
+#         
+    moose.connect(somas, 'VmOut', spike, 'Vm', 'OneToOne')
+
+        # Add Excitatory Connections
+    syn = moose.element('/cpu/cells[0]/d3/gluR/handler/synapse')
+    m = moose.connect(input_layer, 'spikeOut', syn, 'addSpike', 'Single')
+#     m2 = moose.element(m)
+#     m2.setRandomConnectivity(IC, 5489)
         
-    # P3: Inh -> Ex 
-    for i in range(number_of_ext_cells):
-        syn = moose.element('/cpu/cell' + str(i) + '/d4/gluR/handler/synapse')
-        rnd = nprand.rand(1, number_of_inh_cells)
-        indices = where(rnd <= P1)
-        for j in indices[1]:
-            spike = moose.element('/cpu/cell_in' + str(j) + '/spike')
-            moose.connect(spike, 'spikeOut', syn, 'addSpike', 'Single')
-            syn.weight = 0.8
-            syn.delay = 5e-3 #random
+#         rnd = nprand.rand(1, number_of_input_cells)
+#         indices = where(rnd <= IC)
+#         for j in indices[1]:
+#             syn = moose.element(
+#                 '/cpu/cell' + str(i) + '/d3/gluR/handler/synapse')
+#             moose.connect(input_layer, 'spikeOut', syn, 'addSpike', 'Single')
+#             syn.weight = 1
+#             syn.delay = 5e-3  # random
+
+    # Create Inh cells
+#     for i in range(number_of_inh_cells):
+#         [cell, soma] = make_spiny_compt(network.path, i, False)
+#         spike = moose.SpikeGen(cell.path + '/spike')
+#         spike.refractT = 47e-3
+#         spike.threshold = 0
+#         spike.edgeTriggered = True
+#         spike.Vm(0)
+#         moose.connect(soma, 'VmOut', spike, 'Vm')
+
+        # P2: Ex -> Inh
+#         syn = moose.element(
+#             '/cpu/cell_in' + str(i) + '/d3/gluR/handler/synapse')
+#         rnd = nprand.rand(1, number_of_ext_cells)
+#         indices = where(rnd <= P2)
+#         for j in indices[1]:
+#             spike = moose.element('/cpu/cell' + str(j) + '/spike')
+#             moose.connect(spike, 'spikeOut', syn, 'addSpike', 'Single')
+#             syn.weight = 0.8
+#             syn.delay = 2e-3 + (8e-3 - 2e-3) * nprand.random_sample()  # random
+
+    # P3: Inh -> Ex
+#     for i in range(number_of_ext_cells):
+#         syn = moose.element('/cpu/cell' + str(i) + '/d4/gluR/handler/synapse')
+#         rnd = nprand.rand(1, number_of_inh_cells)
+#         indices = where(rnd <= P1)
+#         for j in indices[1]:
+#             spike = moose.element('/cpu/cell_in' + str(j) + '/spike')
+#             moose.connect(spike, 'spikeOut', syn, 'addSpike', 'Single')
+#             syn.weight = 0.8
+#             syn.delay = 2e-3 + (8e-3 - 2e-3) * nprand.random_sample()  # random
 
     # P1: Ex -> Ex
-    for i in range(number_of_ext_cells):
-        syn = moose.element('/cpu/cell' + str(i) + '/d3/gluR/handler/synapse')
-        rnd = nprand.rand(1, number_of_ext_cells)
-        indices = where(rnd <= P1)
-        for j in indices[1]:
-            if i == j:
-                continue
-            spike = moose.element('/cpu/cell' + str(j) + '/spike')
-            moose.connect(spike, 'spikeOut', syn, 'addSpike', 'Single')
-            syn.weight = 0.5
-            syn.delay = 5e-3 #random
+#     for i in range(number_of_ext_cells):
+#         syn = moose.element('/cpu/cell' + str(i) + '/d3/gluR/handler/synapse')
+#         rnd = nprand.rand(1, number_of_ext_cells)
+#         indices = where(rnd <= P1)
+#         for j in indices[1]:
+#             if i == j:
+#                 continue
+#             spike = moose.element('/cpu/cell' + str(j) + '/spike')
+#             moose.connect(spike, 'spikeOut', syn, 'addSpike', 'Single')
+#             syn.weight = 0.5
+#             syn.delay = 2e-3 + (8e-3 - 2e-3) * nprand.random_sample()  # random
 
-        
+    # Assign HSolve objects
+#     for i in range(number_of_ext_cells):
+#         hsolve = moose.HSolve('/cpu/cell' + str(i) + '/hsolve')
+#         hsolve.dt = dt
+#         hsolve.target = '/cpu/cell' + str(i) + '/soma'
+#     for i in range(number_of_inh_cells):
+#         hsolve = moose.HSolve('/cpu/cell_in' + str(i) + '/hsolve')
+#         hsolve.dt = dt
+#         hsolve.target = '/cpu/cell_in' + str(i) + '/soma'
+
+
 def make_input_layer(avgFiringRate=10, spike_refractT=74e-4):
     _input = moose.Neutral('/in')
 
@@ -266,12 +278,9 @@ def make_input_layer(avgFiringRate=10, spike_refractT=74e-4):
     stim.stepPosition = 0
     stim.doLoop = 1
 
-    input_layer = []
-    for i in range(number_of_input_cells):
-        spike = moose.RandSpike(_input.path + '/sp'+ str(i))
-        spike.refractT = spike_refractT
-        moose.connect(stim, 'output', spike, 'setRate')
-        input_layer.append(spike)
+    input_layer = moose.RandSpike(_input.path + '/spike',number_of_input_cells)
+    input_layer.vec.refractT = spike_refractT
+    moose.connect(stim, 'output', input_layer, 'setRate', 'OneToOne')
 
     return input_layer
 
@@ -290,30 +299,21 @@ def main():
 
     create_cells("/cpu", input_layer)
 
-#     for i in range(number_of_ext_cells):
-#         hsolve = moose.HSolve('/cpu/cell' + str(i) + '/hsolve')
-#         moose.useClock(1, '/n/hsolve', 'process')
-#         hsolve.dt = dt
-#         hsolve.target = '/cpu/cell' + str(i)
-    
-    
-    
-#     for i in range(number_of_ext_cells):
-#         add_plot("/cpu/cell" + str(i) + '/soma', 'getVm', 'cpu/c'+ str(i)+'_soma')
+    for i in range(number_of_ext_cells):
+        add_plot("/cpu/cells[" + str(i) + ']/soma','getVm', 'cpu/c' + str(i) + '_soma')
 #         add_plot("/cpu/cell" + str(i) + '/d4', 'getVm', 'cpu/c'+ str(i)+'_d4')
 #         add_plot("/cpu/cell" + str(i) + '/d3', 'getVm', 'cpu/c'+ str(i)+'_d3')
 #         add_plot("/cpu/cell" + str(i) + '/d2', 'getVm', 'cpu/c'+ str(i)+'_d2')
 #         add_plot("/cpu/cell" + str(i) + '/d1', 'getVm', 'cpu/c'+ str(i)+'_d1')
-   
+
     for i in range(number_of_inh_cells):
-        add_plot("/cpu/cell_in" + str(i) + '/soma', 'getVm', 'cpu/c'+ str(i)+'_soma_inh')
+        add_plot("/cpu/cell_in" + str(i) + '/soma','getVm', 'cpu/c' + str(i) + '_soma_inh')
 #     add_plot("/cpu/stim" , 'getOutputValue', 'cpu/stim')
-    
 
     moose.useClock(0, '/cpu/##', 'init')
     moose.useClock(1, '/cpu/##', 'process')
     moose.useClock(1, '/in/stim', 'process')
-    moose.useClock(1, '/in/sp#', 'process')    
+    moose.useClock(1, '/in/sp#', 'process')
     moose.useClock(8, '/graphs/##', 'process')
     moose.reinit()
     moose.start(Simulation_Time)
@@ -324,20 +324,20 @@ def main():
 
 # Use_MasterHSolve = True
 Use_MasterHSolve = False
-Simulation_Time = 1
+Simulation_Time = 1e-1
 
 number_of_input_cells = 10
-number_of_ext_cells = 10
-number_of_inh_cells = 2
+number_of_ext_cells = 1
+number_of_inh_cells = 0
 
 
-IC = .3     #Input connection probability
-P1 = .5     #Exitatory to Excitatory connection probability
-P2 = .5     #Exitatory to Inhibitory connection probability
-P3 = .8     #Inhibitory to Excitatory connection probability
+IC = 1  # Input connection probability
+P1 = 1  # Exitatory to Excitatory connection probability
+P2 = 1  # Exitatory to Inhibitory connection probability
+P3 = 1  # Inhibitory to Excitatory connection probability
 
-INJECT_CURRENT = 1e-6
-dt = 1e-6
+INJECT_CURRENT = 0
+dt = 2e-6
 
 if __name__ == '__main__':
     main()
