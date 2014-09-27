@@ -181,6 +181,7 @@ private:
 	string path_;
 	vector<Id> seeds_;
 	bool isMasterHSolve_;
+	bool isSubSolver_;
 };
 
 #endif // _HSOLVE_H

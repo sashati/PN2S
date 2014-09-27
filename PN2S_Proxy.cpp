@@ -30,8 +30,26 @@ using namespace pn2s;
 
 extern std::map< unsigned int, pn2s::Location > locationMap; //Locates in DeviceManager
 
+std::map< pn2s::Location, Eref > spikegen_;
+vector< SynChanStruct >   synchan_;
 
-void PN2S_Proxy::FillData(map<unsigned int, Id> modelId_map){
+void PN2S_Proxy::Process(ProcPtr info){
+	DeviceManager::Process();
+
+	//Send Spikes
+	typedef std::map<pn2s::Location, Eref>::iterator it_type;
+	for(it_type it = spikegen_.begin(); it != spikegen_.end(); it++) {
+		pn2s::Location l = it->first;
+		SpikeGen* spike = reinterpret_cast< SpikeGen* >( it->second.data() );
+		double vm = DeviceManager::Devices()[l.device].ModelPacks()[l.pack]._compsSolver.GetValue(l.index,pn2s::FIELD::VM);
+		spike->handleVm( vm );
+		spike->process( it->second, info );
+	}
+
+	//Send VM message outs
+}
+
+void PN2S_Proxy::fillData(map<unsigned int, Id> modelId_map){
 	for (uint dev_i = 0; dev_i < DeviceManager::Devices().size(); ++dev_i) {
 		pn2s::Device& dev = DeviceManager::Devices()[dev_i];
 		for (uint mp_i = 0; mp_i < dev.ModelPacks().size(); ++mp_i) {
@@ -110,61 +128,63 @@ void PN2S_Proxy::FillData(map<unsigned int, Id> modelId_map){
 
 					}
 				}
+
+				readSynapses(h->HSolvePassive::compartmentId_);
 			}
 		}
 	}
 }
 
-void PN2S_Proxy::Reinit(Eref hsolve){
-	//Create model structures and Allocate memory
-	Manager::Allocate();
-
-	//create a map from Id to Location
-//	typename vector<Device>::iterator dev;
-//	typename vector<ModelPack>::iterator mp;
-//	for( dev = DeviceManager::_device.begin(); dev != DeviceManager::_device.end(); ++dev) {
-//		for( mp = dev->_modelPacks.begin(); mp != dev->_modelPacks.end(); ++mp) {
-//			for (size_t m = 0; m < mp->stat.nModels; ++m) {
-//				models::Model& model = mp->models[m];
-//				for (size_t c = 0; c < mp->stat.nCompts; ++c) {
-//					models::Compartment* cmp = &(model.compts[c]);
-//					_compartmentMap[cmp->gid] = cmp->location;
-//				}
-//			}
-//		}
-//	}
-
-	/**
-	 * Zumbify and Copy data values
-	 */
-    vector< Id >::const_iterator i;
-	vector< ObjId > temp;
-
-//    for ( i = _all_compartmentIds.begin(); i != _all_compartmentIds.end(); ++i )
-//		temp.push_back( ObjId( *i, 0 ) );
-	Shell::dropClockMsgs( temp, "init" );
-	Shell::dropClockMsgs( temp, "process" );
-//    for ( i = _all_compartmentIds.begin(); i != _all_compartmentIds.end(); ++i )
-//        CompartmentBase::zombify( i->eref().element(),
-//					   ZombieCompartment::initCinfo(), hsolve.id() );
-    //	temp.clear();
-    //    for ( i = caConcId_.begin(); i != caConcId_.end(); ++i )
-    //		temp.push_back( ObjId( *i, 0 ) );
-    //	Shell::dropClockMsgs( temp, "process" );
-    //    for ( i = caConcId_.begin(); i != caConcId_.end(); ++i )
-    //        ZombieCaConc::zombify( hsolve.element(), i->eref().element() );
-    //
-    //	temp.clear();
-    //    for ( i = channelId_.begin(); i != channelId_.end(); ++i )
-    //		temp.push_back( ObjId( *i, 0 ) );
-    //	Shell::dropClockMsgs( temp, "process" );
-    //    for ( i = channelId_.begin(); i != channelId_.end(); ++i )
-    //        ZombieHHChannel::zombify( hsolve.element(), i->eref().element() );
-
-    //Prepare solvers
-	Manager::PrepareSolvers();
+void PN2S_Proxy::Reinit(map<unsigned int, Id> modelId_map){
+	spikegen_.clear();
+	fillData(modelId_map);
+	DeviceManager::PrepareSolvers();
 }
 
+void PN2S_Proxy::AllocateMemory(vector<unsigned int > &ids, vector<int2 > &m, double dt)
+{
+	pn2s::DeviceManager::AllocateMemory(ids,m,dt);
+}
+
+void PN2S_Proxy::readSynapses(vector< Id >	compartmentId_)
+{
+    vector< Id > spikeId;
+    vector< Id > synId;
+    vector< Id >::iterator syn;
+    vector< Id >::iterator spike;
+    SynChanStruct synchan;
+
+    for ( unsigned int ic = 0; ic < compartmentId_.size(); ++ic )
+    {
+        synId.clear();
+        HSolveUtils::synchans( compartmentId_[ ic ], synId );
+        for ( syn = synId.begin(); syn != synId.end(); ++syn )
+        {
+            synchan.compt_ = ic;
+            synchan.elm_ = *syn;
+            synchan_.push_back( synchan );
+        }
+
+        static const Finfo* procDest = SpikeGen::initCinfo()->findFinfo( "process");
+        assert( procDest );
+        const DestFinfo* df = dynamic_cast< const DestFinfo* >( procDest );
+        assert( df );
+
+        spikeId.clear();
+        HSolveUtils::spikegens( compartmentId_[ ic ], spikeId );
+        // Very unlikely that there will be >1 spikegens in a compartment,
+        // but lets take care of it anyway.
+        for ( spike = spikeId.begin(); spike != spikeId.end(); ++spike )
+        {
+        	Location l = locationMap[compartmentId_[ ic ].value() ];
+            spikegen_[l] = spike->eref();
+
+            ObjId mid = spike->element()->findCaller( df->getFid() );
+            if ( ! mid.bad()  )
+                Msg::deleteMsg( mid );
+        }
+    }
+}
 /**
  * Interface Set/Get functions
  */

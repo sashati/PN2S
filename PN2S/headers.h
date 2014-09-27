@@ -49,14 +49,23 @@ struct FIELD{
 };
 
 struct Location{
-	int16_t pack;
 	int16_t device;
+	int16_t pack;
 	int32_t index;
 
-	Location():pack(0), device(0), index(0){}
-	Location(int16_t _d): pack(0), device(_d), index(0){}
-	Location(int16_t _d, int16_t _p): pack(_p), device(_d), index(0){}
-	Location(int16_t _d,int16_t _p,int32_t _i): pack(_p), device(_d), index(_i){}
+	Location():device(0), pack(0), index(0){}
+	Location(int16_t _d): device(_d), pack(0), index(0){}
+	Location(int16_t _d, int16_t _p): device(_d), pack(_p), index(0){}
+	Location(int16_t _d,int16_t _p,int32_t _i): device(_d), pack(_p), index(_i){}
+	bool operator<(const Location &r)  const {
+//	    int64_t lv = ((int64_t)device << 48) + (pack << 32) + index;
+//	    int64_t rv = ((int64_t)r.device << 48) + (r.pack << 32) + r.index;
+
+	    int64_t lv = index;
+  	    int64_t rv = r.index;
+
+	    return lv < rv;
+	}
 };
 
 }

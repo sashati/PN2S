@@ -25,15 +25,15 @@ def make_network():
 	t0 = time.time()
 
 	clock = moose.element( '/clock' )
-	network = moose.IntFire( 'network', size, 1 );
+	network = moose.IntFire( 'network2', size, 1 );
 	network.vec.bufferTime = [delayMax * 2] * size
-	moose.le( '/network' )
+	moose.le( '/network2' )
 	network.vec.numSynapses = [1] * size
 	# Interesting. This fails because we haven't yet allocated
 	# the synapses. I guess it is fair to avoid instances of objects that
 	# don't have allocations.
-	#synapse = moose.element( '/network/synapse' )
-	sv = moose.vec( '/network/synapse' )
+	#synapse = moose.element( '/network2/synapse' )
+	sv = moose.vec( '/network2/synapse' )
 	print 'before connect t = ', time.time() - t0
 	mid = moose.connect( network, 'spikeOut', sv, 'addSpike', 'Sparse')
 	print 'after connect t = ', time.time() - t0
@@ -56,7 +56,7 @@ def make_network():
 
 	"""
 
-	netvec = network.vec
+	netvec = network2.vec
 	for i in range( size ):
 		synvec = netvec[i].synapse.vec
 		synvec.weight = [ (random.random() * weightMax) for r in range( synvec.len )] 
@@ -64,7 +64,7 @@ def make_network():
 	"""
 
 	#moose.useClock( 9, '/postmaster', 'process' )
-	moose.useClock( 0, '/network', 'process' )
+	moose.useClock( 0, '/network2', 'process' )
 	moose.setClock( 0, timestep )
 	moose.setClock( 9, timestep )
 	t1 = time.time()

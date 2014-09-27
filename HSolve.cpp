@@ -189,7 +189,7 @@ static const Cinfo* hsolveCinfo = HSolve::initCinfo();
 
 
 HSolve::HSolve()
-    : dt_( 0.0 ), isMasterHSolve_ (false)
+    : dt_( 0.0 ), isMasterHSolve_ (false), isSubSolver_(false)
 {
     ;
 }
@@ -205,16 +205,18 @@ HSolve::~HSolve(){
 
 void HSolve::process( const Eref& hsolve, ProcPtr p )
 {
-    if( isMasterHSolve_ )
-    	pn2s::DeviceManager::Process();
-    else
+    if( isMasterHSolve_)
+    	PN2S_Proxy::Process(p);
+    else if (!isSubSolver_)
     	this->HSolveActive::step( p );
 }
 
 void HSolve::reinit( const Eref& hsolve, ProcPtr p )
 {
+//    cout << hsolve.id() << endl << flush;
+	if(isSubSolver_)
+		return;
     dt_ = p->dt;
-
     if( !isMasterHSolve_ )
     {
     	this->HSolveActive::reinit(p);
@@ -249,19 +251,15 @@ void HSolve::reinit( const Eref& hsolve, ProcPtr p )
 			modelIds.push_back(i->value());
 		}
 
-		//Distribute model and Allocate memory
-		pn2s::DeviceManager::AllocateMemory(modelIds,modelST,dt_);
+		PN2S_Proxy::AllocateMemory(modelIds,modelST,dt_);
 
-		//Fill data
-		PN2S_Proxy::FillData(modelId_map);
-
-		pn2s::DeviceManager::PrepareSolvers();
+		PN2S_Proxy::Reinit(modelId_map);
 
 		//Change in/out direction
 		for (vector< Id >::const_iterator i = seeds_.begin(); i != seeds_.end(); ++i )
 		{
 			HSolve* h =	reinterpret_cast< HSolve* >( i->eref().data());
-			h->isMasterHSolve_ = true;
+			h->isSubSolver_ = true;
 		}
     }
 }
@@ -292,30 +290,6 @@ void HSolve::zombify( Eref hsolve ) const
 	Shell::dropClockMsgs( temp, "process" );
     for ( i = channelId_.begin(); i != channelId_.end(); ++i )
         ZombieHHChannel::zombify( hsolve.element(), i->eref().element() );
-/*
-   vector< Id >::const_iterator i;
-	vector< ObjId > temp;
-
-    for ( i = compartmentId_.begin(); i != compartmentId_.end(); ++i )
-		temp.push_back( ObjId( *i, 0 ) );
-    for ( i = compartmentId_.begin(); i != compartmentId_.end(); ++i )
-        CompartmentBase::zombify( i->eref().element(),
-					   ZombieCompartment::initCinfo(), hsolve.id() );
-
-	temp.clear();
-    for ( i = caConcId_.begin(); i != caConcId_.end(); ++i )
-		temp.push_back( ObjId( *i, 0 ) );
-	// Shell::dropClockMsgs( temp, "process" );
-    for ( i = caConcId_.begin(); i != caConcId_.end(); ++i )
-        CaConcBase::zombify( i->eref().element(), ZombieCaConc::initCinfo(), hsolve.id() );
-
-	temp.clear();
-    for ( i = channelId_.begin(); i != channelId_.end(); ++i )
-		temp.push_back( ObjId( *i, 0 ) );
-    for ( i = channelId_.begin(); i != channelId_.end(); ++i )
-        HHChannelBase::zombify( i->eref().element(), 
-						ZombieHHChannel::initCinfo(), hsolve.id() );
-*/
 }
 
 void HSolve::setup( Eref hsolve )
