@@ -316,14 +316,14 @@ def main():
     moose.useClock(8, '/graphs/##', 'process')
     moose.reinit()
     moose.start(Simulation_Time)
-    dump_plots()
-    pylab.legend()
-    pylab.show()
+#     dump_plots()
+#     pylab.legend()
+#     pylab.show()
 
 
 Use_MasterHSolve = True
 # Use_MasterHSolve = False
-Simulation_Time = 2e-1
+Simulation_Time = 1e-1
 
 number_of_input_cells = 0
 number_of_ext_cells = 2

@@ -18,8 +18,9 @@
 class PN2S_Proxy
 {
 private:
-	static void fillData(map<unsigned int, Id> modelId_map);
-	static void readSynapses(vector< Id >	compartmentId_);
+	static void fillData(map<unsigned int, Id> &modelId_map);
+	static void readSynapses(vector< Id >	&compartmentId_);
+//	static void manageOutgoingMessages(vector< Id >	&compartmentId_);
 public:
 	static void Process(ProcPtr info);
 	static void Reinit(map<unsigned int, Id> modelId_map);
