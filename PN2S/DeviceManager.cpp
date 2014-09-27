@@ -8,7 +8,6 @@
 #include "DeviceManager.h"
 #include <cuda.h>
 #include <cuda_runtime_api.h>
-#include <cuda_profiler_api.h>
 #include <assert.h>
 
 using namespace pn2s;
@@ -85,7 +84,6 @@ void DeviceManager::PrepareSolvers()
 	{
 		device->PrepareSolvers();
 	}
-//	cudaProfilerStart();
 }
 
 void DeviceManager::Process()
@@ -98,7 +96,6 @@ void DeviceManager::Process()
 
 void DeviceManager::Close()
 {
-//	cudaProfilerStop();
 	for(vector<Device>::iterator device = _device.begin(); device != _device.end(); ++device)
 		device->Destroy();
 }

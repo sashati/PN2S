@@ -22,10 +22,9 @@ endif
 TARGET = _pn2s.o
 
 COBJS += Device.o \
-	DeviceManager.o \
-	ResourceManager.o \
+	DeviceManager.o 
 		 
-OBJS += Manager.o 
+OBJS += ResourceManager.o  
 
 SUBDIR = core
 	
