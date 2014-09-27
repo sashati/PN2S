@@ -27,7 +27,6 @@
 #include "../shell/Wildcard.h"
 #include "../shell/Shell.h"
 
-#include "PN2S/DeviceManager.h"
 #include "PN2S_Proxy.h"
 
 const Cinfo* HSolve::initCinfo()
@@ -195,7 +194,7 @@ HSolve::HSolve()
 }
 
 HSolve::~HSolve(){
-	pn2s::DeviceManager::Close();
+	PN2S_Proxy::Close();
 }
 
 
@@ -305,9 +304,6 @@ void HSolve::setup( Eref hsolve )
 			temp.push_back( ObjId( *i, 0 ) );
 		Shell::dropClockMsgs( temp, "init" );
 		Shell::dropClockMsgs( temp, "process" );
-
-		if(! pn2s::DeviceManager::IsInitialized())
-			pn2s::DeviceManager::Initialize();
 	}
 	else
 	{
@@ -386,9 +382,7 @@ void HSolve::setPath( const Eref& hsolve, string path )
 						seeds_.push_back(s);
 				}
 			}
-
-    		if(pn2s::DeviceManager::IsInitialized())
-				pn2s::DeviceManager::Initialize();
+    		PN2S_Proxy::Initialize();
     	}
     }
 

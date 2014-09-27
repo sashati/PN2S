@@ -50,8 +50,8 @@ public:
 	void 	SetGateYParams(int index, vector<double>& params);
 	void 	SetGateZParams(int index, vector<double>& params);
 
-	void 	SetValue(int index, FIELD::TYPE field, TYPE_ value);
-	TYPE_ 	GetValue(int index, FIELD::TYPE field);
+	void 	SetValue(int index, FIELD::CH field, TYPE_ value);
+	TYPE_ 	GetValue(int index, FIELD::CH field);
 };
 
 }

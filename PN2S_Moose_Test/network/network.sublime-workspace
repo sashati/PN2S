@@ -75,7 +75,7 @@
 			"file": "network.py",
 			"settings":
 			{
-				"buffer_size": 11905,
+				"buffer_size": 11342,
 				"line_ending": "Unix"
 			}
 		},
@@ -553,7 +553,7 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -562,7 +562,7 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 11905,
+						"buffer_size": 11342,
 						"regions":
 						{
 						},
@@ -583,7 +583,7 @@
 						"translation.y": 5290.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -599,8 +599,8 @@
 						"selection":
 						[
 							[
-								10289,
-								10289
+								9822,
+								9822
 							]
 						],
 						"settings":
@@ -610,10 +610,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 6580.0,
+						"translation.y": 6338.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
@@ -640,10 +640,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 6224.0,
+						"translation.y": 6017.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -671,7 +671,7 @@
 						"translation.y": 497.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{

@@ -19,19 +19,23 @@ namespace pn2s
 
 class DeviceManager
 {
-	static int CkeckAvailableDevices();
-	static vector<Device> _device; //TODO: Should be private
+	int CkeckAvailableDevices();
+	vector<Device> _device;
 public:
-	static bool IsInitialized();
-	static Error_PN2S Initialize();
+	bool IsInitialized();
+	Error_PN2S Initialize();
 
 	// Distribute model between devices
-	static void AllocateMemory(vector<unsigned int > &ids, vector<int2 > &m, double dt);
-	static void PrepareSolvers();
-	static void Process();
-	static void Close();
-	static vector<Device>& Devices(){
-		return _device;
+	void AllocateMemory(vector<unsigned int > &ids, vector<int2 > &m, double dt);
+	void PrepareSolvers();
+	void Process();
+	void Close();
+
+	vector<Device*> GetDevices(){
+		vector<Device*> res;
+		for(vector<Device>::iterator d = _device.begin(); d != _device.end(); ++d)
+			res.push_back(&(*d));
+		return res;
 	}
 };
 }

@@ -26,7 +26,7 @@ using namespace tbb::flow;
 
 using namespace pn2s::models;
 
-extern std::map< unsigned int, pn2s::Location > locationMap; //Locates in DeviceManager
+extern std::map< unsigned int, pn2s::Location > locationMap; //Locates in ResourceManager
 
 
 Device::Device(int _id): id(_id), _dt(1), nstreams(DEFAULT_STREAM_NUMBER){

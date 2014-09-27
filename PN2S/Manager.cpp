@@ -46,7 +46,7 @@ Error_PN2S Manager::Allocate(){
 Error_PN2S Manager::PrepareSolvers(){
 	if (!_isInitialized)
 		return Error_PN2S::NOT_INITIALIZED_Error;
-	DeviceManager::PrepareSolvers();
+//	DeviceManager::PrepareSolvers();
 	return  Error_PN2S::NO_ERROR;
 }
 

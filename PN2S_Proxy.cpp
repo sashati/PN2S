@@ -7,7 +7,7 @@
 
 #include "PN2S_Proxy.h"
 #include "PN2S/headers.h"
-#include "PN2S/Manager.h"
+#include "PN2S/ResourceManager.h"
 #include "PN2S/core/models/SolverComps.h"
 #include "HSolveUtils.h"
 
@@ -31,36 +31,27 @@ using namespace pn2s;
 extern std::map< unsigned int, pn2s::Location > locationMap; //Locates in DeviceManager
 
 std::map< pn2s::Location, Eref > spikegen_;
-//std::map< pn2s::Location, Eref > vmOut_;
-//vector< SynChanStruct >   synchan_;
 
 void PN2S_Proxy::Process(ProcPtr info){
-	DeviceManager::Process();
-
-	//Send VM message outs
-//	typedef std::map<pn2s::Location, Eref>::iterator it_type;
-//	for(it_type it = vmOut_.begin(); it != vmOut_.end(); it++) {
-//		pn2s::Location l = it->first;
-//		double vm = DeviceManager::Devices()[l.device].ModelPacks()[l.pack]._compsSolver.GetValue(l.index,pn2s::FIELD::VM);
-//		moose::Compartment::VmOut()->send( it->second, vm );
-//	}
+	ResourceManager::Process();
 
 	//Send Spikes
 	typedef std::map<pn2s::Location, Eref>::iterator it_type;
 	for(it_type it = spikegen_.begin(); it != spikegen_.end(); it++) {
 		pn2s::Location l = it->first;
+		double vm =	ResourceManager::GetValue(l,pn2s::FIELD::VM);
 		SpikeGen* spike = reinterpret_cast< SpikeGen* >( it->second.data() );
-		double vm = DeviceManager::Devices()[l.device].ModelPacks()[l.pack]._compsSolver.GetValue(l.index,pn2s::FIELD::VM);
 		spike->handleVm( vm );
 		spike->process( it->second, info );
 	}
 }
 
 void PN2S_Proxy::fillData(map<unsigned int, Id> &modelId_map){
-	for (uint dev_i = 0; dev_i < DeviceManager::Devices().size(); ++dev_i) {
-		pn2s::Device& dev = DeviceManager::Devices()[dev_i];
-		for (uint mp_i = 0; mp_i < dev.ModelPacks().size(); ++mp_i) {
-			pn2s::ModelPack& mp = dev.ModelPacks()[mp_i];
+	vector<Device*> devices = ResourceManager::Devices();
+	for (uint dev_i = 0; dev_i < devices.size(); ++dev_i) {
+		pn2s::Device* dev = devices[dev_i];
+		for (uint mp_i = 0; mp_i < dev->ModelPacks().size(); ++mp_i) {
+			pn2s::ModelPack& mp = dev->ModelPacks()[mp_i];
 			int cmpt_idx = 0;
 			int ch_idx = 0;
 			for (uint m_i = 0; m_i < mp.models.size(); ++m_i) {
@@ -136,7 +127,6 @@ void PN2S_Proxy::fillData(map<unsigned int, Id> &modelId_map){
 					}
 				}
 				readSynapses(h->HSolvePassive::compartmentId_);
-//				manageOutgoingMessages(h->HSolvePassive::compartmentId_);
 			}
 		}
 	}
@@ -144,15 +134,13 @@ void PN2S_Proxy::fillData(map<unsigned int, Id> &modelId_map){
 
 void PN2S_Proxy::Reinit(map<unsigned int, Id> modelId_map){
 	spikegen_.clear();
-//	vmOut_.clear();
-//	synchan_.clear();
 	fillData(modelId_map);
-	DeviceManager::PrepareSolvers();
+	ResourceManager::PrepareSolvers();
 }
 
 void PN2S_Proxy::AllocateMemory(vector<unsigned int > &ids, vector<int2 > &m, double dt)
 {
-	pn2s::DeviceManager::AllocateMemory(ids,m,dt);
+	ResourceManager::AllocateMemory(ids,m,dt);
 }
 
 void PN2S_Proxy::readSynapses(vector< Id >	&compartmentId_)
@@ -171,7 +159,6 @@ void PN2S_Proxy::readSynapses(vector< Id >	&compartmentId_)
         {
             synchan.compt_ = ic;
             synchan.elm_ = *syn;
-//            synchan_.push_back( synchan );
         }
 
         static const Finfo* procDest = SpikeGen::initCinfo()->findFinfo( "process");
@@ -195,33 +182,15 @@ void PN2S_Proxy::readSynapses(vector< Id >	&compartmentId_)
     }
 }
 
-//void PN2S_Proxy::manageOutgoingMessages(vector< Id > &compartmentId_)
-//{
-//    vector< Id > targets;
-//    vector< string > filter;
-//
-//    filter.push_back( "HHChannel" );
-//    filter.push_back( "SpikeGen" );
-//    for ( unsigned int ic = 0; ic < compartmentId_.size(); ++ic )
-//    {
-//        targets.clear();
-//
-//        int nTargets = HSolveUtils::targets(
-//                           compartmentId_[ ic ],
-//                           "VmOut",
-//                           targets,
-//                           filter,
-//                           false    // include = false. That is, use filter to exclude.
-//                       );
-//
-//
-//        if ( nTargets )
-//        {
-//			Location l = locationMap[compartmentId_[ ic ].value() ];
-//			vmOut_[l] = compartmentId_[ic].eref();
-//        }
-//    }
-//}
+void PN2S_Proxy::Initialize()
+{
+	ResourceManager::Initialize();
+}
+
+void PN2S_Proxy::Close()
+{
+	ResourceManager::Close();
+}
 
 /**
  * Interface Set/Get functions
@@ -231,18 +200,24 @@ extern std::map< unsigned int, pn2s::Location > locationMap;
 
 void PN2S_Proxy::AddExternalCurrent( unsigned int id, TYPE_ Gk, TYPE_ GkEk)
 {
-	Location l = locationMap[id];
-	DeviceManager::Devices()[l.device].ModelPacks()[l.pack]._compsSolver.AddExternalCurrent(l.index,Gk, GkEk);
+	ResourceManager::AddExternalCurrent(locationMap[id], Gk, GkEk);
 }
 
-void PN2S_Proxy::setValue( unsigned int id, TYPE_ value , FIELD::TYPE n)
+void PN2S_Proxy::setValue( unsigned int id, TYPE_ value , FIELD::CM n)
 {
-	Location l = locationMap[id];
-	DeviceManager::Devices()[l.device].ModelPacks()[l.pack]._compsSolver.SetValue(l.index,n,value);
+	ResourceManager::SetValue(locationMap[id], n,value);
 }
 
-TYPE_ PN2S_Proxy::getValue( unsigned int id, FIELD::TYPE n)
+TYPE_ PN2S_Proxy::getValue( unsigned int id, FIELD::CM n)
 {
-	Location l = locationMap[id];
-	return DeviceManager::Devices()[l.device].ModelPacks()[l.pack]._compsSolver.GetValue(l.index,n);
+	return 	ResourceManager::GetValue(locationMap[id], n);
+}
+void PN2S_Proxy::setValue( unsigned int id, TYPE_ value , FIELD::CH n)
+{
+	ResourceManager::SetValue(locationMap[id], n,value);
+}
+
+TYPE_ PN2S_Proxy::getValue( unsigned int id, FIELD::CH n)
+{
+	return 	ResourceManager::GetValue(locationMap[id], n);
 }

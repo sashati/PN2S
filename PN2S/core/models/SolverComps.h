@@ -62,8 +62,8 @@ public:
 	void 	SetHinesMatrix(int n, int row, int col, TYPE_ value);
 	TYPE_ GetA(int n,int i, int j){return _hm[n*_statistic.nCompts_per_model*_statistic.nCompts_per_model+i*_statistic.nCompts_per_model+j];}
 //	TYPE_ GetRHS(int n,int i){return _rhs[n*nComp+i];}
-	void 	SetValue(int cmpt_index, FIELD::TYPE field, TYPE_ value);
-	TYPE_ 	GetValue(int cmpt_index, FIELD::TYPE field);
+	void 	SetValue(int cmpt_index, FIELD::CM field, TYPE_ value);
+	TYPE_ 	GetValue(int cmpt_index, FIELD::CM field);
 	void ConnectChannel(int cmpt_index,  int ch_index);
 	PField<TYPE_, ARCH_> * GetFieldVm(){return & _Vm;}
 	void AddExternalCurrent( int index, TYPE_ Gk, TYPE_ GkEk);

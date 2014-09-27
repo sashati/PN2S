@@ -224,7 +224,7 @@ void SolverChannels::SetGateZParams(int index, vector<double>& params)
 		_channel_base[index]._xyz_params[2][i] = (TYPE_)params[i];
 }
 
-void SolverChannels::SetValue(int index, FIELD::TYPE field, TYPE_ value)
+void SolverChannels::SetValue(int index, FIELD::CH field, TYPE_ value)
 {
 	switch(field)
 	{
@@ -261,7 +261,7 @@ void SolverChannels::SetValue(int index, FIELD::TYPE field, TYPE_ value)
 	}
 }
 
-TYPE_ SolverChannels::GetValue(int index, FIELD::TYPE field)
+TYPE_ SolverChannels::GetValue(int index, FIELD::CH field)
 {
 //	switch(field)
 //	{

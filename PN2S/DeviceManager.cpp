@@ -12,11 +12,8 @@
 #include <assert.h>
 
 using namespace pn2s;
-
-vector<Device> DeviceManager::_device;
 static bool _isInitialized = false;
-
-std::map< unsigned int, pn2s::Location > locationMap;
+extern std::map< unsigned int, pn2s::Location > locationMap;
 
 int DeviceManager::CkeckAvailableDevices(){
 //	cudaProfilerStop();

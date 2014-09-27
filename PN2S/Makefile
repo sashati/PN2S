@@ -23,6 +23,7 @@ TARGET = _pn2s.o
 
 COBJS += Device.o \
 	DeviceManager.o \
+	ResourceManager.o \
 		 
 OBJS += Manager.o 
 
@@ -37,6 +38,7 @@ default: benchmark
 Manager.o: Manager.cpp Manager.h headers.h Parameters.h
 Device.o: Device.cpp Device.h headers.h Parameters.h
 DeviceManager.o: DeviceManager.cpp DeviceManager.h headers.h Parameters.h 
+ResourceManager.o: ResourceManager.cpp ResourceManager.h DeviceManager.cpp DeviceManager.h headers.h Parameters.h
 
 $(TARGET): $(OBJS) $(COBJS) $(SUBDIR) 
 #	@(for i in $(SUBDIR) ; do $(MAKE) -C $$i; done)

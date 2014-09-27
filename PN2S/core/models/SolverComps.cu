@@ -179,7 +179,7 @@ void SolverComps::AddExternalCurrent( int index, TYPE_ Gk, TYPE_ GkEk)
 	_externalCurrent[index]._gkek += GkEk;
 }
 
-void SolverComps::SetValue(int index, FIELD::TYPE field, TYPE_ value)
+void SolverComps::SetValue(int index, FIELD::CM field, TYPE_ value)
 {
 	switch(field)
 	{
@@ -214,7 +214,7 @@ void SolverComps::SetValue(int index, FIELD::TYPE field, TYPE_ value)
 	}
 }
 
-TYPE_ SolverComps::GetValue(int index, FIELD::TYPE field)
+TYPE_ SolverComps::GetValue(int index, FIELD::CM field)
 {
 	switch(field)
 	{

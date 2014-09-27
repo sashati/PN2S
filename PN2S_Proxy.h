@@ -26,9 +26,14 @@ public:
 	static void Reinit(map<unsigned int, Id> modelId_map);
 	static void AllocateMemory(vector<unsigned int > &ids, vector<int2 > &m, double dt);
 
-	static void setValue( unsigned int , TYPE_, pn2s::FIELD::TYPE);
-	static TYPE_ getValue( unsigned int , pn2s::FIELD::TYPE);
+	static void setValue( unsigned int , TYPE_, pn2s::FIELD::CM);
+	static TYPE_ getValue( unsigned int , pn2s::FIELD::CM);
+	static void setValue( unsigned int , TYPE_, pn2s::FIELD::CH);
+	static TYPE_ getValue( unsigned int , pn2s::FIELD::CH);
 
 	static void AddExternalCurrent( unsigned int index, TYPE_ Gk, TYPE_ GkEk);
+
+	static void Initialize();
+	static void Close();
 
 };

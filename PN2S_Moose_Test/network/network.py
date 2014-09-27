@@ -204,7 +204,7 @@ def create_cells(net, input_layer):
             syn = moose.element(cell.path + '/d3/gluR/handler/synapse')
             moose.connect(input_layer[j], 'spikeOut', syn, 'addSpike')
             syn.weight = 1.0 / number_of_input_cells
-            syn.delay = 0#2e-3 + (8e-3 - 2e-3) * nprand.random_sample()  # random
+            syn.delay = 1e-3#2e-3 + (8e-3 - 2e-3) * nprand.random_sample()  # random
 
     # Create Inh cells
     for i in range(number_of_inh_cells):
@@ -302,9 +302,9 @@ def main():
         hsolve.dt = dt
         hsolve.target = '/gpu'
         
-    for i in range(number_of_ext_cells-1):
-        add_plot("/cpu/cell" + str(i+1) + '/soma','getVm', 'cpu/c' + str(i) + '_soma')
-        add_plot("/gpu/cell" + str(i+1) + '/soma','getVm', 'gpu/c' + str(i) + '_soma')
+    for i in range(number_of_ext_cells):
+        add_plot("/cpu/cell" + str(i) + '/soma','getVm', 'cpu/c' + str(i) + '_soma')
+        add_plot("/gpu/cell" + str(i) + '/soma','getVm', 'gpu/c' + str(i) + '_soma')
 
     moose.useClock(0, '/##', 'init')
     moose.useClock(1, '/##', 'process')
@@ -316,16 +316,16 @@ def main():
     moose.useClock(8, '/graphs/##', 'process')
     moose.reinit()
     moose.start(Simulation_Time)
-#     dump_plots()
-#     pylab.legend()
-#     pylab.show()
+    dump_plots()
+    pylab.legend()
+    pylab.show()
 
 
 Use_MasterHSolve = True
 # Use_MasterHSolve = False
-Simulation_Time = 1e-1
+Simulation_Time = 2e-1
 
-number_of_input_cells = 0
+number_of_input_cells = 1
 number_of_ext_cells = 2
 number_of_inh_cells = 0
 
@@ -335,7 +335,7 @@ P1 = 1  # Exitatory to Excitatory connection probability
 P2 = 0.3  # Exitatory to Inhibitory connection probability
 P3 = 0.5  # Inhibitory to Excitatory connection probability
 
-INJECT_CURRENT = 1e-7
+INJECT_CURRENT = 0
 dt = 2e-6
 
 if __name__ == '__main__':
