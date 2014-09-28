@@ -40,7 +40,6 @@ DeviceManager.o: DeviceManager.cpp DeviceManager.h headers.h Parameters.h
 ResourceManager.o: ResourceManager.cpp ResourceManager.h DeviceManager.cpp DeviceManager.h headers.h Parameters.h
 
 $(TARGET): $(OBJS) $(COBJS) $(SUBDIR) 
-#	@(for i in $(SUBDIR) ; do $(MAKE) -C $$i; done)
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) $(MODULES)
 	 
 $(OBJS):

@@ -260,6 +260,7 @@ void HSolve::reinit( const Eref& hsolve, ProcPtr p )
 			HSolve* h =	reinterpret_cast< HSolve* >( i->eref().data());
 			h->isSubSolver_ = true;
 		}
+//		isMasterHSolve_ = false;
     }
 }
 
@@ -304,6 +305,23 @@ void HSolve::setup( Eref hsolve )
 			temp.push_back( ObjId( *i, 0 ) );
 		Shell::dropClockMsgs( temp, "init" );
 		Shell::dropClockMsgs( temp, "process" );
+
+		//Create New HSolveObject
+		Id clockId = Id::nextId();
+
+		Shell* s = reinterpret_cast<Shell*>(Shell::Current_Shell_Id.eref().data());
+		Id nId = s->doCreate(
+				string("HSolve"),
+		        hsolve.id(),
+		        string("engine"),
+		        1,
+		        static_cast< NodePolicy >( 0 ) );
+		HSolve* hs = reinterpret_cast<HSolve*>(nId.eref().data());
+		hs->isSubSolver_ = true;
+		hs->isMasterHSolve_ = true;
+		temp.clear();
+		temp.push_back(ObjId( nId, 0 ));
+		s->doUseClock(Id::id2str(nId),"process", 0);
 	}
 	else
 	{

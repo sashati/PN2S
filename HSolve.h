@@ -182,6 +182,7 @@ private:
 	vector<Id> seeds_;
 	bool isMasterHSolve_;
 	bool isSubSolver_;
+//	bool isEngine_;
 };
 
 #endif // _HSOLVE_H
