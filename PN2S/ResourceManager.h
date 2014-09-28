@@ -6,14 +6,12 @@ namespace pn2s
 
 class ResourceManager
 {
-	static DeviceManager _device_manager;
-	static vector<Device*> _devices;
 public:
 	static bool IsInitialized();
 	static Error_PN2S Initialize();
 
 	// Distribute model between devices
-	static void AllocateMemory(vector<unsigned int > &ids, vector<int2 > &m, double dt);
+	static void ModelDistribution(pn2s::Model_pack_info& m, double dt);
 	static void PrepareSolvers();
 	static void Process();
 	static void Close();
@@ -26,5 +24,11 @@ public:
 	static vector<Device*> Devices(){
 		return _devices;
 	}
+
+private:
+
+	static DeviceManager _device_manager;
+	static vector<Device*> _devices;
+
 };
 }

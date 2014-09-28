@@ -138,9 +138,9 @@ void PN2S_Proxy::Reinit(map<unsigned int, Id> modelId_map){
 	ResourceManager::PrepareSolvers();
 }
 
-void PN2S_Proxy::AllocateMemory(vector<unsigned int > &ids, vector<int2 > &m, double dt)
+void PN2S_Proxy::ModelDistribution(pn2s::Model_pack_info& m, double dt)
 {
-	ResourceManager::AllocateMemory(ids,m,dt);
+	ResourceManager::ModelDistribution(m,dt);
 }
 
 void PN2S_Proxy::readSynapses(vector< Id >	&compartmentId_)

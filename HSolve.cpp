@@ -223,9 +223,8 @@ void HSolve::reinit( const Eref& hsolve, ProcPtr p )
     else
     {
     	vector<Id> _all_compartmentIds;
-		vector<int2> modelST;
 		map<unsigned int, Id> modelId_map;
-		vector<unsigned int> modelIds;
+		vector<pn2s::Model_info> models;
 
     	/**
 		 * Create statistic and Allocate memory for Modelpacks
@@ -241,16 +240,15 @@ void HSolve::reinit( const Eref& hsolve, ProcPtr p )
 					h->compartmentId_.begin(),
 					h->compartmentId_.end());
 
-			int2 st;
-			st.x = h->nCompt_;
-			st.y = h->HSolveActive::channelId_.size();
-			modelST.push_back(st);
-
+			models.push_back( pn2s::Model_info(
+					i->value(),
+					h->nCompt_,
+					h->HSolveActive::channelId_.size()));
 			modelId_map[i->value()] = *i;
-			modelIds.push_back(i->value());
+//			cout << i->value() << " " <<h->nCompt_ << endl<< flush;
 		}
 
-		PN2S_Proxy::AllocateMemory(modelIds,modelST,dt_);
+		PN2S_Proxy::ModelDistribution(models,dt_);
 
 		PN2S_Proxy::Reinit(modelId_map);
 
@@ -300,28 +298,21 @@ void HSolve::setup( Eref hsolve )
 		 * Zumbify other HSolve objects
 		 */
 		vector< ObjId > temp;
-
 		for (vector< Id >::const_iterator i = seeds_.begin(); i != seeds_.end(); ++i )
 			temp.push_back( ObjId( *i, 0 ) );
 		Shell::dropClockMsgs( temp, "init" );
 		Shell::dropClockMsgs( temp, "process" );
 
 		//Create New HSolveObject
-		Id clockId = Id::nextId();
-
-		Shell* s = reinterpret_cast<Shell*>(Shell::Current_Shell_Id.eref().data());
-		Id nId = s->doCreate(
-				string("HSolve"),
-		        hsolve.id(),
-		        string("engine"),
-		        1,
-		        static_cast< NodePolicy >( 0 ) );
-		HSolve* hs = reinterpret_cast<HSolve*>(nId.eref().data());
-		hs->isSubSolver_ = true;
-		hs->isMasterHSolve_ = true;
-		temp.clear();
-		temp.push_back(ObjId( nId, 0 ));
-		s->doUseClock(Id::id2str(nId),"process", 0);
+//		Shell* s = reinterpret_cast<Shell*>(Shell::Current_Shell_Id.eref().data());
+//		Id nId = s->doCreate(string("HSolve"),hsolve.id(),string("engine"), 1,
+//		        static_cast< NodePolicy >( 0 ) );
+//		HSolve* hs = reinterpret_cast<HSolve*>(nId.eref().data());
+//		hs->isSubSolver_ = true;
+//		hs->isMasterHSolve_ = true;
+//		temp.clear();
+//		temp.push_back(ObjId( nId, 0 ));
+//		s->doUseClock(Id::id2str(nId),"process", 0);
 	}
 	else
 	{

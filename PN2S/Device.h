@@ -31,10 +31,7 @@ public:
 	int NumberOfModelPacks(){return nstreams;}
 
 	//Generate model packs
-	Error_PN2S AllocateMemory(double dt,
-			vector<unsigned int>& ids,
-			vector<int2 >& m,
-			size_t start, size_t end);
+	Error_PN2S AllocateMemory(vector <Model_pack_info> &m, double dt);
 	void PrepareSolvers();
 
 	void Destroy();

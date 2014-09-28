@@ -295,24 +295,19 @@ def main():
 
     input_layer = make_input_layer()
 
-    create_cells("/cpu", input_layer)
+#     create_cells("/cpu", input_layer)
     if Use_MasterHSolve:
         create_cells("/gpu", input_layer)
         hsolve = moose.HSolve('/gpu/hsolve')
         hsolve.dt = dt
         hsolve.target = '/gpu'
         
-    for i in range(number_of_ext_cells):
-        add_plot("/cpu/cell" + str(i) + '/soma','getVm', 'cpu/c' + str(i) + '_soma')
-        add_plot("/gpu/cell" + str(i) + '/soma','getVm', 'gpu/c' + str(i) + '_soma')
+#     for i in range(number_of_ext_cells):
+#         add_plot("/cpu/cell" + str(i) + '/soma','getVm', 'cpu/c' + str(i) + '_soma')
+#         add_plot("/gpu/cell" + str(i) + '/soma','getVm', 'gpu/c' + str(i) + '_soma')
 
     moose.useClock(0, '/##', 'init')
     moose.useClock(1, '/##', 'process')
-#     if Use_MasterHSolve:
-#         moose.useClock(0, '/gpu/##', 'init')
-#         moose.useClock(1, '/gpu/##', 'process')
-#     moose.useClock(1, '/in/stim', 'process')
-#     moose.useClock(1, '/in/sp#', 'process')
     moose.useClock(8, '/graphs/##', 'process')
     moose.reinit()
     moose.start(Simulation_Time)
@@ -323,10 +318,10 @@ def main():
 
 Use_MasterHSolve = True
 # Use_MasterHSolve = False
-Simulation_Time = 2e-2
+Simulation_Time = 1e-2
 
 number_of_input_cells = 1
-number_of_ext_cells = 2
+number_of_ext_cells = 200
 number_of_inh_cells = 0
 
 

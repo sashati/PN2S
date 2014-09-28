@@ -56,26 +56,10 @@ Error_PN2S DeviceManager::Initialize(){
  * and assign memory for PFields
  */
 
-void DeviceManager::AllocateMemory(vector<unsigned int > &ids, vector<int2 > &m, double dt){
-	assert(_device.size() > 0);
-	assert(ids.size() > 0);
+void DeviceManager::AllocateMemory(vector< vector <Model_pack_info> > &m, double dt){
 	assert(m.size() > 0);
-
-	if(ids.size() < _device.size() )
-		for (int i = ids.size() - 1; i < _device.size(); ++i)
-			_device.pop_back();
-
-	//Distribute model
-	size_t start = 0;
-	size_t pack = ids.size() / _device.size();
-	size_t end = pack-1;
-	for (int i = 0; i < _device.size(); ++i) {
-		if (i == _device.size()-1) //Last one
-			end = ids.size() - 1;
-		_device[i].AllocateMemory(dt, ids, m, start, end);
-		start += pack;
-		end += pack;
-	}
+	for(int i = 0; i < _device.size(); i++)
+		_device[i].AllocateMemory(m[i], dt);
 }
 
 void DeviceManager::PrepareSolvers()

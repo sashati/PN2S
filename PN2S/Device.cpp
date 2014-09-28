@@ -65,63 +65,35 @@ void Device::Destroy(){
 //	{
 //		cudaStreamDestroy(streams[i]);
 //	}
-//	cudaDeviceReset();
 }
 
-Error_PN2S Device::AllocateMemory(double dt, vector<unsigned int>& ids, vector<int2>& statistic, size_t start, size_t end){
+Error_PN2S Device::AllocateMemory(vector<Model_pack_info> &mps, double dt ){
+
+	if(mps.empty())
+		return Error_PN2S::EMPTY;
+
 	cudaSetDevice(id);
 	_dt = dt;
 
 	//Distribute model into packs
-	int2* st_start = &statistic[start];
-	unsigned int* ids_start = &ids[start];
-	size_t nModel = end - start +1;
+//	model_t* st_start = &mps[start];
+	size_t nPack = mps.size();
 
-	if(nModel <= 0)
-		return Error_PN2S::EMPTY;
-
-	//TODO: Minimum size for models and change strategy for distribution of models
-
-	//If number of models are less than streams, reduce stream number
-	if (nstreams > nModel)
-	{
-		for (int i = nModel; i < nstreams; i++)
-		{
-			cudaStreamDestroy(streams[i]);
-		}
-		nstreams = nModel;
-	}
-
-	//Each stream for one Modelpack
-	size_t nModel_in_pack = nModel/nstreams;
-	_modelPacks.resize(nstreams);
-	for (int pack = 0; pack < nstreams; ++pack) {
-		//Check nComp for each compartments and update it's fields
-		if(pack == nstreams-1) //Last one carries extra parts
-			nModel_in_pack += nModel%nstreams;
-
+	//Distribute Modelpacks over streams
+	_modelPacks.resize(nPack);
+	for (int pack = 0; pack < nPack; ++pack) {
 		/**
 		 * Create statistic and Allocate memory for Modelpacks
 		 */
-
-		size_t nCompt = 0;
-		size_t numberOfChannels = 0;
-		for (int i = 0; i < nModel_in_pack; ++i) {
-			if(nCompt == 0)
-				nCompt = st_start[i].x; //First set
-			else
-				assert(nCompt == st_start[i].x); //Check for others
-
-			numberOfChannels += st_start[i].y;
+		size_t nCompt = mps[pack][0].nCompt;
+		size_t nChannels = 0;
+		for (Model_pack_info::iterator m = mps[pack].begin(); m != mps[pack].end(); m++)
+		{
+			nChannels += m->nChannel;
+			_modelPacks[pack].models.push_back( m->id);
 		}
-
-		ModelStatistic stat(dt, nModel_in_pack, nCompt, numberOfChannels);
-
+		ModelStatistic stat(dt, mps[pack].size(), nCompt, nChannels);
 		_modelPacks[pack].AllocateMemory(stat,streams[pack%nstreams]);
-		_modelPacks[pack].models.assign(ids_start,ids_start+nModel_in_pack);
-
-		st_start += nModel_in_pack;
-		ids_start += nModel_in_pack;
 	}
 	return Error_PN2S::NO_ERROR;
 }
@@ -133,7 +105,7 @@ void Device::PrepareSolvers(){
 	}
 }
 
-
+#ifdef USE_TBB
 /**
  * Multithread tasks section
  */
@@ -164,7 +136,7 @@ struct output_body{
         return m;
     }
 };
-
+#endif
 
 void Device::Process()
 {

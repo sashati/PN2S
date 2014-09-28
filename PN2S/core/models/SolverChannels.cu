@@ -124,7 +124,7 @@ __global__ void advanceChannels(
 			}
 		}
 
-		if ( fabs( ch[idx]._xyz_params[threadIdx.x][9] ) < SINGULARITY ) {
+		if ( fabs( ch[idx]._xyz_params[threadIdx.x][PARAMS_B_F] ) < SINGULARITY ) {
 			B = 0.0;
 		} else {
 			temp2 = ch[idx]._xyz_params[threadIdx.x][7] + exp( ( x + ch[idx]._xyz_params[threadIdx.x][8] ) / ch[idx]._xyz_params[threadIdx.x][9] );

@@ -64,8 +64,59 @@ void ResourceManager::AddExternalCurrent(pn2s::Location l,TYPE_ Gk, TYPE_ GkEk)
 	return _devices[l.device]->ModelPacks()[l.pack]._compsSolver.AddExternalCurrent(l.index, Gk, GkEk);
 }
 
-void ResourceManager::AllocateMemory(vector<unsigned int > &ids, vector<int2 > &m, double dt){
-	_device_manager.AllocateMemory(ids,m,dt);
+
+bool compareModels (pn2s::Model_info i,pn2s::Model_info j) { return (i.nChannel<j.nChannel); }
+
+void ResourceManager::ModelDistribution(pn2s::Model_pack_info& m, double dt){
+
+	map<unsigned int, Model_pack_info > splited;
+	for(Model_pack_info::iterator i = m.begin(); i != m.end(); i++)
+	{
+		if(!splited.count(i->nCompt))
+			splited[i->nCompt] = Model_pack_info();
+		splited[i->nCompt].push_back(*i);
+	}
+
+	vector<Model_pack_info> packs;
+	typedef std::map<unsigned int, Model_pack_info >::iterator it_type;
+	for(it_type i = splited.begin(); i != splited.end(); i++) {
+		std::sort(i->second.begin(), i->second.end(), compareModels);
+		/**
+		 * Create modelpacks
+		 */
+		// TODO: Also consider limitation on channel size. Maybe a
+		// model has a few number of compartment, but many channels
+		// reduce efficiency
+		size_t nModel_in_pack = ceil( (double)MP_CMPT_SIZE_LIMIT / i->first);
+		for(Model_pack_info::iterator start = i->second.begin();
+				start < i->second.end();)
+		{
+			Model_pack_info::iterator end;
+			if(start + nModel_in_pack > i->second.end())
+				end = i->second.end();
+			else
+				end = start + nModel_in_pack;
+
+			Model_pack_info pack (nModel_in_pack);
+			pack.assign(start,end);
+			packs.push_back(pack);
+			start = end;
+		}
+	}
+
+	size_t ds = _devices.size();
+	vector< vector <Model_pack_info> > allocation(ds);
+	int index = 0;
+	for(vector<Model_pack_info>::iterator i = packs.begin(); i != packs.end(); i++)
+	{
+		allocation[index].push_back(*i);
+		index = (index + 1 ) % ds;
+//		for(Model_pack_info::iterator j = i->begin(); j != i->end(); j++)
+//			cout << j->id << " ";
+//		cout << endl << flush;
+	}
+
+	_device_manager.AllocateMemory(allocation,dt);
 }
 
 void ResourceManager::PrepareSolvers()

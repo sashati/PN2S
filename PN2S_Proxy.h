@@ -24,7 +24,7 @@ private:
 public:
 	static void Process(ProcPtr info);
 	static void Reinit(map<unsigned int, Id> modelId_map);
-	static void AllocateMemory(vector<unsigned int > &ids, vector<int2 > &m, double dt);
+	static void ModelDistribution(pn2s::Model_pack_info& m, double dt);
 
 	static void setValue( unsigned int , TYPE_, pn2s::FIELD::CM);
 	static TYPE_ getValue( unsigned int , pn2s::FIELD::CM);

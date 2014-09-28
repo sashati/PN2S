@@ -26,7 +26,7 @@ public:
 	Error_PN2S Initialize();
 
 	// Distribute model between devices
-	void AllocateMemory(vector<unsigned int > &ids, vector<int2 > &m, double dt);
+	void AllocateMemory(vector< vector <Model_pack_info> > &m, double dt);
 	void PrepareSolvers();
 	void Process();
 	void Close();
