@@ -170,7 +170,6 @@ void Device::Process()
 #else
 
 	cudaSetDevice(id);
-//	cudaDeviceSynchronize();
 	for (vector<ModelPack>::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
 	{
 		it->Input();
@@ -183,6 +182,7 @@ void Device::Process()
 	{
 		it->Output();
 	}
+	cudaDeviceSynchronize();
 
 #endif
 }

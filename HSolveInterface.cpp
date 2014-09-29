@@ -278,7 +278,8 @@ void HSolve::addGkEk( Id id, double Gk, double Ek )
 {
 	if(isSubSolver_)
 	{
-		PN2S_Proxy::AddExternalCurrent(id.value(), Gk, Gk * Ek);
+		PN2S_Proxy::setValue(id.value(), Gk, pn2s::FIELD::EXT_CURRENT_GK);
+		PN2S_Proxy::setValue(id.value(), Gk * Ek, pn2s::FIELD::EXT_CURRENT_EKGK);
 		return;
 	}
 	unsigned int index = localIndex( id );

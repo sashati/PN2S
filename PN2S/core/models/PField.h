@@ -34,27 +34,6 @@ namespace models
 #define PARAMS_MIN 11
 #define PARAMS_MAX 12
 
-struct ExternalCurrent{
-
-	TYPE_ _gk;
-	TYPE_ _gkek;
-	friend ostream& operator<<(ostream& out, const ExternalCurrent& obj)
-	{
-	    out << "(" << obj._gk<< ", " << obj._gkek << ")";
-	    return out;
-	}
-};
-
-struct ChannelCurrent{
-
-	TYPE_ _gk;
-	TYPE_ _ek;
-	friend ostream& operator<<(ostream& out, const ChannelCurrent& obj) // output
-	{
-	    out << "(" <<std::setprecision (std::numeric_limits< double >::digits10) << obj._gk<< ", " << std::setprecision (std::numeric_limits< double >::digits10)<<obj._ek << ")";
-	    return out;
-	}
-};
 struct ChannelType {
 	//TODO: Constants, put them in texture memory
 	unsigned char _xyz_power [3];
@@ -74,7 +53,7 @@ struct ChannelType {
 	}
 };
 
-template <typename T, int arch>
+template <typename T>
 class PField
 {
 private:
@@ -113,6 +92,7 @@ public:
 	T & operator [](int i) {return host[i];}
 
 	void print();
+	void print(int seperator);
 private:
 
 };

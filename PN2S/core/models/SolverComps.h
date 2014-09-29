@@ -23,20 +23,20 @@ private:
 	cudaStream_t _stream;
 
 	//Connection Fields
-	PField<TYPE_, ARCH_>  _Vm;	// Vm of the compartments
-	PField<TYPE_, ARCH_>  _Constant;
-	PField<TYPE_, ARCH_>  _hm;	// Hines Matrices
-	PField<TYPE_, ARCH_>  _rhs;	// Right hand side of the equation
-	PField<TYPE_, ARCH_>  _Ra;	// Ra of the compartments
-	PField<TYPE_, ARCH_>  _CmByDt;	// Cm of the compartments
-	PField<TYPE_, ARCH_>  _EmByRm;	// Em of the compartments
-	PField<TYPE_, ARCH_>  _InjectBasal;
-	PField<TYPE_, ARCH_>  _InjectVarying;
-	PField<ExternalCurrent, ARCH_>  _externalCurrent;
+	PField<TYPE_>  _Vm;	// Vm of the compartments
+	PField<TYPE_>  _Constant;
+	PField<TYPE_>  _hm;	// Hines Matrices
+	PField<TYPE_>  _rhs;	// Right hand side of the equation
+	PField<TYPE_>  _Ra;	// Ra of the compartments
+	PField<TYPE_>  _CmByDt;	// Cm of the compartments
+	PField<TYPE_>  _EmByRm;	// Em of the compartments
+	PField<TYPE_>  _InjectBasal;
+	PField<TYPE_>  _InjectVarying;
+	PField<TYPE2_>  _ext_curr_gh_gkek;
 
 	//Channel currents
-	PField<int, ARCH_>  _channelIndex; 	// (NumberOfChannels, Index in _current)
-	PField<ChannelCurrent, ARCH_>*  _channels_current;	// Refer to channel kernel
+	PField<int2>  _channelIndex; 	// (NumberOfChannels, Index in _current)
+	PField<TYPE2_>*  _channels_current;	// Refer to channel kernel
 
 	void getValues();
 
@@ -49,7 +49,7 @@ public:
 	SolverComps();
 	~SolverComps();
 	Error_PN2S AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
-	void PrepareSolver(PField<ChannelCurrent, ARCH_>*  channels_current);
+	void PrepareSolver(PField<TYPE2_>*  channels_current);
 	void Input();
 	void Process();
 	void Output();
@@ -59,11 +59,10 @@ public:
 
 	void 	SetHinesMatrix(int n, int row, int col, TYPE_ value);
 	TYPE_ GetA(int n,int i, int j){return _hm[n*_statistic.nCompts_per_model*_statistic.nCompts_per_model+i*_statistic.nCompts_per_model+j];}
-//	TYPE_ GetRHS(int n,int i){return _rhs[n*nComp+i];}
 	void 	SetValue(int cmpt_index, FIELD::CM field, TYPE_ value);
 	TYPE_ 	GetValue(int cmpt_index, FIELD::CM field);
 	void ConnectChannel(int cmpt_index,  int ch_index);
-	PField<TYPE_, ARCH_> * GetFieldVm(){return & _Vm;}
+	PField<TYPE_> * GetFieldVm(){return & _Vm;}
 	void AddExternalCurrent( int index, TYPE_ Gk, TYPE_ GkEk);
 };
 

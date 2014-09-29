@@ -59,12 +59,6 @@ void ResourceManager::SetValue(pn2s::Location l, FIELD::CH field, TYPE_ value)
 	_devices[l.device]->ModelPacks()[l.pack]._chanSolver.SetValue(l.index,field, value);
 }
 
-void ResourceManager::AddExternalCurrent(pn2s::Location l,TYPE_ Gk, TYPE_ GkEk)
-{
-	return _devices[l.device]->ModelPacks()[l.pack]._compsSolver.AddExternalCurrent(l.index, Gk, GkEk);
-}
-
-
 bool compareModels (pn2s::Model_info i,pn2s::Model_info j) { return (i.nChannel<j.nChannel); }
 
 void ResourceManager::ModelDistribution(pn2s::Model_pack_info& m, double dt){

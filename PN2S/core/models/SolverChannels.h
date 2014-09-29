@@ -22,25 +22,23 @@ private:
 	ModelStatistic _m_statistic;
 	cudaStream_t _stream;
 
-	PField<TYPE_, ARCH_>*  _Vm;
-
-	PField<TYPE_, ARCH_>  _state;
-	PField<int, ARCH_>  _comptIndex;
-	PField<ChannelType, ARCH_>  _channel_base;
-	PField<ChannelCurrent, ARCH_>  _channel_currents;
-
+	PField<TYPE_>*  _Vm;
+	PField<TYPE_>  _state;
+	PField<int>  _comptIndex;
+	PField<ChannelType>  _channel_base;
+	PField<TYPE2_>  _ch_currents_gk_ek;
 
 public:
 	dim3 _threads, _blocks;
 	SolverChannels();
 	~SolverChannels();
 	void AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
-	void PrepareSolver(PField<TYPE_, ARCH_>*  Vm);
+	void PrepareSolver(PField<TYPE_>*  Vm);
 	void Input();
 	void Process();
 	void Output();
 
-	PField<ChannelCurrent, ARCH_> * GetFieldChannelCurrents(){return & _channel_currents;}
+	PField<TYPE2_> * GetFieldChannelCurrents(){return & _ch_currents_gk_ek;}
 
 	double GetDt(){ return _m_statistic.dt;}
 	void SetDt(double dt){ _m_statistic.dt = dt;}

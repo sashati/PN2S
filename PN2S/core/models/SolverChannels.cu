@@ -43,26 +43,26 @@ void SolverChannels::AllocateMemory(models::ModelStatistic& s, cudaStream_t stre
 	_state.AllocateMemory(_m_statistic.nChannels_all*3);
 	_comptIndex.AllocateMemory(_m_statistic.nChannels_all);
 	_channel_base.AllocateMemory(_m_statistic.nChannels_all);
-	_channel_currents.AllocateMemory(_m_statistic.nChannels_all);
+	_ch_currents_gk_ek.AllocateMemory(_m_statistic.nChannels_all);
 
 	int threadSize = min(max((int)_m_statistic.nChannels_all/NUMBER_OF_MULTI_PROCESSOR,16), 32);
 	_threads=dim3(2,threadSize, 1);
 	_blocks=dim3(max((int)(ceil(_m_statistic.nChannels_all / _threads.y)),1), 1);
 }
 
-void SolverChannels::PrepareSolver(PField<TYPE_, ARCH_>*  Vm)
+void SolverChannels::PrepareSolver(PField<TYPE_>*  Vm)
 {
 	if(_m_statistic.nChannels_all)
 	{
 		_state.Host2Device_Async(_stream);
 		_channel_base.Host2Device_Async(_stream);
-		_channel_currents.Host2Device_Async(_stream);
+		_ch_currents_gk_ek.Host2Device_Async(_stream);
 		_comptIndex.Host2Device_Async(_stream);
 		_Vm = Vm;
 
 		int threadSize = min(max((int)_m_statistic.nChannels_all/8,16), 32);
 		_threads=dim3(2,threadSize, 1);
-		_blocks=dim3(max((int)(ceil(_m_statistic.nChannels_all / _threads.y)),1), 1);
+		_blocks=dim3(max((int)(ceil((double)_m_statistic.nChannels_all / _threads.y)),1), 1);
 	}
 }
 
@@ -76,7 +76,7 @@ __global__ void advanceChannels(
 		int* compIndex,
 		TYPE_* state,
 		pn2s::models::ChannelType* ch,
-		pn2s::models::ChannelCurrent* current,
+		TYPE2_* current,
 		size_t size, TYPE_ dt)
 {
 	TYPE_ temp, temp2, A, B;
@@ -93,7 +93,6 @@ __global__ void advanceChannels(
 	{
 		int cIdx = compIndex[idx];
 		TYPE_ x = v[cIdx];
-
 
 		temp = ch[idx]._xyz_params[threadIdx.x][PARAMS_MIN];
 		temp2 = ch[idx]._xyz_params[threadIdx.x][PARAMS_MAX];
@@ -172,7 +171,7 @@ __global__ void advanceChannels(
 		}
 		__syncthreads();
 		if(!threadIdx.x)
-			current[idx]._gk = ch[idx]._gbar * data[i] * data[i+1];
+			current[idx].x = ch[idx]._gbar * data[i] * data[i+1];
 	}
 }
 
@@ -192,7 +191,7 @@ void SolverChannels::Process()
 			_comptIndex.device,
 			_state.device,
 			_channel_base.device,
-			_channel_currents.device,
+			_ch_currents_gk_ek.device,
 			_m_statistic.nChannels_all,
 			_m_statistic.dt);
 
@@ -201,7 +200,7 @@ void SolverChannels::Process()
 
 void SolverChannels::Output()
 {
-	_channel_currents.Device2Host_Async(_stream);
+	_ch_currents_gk_ek.Device2Host_Async(_stream);
 }
 
 /**
@@ -232,10 +231,10 @@ void SolverChannels::SetValue(int index, FIELD::CH field, TYPE_ value)
 			_channel_base[index]._gbar = value;
 			break;
 		case FIELD::CH_GK:
-			_channel_currents[index]._gk = value;
+			_ch_currents_gk_ek[index].x = value;
 			break;
 		case FIELD::CH_EK:
-			_channel_currents[index]._ek = value;
+			_ch_currents_gk_ek[index].y = value;
 			break;
 		case FIELD::CH_X_POWER:
 			_channel_base[index]._xyz_power[0] = (unsigned char)value;

@@ -44,18 +44,18 @@ Error_PN2S SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t s
 	_EmByRm.AllocateMemory(vectorSize);
 	_InjectBasal.AllocateMemory(vectorSize);
 	_InjectVarying.AllocateMemory(vectorSize, 0);
-	_externalCurrent.AllocateMemory(vectorSize, 0);
+	_ext_curr_gh_gkek.AllocateMemory(vectorSize, 0);
 
 	//Connection to Channels
-	_channelIndex.AllocateMemory(vectorSize*2, 0); //Filled with zero
+	_channelIndex.AllocateMemory(vectorSize, 0); //Filled with zero
 
 	return Error_PN2S::NO_ERROR;
 }
 
-void SolverComps::PrepareSolver(PField<ChannelCurrent, ARCH_>*  channels_current)
+void SolverComps::PrepareSolver(PField<TYPE2_>*  channels_current)
 {
-	int model_dize = _statistic.nCompts_per_model * _statistic.nCompts_per_model;
-	if(model_dize == 0)
+	int vectorSize = _statistic.nModels * _statistic.nCompts_per_model;
+	if(vectorSize == 0)
 		return;
 
 	_channels_current = channels_current;
@@ -68,10 +68,10 @@ void SolverComps::PrepareSolver(PField<ChannelCurrent, ARCH_>*  channels_current
 	_Vm.Host2Device_Async(_stream);
 	_InjectBasal.Host2Device_Async(_stream);
 	_Constant.Host2Device_Async(_stream);
-	_externalCurrent.Host2Device_Async(_stream);
+	_ext_curr_gh_gkek.Host2Device_Async(_stream);
 
 	_threads=dim3(128);
-	_blocks=dim3( model_dize / _threads.x + 1);
+	_blocks=dim3( vectorSize / _threads.x + 1);
 }
 
 /**
@@ -91,9 +91,9 @@ __global__ void update_rhs(
 		TYPE_* emByRm,
 		TYPE_* inject_basal,
 		TYPE_* inject_varying,
-		ExternalCurrent* external_current,
-		int* channelIndex,
-		ChannelCurrent* channels_current,
+		TYPE2_* ext_curr_gk_ekgk,
+		int2* channelIndex,
+		TYPE2_* ch_curr_gk_ek,
 		unsigned int size,
 		TYPE_ dt)
 {
@@ -105,13 +105,13 @@ __global__ void update_rhs(
 
     	TYPE_ GkSum   = 0.0;
     	TYPE_ GkEkSum = 0.0;
-    	if(channelIndex[idx << 1])
+    	if(channelIndex[idx].x)
     	{
-    		size_t pos = channelIndex[idx << 1 | 0x01];
-    		for ( int i = 0; i < channelIndex[idx << 1]; ++i)
+    		size_t pos = channelIndex[idx].y;
+    		for ( int i = 0; i < channelIndex[idx].x; ++i)
 			{
-				GkSum   += channels_current[pos+i]._gk;
-				GkEkSum += channels_current[pos+i]._gk * channels_current[pos+i]._ek;
+				GkSum   += ch_curr_gk_ek[pos+i].x;
+				GkEkSum += ch_curr_gk_ek[pos+i].x * ch_curr_gk_ek[pos+i].y;
 			}
     	}
 
@@ -123,21 +123,27 @@ __global__ void update_rhs(
     	rhs[idx] += inject_basal[idx] + inject_varying[idx];
 
     	// add external current
-    	hm[pos_a] += external_current[idx]._gk;
-    	rhs[idx] += external_current[idx]._gkek;
+    	hm[pos_a] += ext_curr_gk_ekgk[idx].x;
+    	rhs[idx] += ext_curr_gk_ekgk[idx].y;
     }
 }
 
 void SolverComps::Input()
 {
 	_InjectVarying.Host2Device_Async(_stream);
-	_externalCurrent.Host2Device_Async(_stream);
+	_ext_curr_gh_gkek.Host2Device_Async(_stream);
 }
 
 void SolverComps::Process()
 {
 	uint vectorSize = _statistic.nModels * _statistic.nCompts_per_model;
 
+//	_hm.print(25);
+//	_rhs.print(5);
+//	_Vm.print(5);
+//	_channelIndex.print(5);
+//	_channels_current->Device2Host();
+//	_channels_current->print(5);
 	update_rhs <<<_blocks, _threads,0, _stream>>> (
 			_hm.device,
 			_rhs.device,
@@ -148,16 +154,21 @@ void SolverComps::Process()
 			_EmByRm.device,
 			_InjectBasal.device,
 			_InjectVarying.device,
-			_externalCurrent.device,
+			_ext_curr_gh_gkek.device,
 			_channelIndex.device,
 			_channels_current->device,
 			vectorSize,
 			_statistic.dt);
 	assert(cudaSuccess == cudaGetLastError());
 
+//	_hm.Device2Host(); _hm.print(25);
+//	_rhs.Device2Host();	_rhs.print(5);
+//	_channels_current->Device2Host();	_channels_current->print();
+
 	SolverMatrix<TYPE_,ARCH_>::fast_solve(
 			_hm.device, _rhs.device, _Vm.device,
 			_statistic.nCompts_per_model, _statistic.nModels, _stream);
+//	_Vm.Device2Host();	_Vm.print(5);
 	assert(cudaSuccess == cudaGetLastError());
 
 }
@@ -166,18 +177,13 @@ void SolverComps::Process()
 void SolverComps::Output()
 {
 	_Vm.Device2Host_Async(_stream);
-	_externalCurrent.Fill(0.0);
+	_ext_curr_gh_gkek.Fill(0.0);
 	_InjectVarying.Fill(0.0);
 }
 
 /**
  * 		Set/Get values
  */
-void SolverComps::AddExternalCurrent( int index, TYPE_ Gk, TYPE_ GkEk)
-{
-	_externalCurrent[index]._gk += Gk;
-	_externalCurrent[index]._gkek += GkEk;
-}
 
 void SolverComps::SetValue(int index, FIELD::CM field, TYPE_ value)
 {
@@ -206,10 +212,10 @@ void SolverComps::SetValue(int index, FIELD::CM field, TYPE_ value)
 			_Constant[index] = value;
 			break;
 		case FIELD::EXT_CURRENT_GK:
-			_externalCurrent[index]._gk = value;
+			_ext_curr_gh_gkek[index].x = value;
 			break;
 		case FIELD::EXT_CURRENT_EKGK:
-			_externalCurrent[index]._gkek = value;
+			_ext_curr_gh_gkek[index].y = value;
 			break;
 	}
 }
@@ -239,7 +245,7 @@ void SolverComps::SetHinesMatrix(int n, int row, int col, TYPE_ value)
 
 void SolverComps::ConnectChannel(int cmpt_index, int ch_index)
 {
-	if (_channelIndex[cmpt_index*2] == 0)
-		_channelIndex[cmpt_index*2+1] = ch_index;
-	_channelIndex[cmpt_index*2]++;
+	if (_channelIndex[cmpt_index].x == 0)
+		_channelIndex[cmpt_index].y = ch_index;
+	_channelIndex[cmpt_index].x++;
 }

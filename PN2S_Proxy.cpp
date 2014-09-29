@@ -197,12 +197,6 @@ void PN2S_Proxy::Close()
  */
 extern std::map< unsigned int, pn2s::Location > locationMap;
 
-
-void PN2S_Proxy::AddExternalCurrent( unsigned int id, TYPE_ Gk, TYPE_ GkEk)
-{
-	ResourceManager::AddExternalCurrent(locationMap[id], Gk, GkEk);
-}
-
 void PN2S_Proxy::setValue( unsigned int id, TYPE_ value , FIELD::CM n)
 {
 	ResourceManager::SetValue(locationMap[id], n,value);
