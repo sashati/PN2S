@@ -8,7 +8,6 @@
 #pragma once
 
 #include "../../headers.h"
-#include "../models/Model.h"
 #include "PField.h"
 #include "ModelStatistic.h"
 
@@ -39,7 +38,6 @@ private:
 	PField<int, ARCH_>  _channelIndex; 	// (NumberOfChannels, Index in _current)
 	PField<ChannelCurrent, ARCH_>*  _channels_current;	// Refer to channel kernel
 
-	void  makeHinesMatrix(models::Model *model, TYPE_ * matrix);// float** matrix, uint nCompt);
 	void getValues();
 
 	void updateMatrix();

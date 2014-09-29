@@ -23,11 +23,7 @@ endif
 TARGET = _models.o
 HEADERS = ../../headers.h
 		 
-OBJS +=		HHChannel.o \
-			Model.o \
-			Compartment.o \
-#			Matrix.o	\
-			
+OBJS +=					
 
 COBJS += SolverChannels.o	\
 		SolverComps.o	\
@@ -38,13 +34,6 @@ COBJS += SolverChannels.o	\
 all: $(TARGET)
 default: all
 
-Model.o: Model.cpp Model.h HHChannel.cpp HHChannel.h Compartment.cpp Compartment.h 
-HHChannel.o: HHChannel.cpp HHChannel.h $
-Compartment.o: Compartment.cpp Compartment.h 
-CompartmentVector.o: CompartmentVector.cpp CompartmentVector.h 
-Matrix.o: Matrix.cpp Matrix.h 
-Neuron.o: Neuron.cpp Neuron.h Compartment.o
-NeuronVector.o: NeuronVector.cpp NeuronVector.h
 PField.o: PField.cpp PField.h
 SolverChannels.o: SolverChannels.cu SolverChannels.h PField.cpp PField.h
 SolverComps.o: SolverComps.cu SolverComps.h PField.cpp PField.h SolverMatrix.cu SolverMatrix.h
