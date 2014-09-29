@@ -74,8 +74,6 @@ void DeviceManager::Process()
 {
 	for(vector<Device>::iterator device = _device.begin(); device != _device.end(); ++device)
 		device->Process();
-	for(vector<Device>::iterator device = _device.begin(); device != _device.end(); ++device)
-		device->Sync();
 }
 
 void DeviceManager::Close()

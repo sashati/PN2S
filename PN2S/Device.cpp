@@ -19,6 +19,7 @@
 //Moose models
 //#include "../HSolve.h"
 
+//#define USE_TBB
 using namespace pn2s;
 using namespace std;
 using namespace tbb;
@@ -140,13 +141,11 @@ struct output_body{
 
 void Device::Process()
 {
-	cudaSetDevice(id);
 
 	uint model_n = _modelPacks.size();
 	if(model_n < 1)
 		return;
 
-//#define USE_TBB
 #ifdef USE_TBB
 	graph scheduler;
 
@@ -170,6 +169,8 @@ void Device::Process()
 	scheduler.wait_for_all();
 #else
 
+	cudaSetDevice(id);
+//	cudaDeviceSynchronize();
 	for (vector<ModelPack>::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
 	{
 		it->Input();
@@ -186,8 +187,3 @@ void Device::Process()
 #endif
 }
 
-void Device::Sync()
-{
-	cudaSetDevice(id);
-	cudaDeviceSynchronize();
-}
