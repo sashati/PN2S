@@ -37,13 +37,13 @@ void ModelPack::PrepareSolvers(){
 
 void ModelPack::Input()
 {
-//	cudaStreamSynchronize(_st);
 	_compsSolver.Input();
 	_chanSolver.Input();
 }
 
 void ModelPack::Process()
 {
+	cudaStreamSynchronize(_st);
 	_chanSolver.Process();
 	_compsSolver.Process();
 }
