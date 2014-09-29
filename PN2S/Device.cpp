@@ -32,7 +32,7 @@ extern std::map< unsigned int, pn2s::Location > locationMap; //Locates in Resour
 
 Device::Device(int _id): id(_id), _dt(1), nstreams(DEFAULT_STREAM_NUMBER){
 	_modelPacks.clear();
-
+	cudaSetDevice(id);
 	/**
 	 * Check configuration
 	 */
@@ -170,7 +170,6 @@ void Device::Process()
 #else
 
 	cudaSetDevice(id);
-//	cudaDeviceSynchronize();
 	for (vector<ModelPack>::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
 	{
 		it->Input();
