@@ -25,17 +25,18 @@ HEADERS = ../../headers.h
 		 
 OBJS +=					
 
-COBJS += SolverChannels.o	\
+COBJS += SolverGates.o	\
 		SolverComps.o	\
 		PField.o		\
-		SolverMatrix.o	\
+		SolverMatrix.o	
+		#SolverChannels.o	\
 
 .PHONY: all
 all: $(TARGET)
 default: all
 
 PField.o: PField.cpp PField.h
-SolverChannels.o: SolverChannels.cu SolverChannels.h PField.cpp PField.h
+SolverGates.o: SolverGates.cu SolverGates.h PField.cpp PField.h
 SolverComps.o: SolverComps.cu SolverComps.h PField.cpp PField.h SolverMatrix.cu SolverMatrix.h
 SolverMatrix.o: SolverMatrix.cu SolverMatrix.h operations.h
 

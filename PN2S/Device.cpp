@@ -87,12 +87,14 @@ Error_PN2S Device::AllocateMemory(vector<Model_pack_info> &mps, double dt ){
 		 */
 		size_t nCompt = mps[pack][0].nCompt;
 		size_t nChannels = 0;
+		size_t nGates = 0;
 		for (Model_pack_info::iterator m = mps[pack].begin(); m != mps[pack].end(); m++)
 		{
 			nChannels += m->nChannel;
+			nGates += m->nGates;
 			_modelPacks[pack].models.push_back( m->id);
 		}
-		ModelStatistic stat(dt, mps[pack].size(), nCompt, nChannels);
+		ModelStatistic stat(dt, mps[pack].size(), nCompt, nChannels, nGates);
 		_modelPacks[pack].AllocateMemory(stat,streams[pack%nstreams]);
 	}
 	return Error_PN2S::NO_ERROR;

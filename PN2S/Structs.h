@@ -39,10 +39,11 @@ struct Model_info{
 	unsigned int id;
 	unsigned int nCompt;
 	unsigned int nChannel;
-	Model_info():id(0), nCompt(0), nChannel(0){}
-	Model_info(unsigned int i):id(i), nCompt(0), nChannel(0){}
-	Model_info(unsigned int i, unsigned int n, unsigned int c):id(i), nCompt(n), nChannel(c){}
-	Model_info(const Model_info& m) : id(m.id), nCompt(m.nCompt), nChannel(m.nChannel) {}
+	unsigned int nGates;
+	Model_info():id(0), nCompt(0), nChannel(0), nGates(0){}
+	Model_info(unsigned int i):id(i), nCompt(0), nChannel(0), nGates(0){}
+	Model_info(unsigned int i, unsigned int n, unsigned int c,  unsigned int g):id(i), nCompt(n), nChannel(c), nGates(g){}
+	Model_info(const Model_info& m) : id(m.id), nCompt(m.nCompt), nChannel(m.nChannel), nGates(m.nGates) {}
 };
 
 typedef vector<Model_info> Model_pack_info;

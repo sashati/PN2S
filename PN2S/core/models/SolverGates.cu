@@ -1,11 +1,11 @@
 ///////////////////////////////////////////////////////////
-//  SolverChannels.cpp
-//  Implementation of the Class SolverChannels
+//  SolverGates.cpp
+//  Implementation of the Class SolverGates
 //  Created on:      27-Dec-2013 7:57:50 PM
 //  Original author: Saeed Shariati
 ///////////////////////////////////////////////////////////
 
-#include "SolverChannels.h"
+#include "SolverGates.h"
 
 #include <assert.h>
 #include <cuda_runtime.h>
@@ -24,15 +24,15 @@ using namespace pn2s::models;
 
 #define NUMBER_OF_MULTI_PROCESSOR 8
 
-SolverChannels::SolverChannels(): _stream(0)
+SolverGates::SolverGates(): _stream(0)
 {
 }
 
-SolverChannels::~SolverChannels()
+SolverGates::~SolverGates()
 {
 }
 
-void SolverChannels::AllocateMemory(models::ModelStatistic& s, cudaStream_t stream)
+void SolverGates::AllocateMemory(models::ModelStatistic& s, cudaStream_t stream)
 {
 	_m_statistic = s;
 	_stream = stream;
@@ -50,7 +50,7 @@ void SolverChannels::AllocateMemory(models::ModelStatistic& s, cudaStream_t stre
 	_blocks=dim3(max((int)(ceil((double)_m_statistic.nChannels_all / _threads.y)),1), 1);
 }
 
-void SolverChannels::PrepareSolver(PField<TYPE_>*  Vm)
+void SolverGates::PrepareSolver(PField<TYPE_>*  Vm)
 {
 	if(_m_statistic.nChannels_all)
 	{
@@ -174,12 +174,12 @@ __global__ void advanceChannels(
 	}
 }
 
-double SolverChannels::Input()
+double SolverGates::Input()
 {
 	return 0;
 }
 
-double SolverChannels::Process()
+double SolverGates::Process()
 {
 	clock_t	start_time = clock();
 	if(_m_statistic.nChannels_all > 0)
@@ -200,11 +200,11 @@ double SolverChannels::Process()
 	return elapsed_time;
 }
 
-double SolverChannels::Output()
+double SolverGates::Output()
 {
 	clock_t	start_time = clock();
 
-	_ch_currents_gk_ek.Device2Host_Async(_stream);
+//	_ch_currents_gk_ek.Device2Host_Async(_stream);
 
 	return std::clock() - start_time ;
 }
@@ -213,23 +213,23 @@ double SolverChannels::Output()
  * Set/Get methods
  */
 
-void SolverChannels::SetGateXParams(int index, vector<double>& params)
+void SolverGates::SetGateXParams(int index, vector<double>& params)
 {
 	for (int i = 0; i < min((int)params.size(),13); ++i)
 		_channel_base[index]._xyz_params[0][i] = (TYPE_)params[i];
 }
-void SolverChannels::SetGateYParams(int index, vector<double>& params)
+void SolverGates::SetGateYParams(int index, vector<double>& params)
 {
 	for (int i = 0; i < min((int)params.size(),13); ++i)
 		_channel_base[index]._xyz_params[1][i] = (TYPE_)params[i];
 }
-void SolverChannels::SetGateZParams(int index, vector<double>& params)
+void SolverGates::SetGateZParams(int index, vector<double>& params)
 {
-	for (int i = 0; i < min((int)params.size(),13); ++i)
-		_channel_base[index]._xyz_params[2][i] = (TYPE_)params[i];
+//	for (int i = 0; i < min((int)params.size(),13); ++i)
+//		_channel_base[index]._xyz_params[2][i] = (TYPE_)params[i];
 }
 
-void SolverChannels::SetValue(int index, FIELD::CH field, TYPE_ value)
+void SolverGates::SetValue(int index, FIELD::CH field, TYPE_ value)
 {
 	switch(field)
 	{
@@ -266,7 +266,7 @@ void SolverChannels::SetValue(int index, FIELD::CH field, TYPE_ value)
 	}
 }
 
-TYPE_ SolverChannels::GetValue(int index, FIELD::CH field)
+TYPE_ SolverGates::GetValue(int index, FIELD::CH field)
 {
 //	switch(field)
 //	{

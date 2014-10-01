@@ -95,34 +95,34 @@ void PN2S_Proxy::fillData(map<unsigned int, Id> &modelId_map){
 					//Add Channel for a compartment
 					for ( ; icurrent < *iboundary; ++icurrent, ch_idx++, ichannel++ )
 					{
-						if(ichannel->Xpower_)
-						{
-							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_X_POWER,ichannel->Xpower_);
-							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_X,*istate);
-							mp.ChannelSolver().SetGateXParams(ch_idx,ichannel->Xparams);
-							istate++;
-						}
-						if(ichannel->Ypower_)
-						{
-							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Y_POWER,ichannel->Ypower_);
-							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Y,*istate);
-							mp.ChannelSolver().SetGateYParams(ch_idx,ichannel->Yparams);
-							istate++;
-						}
-						if(ichannel->Zpower_)
-						{
-							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Z_POWER,ichannel->Zpower_);
-							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Z,*istate);
-							mp.ChannelSolver().SetGateZParams(ch_idx,ichannel->Zparams);
-							istate++;
-						}
-						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_GBAR,ichannel->Gbar_);
-						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_GK,icurrent->Gk);
-						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_EK,icurrent->Ek);
-
-						//Connect the channel with the compartment
-						mp.ComptSolver().ConnectChannel(cmpt_idx,ch_idx);
-						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_COMPONENT_INDEX,cmpt_idx);
+//						if(ichannel->Xpower_)
+//						{
+//							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_X_POWER,ichannel->Xpower_);
+//							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_X,*istate);
+//							mp.ChannelSolver().SetGateXParams(ch_idx,ichannel->Xparams);
+//							istate++;
+//						}
+//						if(ichannel->Ypower_)
+//						{
+//							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Y_POWER,ichannel->Ypower_);
+//							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Y,*istate);
+//							mp.ChannelSolver().SetGateYParams(ch_idx,ichannel->Yparams);
+//							istate++;
+//						}
+//						if(ichannel->Zpower_)
+//						{
+//							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Z_POWER,ichannel->Zpower_);
+//							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Z,*istate);
+//							mp.ChannelSolver().SetGateZParams(ch_idx,ichannel->Zparams);
+//							istate++;
+//						}
+//						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_GBAR,ichannel->Gbar_);
+//						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_GK,icurrent->Gk);
+//						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_EK,icurrent->Ek);
+//
+//						//Connect the channel with the compartment
+//						mp.ComptSolver().ConnectChannel(cmpt_idx,ch_idx);
+//						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_COMPONENT_INDEX,cmpt_idx);
 
 					}
 				}

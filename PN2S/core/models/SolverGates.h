@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////
-//  SolverChannels.h
-//  Implementation of the Class SolverChannels
+//  SolverGates.h
+//  Implementation of the Class SolverGates
 //  Created on:      27-Dec-2013 7:57:50 PM
 //  Original author: Saeed Shariati
 ///////////////////////////////////////////////////////////
@@ -15,14 +15,15 @@ namespace pn2s
 {
 namespace models
 {
-class SolverChannels
+class SolverGates
 {
 private:
 
 	ModelStatistic _m_statistic;
 	cudaStream_t _stream;
 
-	PField<TYPE_>*  _Vm;
+	PField<TYPE_>*  _Vm; //Link to the compartments
+
 	PField<TYPE_>  _state;
 	PField<int>  _comptIndex;
 	PField<ChannelType>  _channel_base;
@@ -30,8 +31,8 @@ private:
 
 public:
 	dim3 _threads, _blocks;
-	SolverChannels();
-	~SolverChannels();
+	SolverGates();
+	~SolverGates();
 	void AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
 	void PrepareSolver(PField<TYPE_>*  Vm);
 	double Input();

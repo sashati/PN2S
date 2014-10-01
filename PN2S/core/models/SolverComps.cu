@@ -112,13 +112,13 @@ __global__ void update_rhs(
     	hm_local = ext_curr_gk_ekgk[idx].x + constants[idx];
 
 		size_t pos = channelIndex[idx].y;
-		for ( int i = 0; i < channelIndex[idx].x; ++i)
-		{
-			hm_local   += ch_curr_gk_ek[pos].x;
-			rhs_local += ch_curr_gk_ek[pos].x * ch_curr_gk_ek[pos].y;
-			pos++;
-		}
-    	__syncthreads();
+//		for ( int i = 0; i < channelIndex[idx].x; ++i)
+//		{
+//			hm_local   += ch_curr_gk_ek[pos].x;
+//			rhs_local += ch_curr_gk_ek[pos].x * ch_curr_gk_ek[pos].y;
+//			pos++;
+//		}
+//    	__syncthreads();
     	hm[pos_a] = hm_local;
     	rhs[idx] = rhs_local;
     }

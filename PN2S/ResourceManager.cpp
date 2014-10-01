@@ -46,12 +46,12 @@ void ResourceManager::SetValue(pn2s::Location l, FIELD::CM field, TYPE_ value)
 
 TYPE_ ResourceManager::GetValue(pn2s::Location l, FIELD::CH field)
 {
-	return _devices[l.device]->ModelPacks()[l.pack]._chanSolver.GetValue(l.index,field);
+	return _devices[l.device]->ModelPacks()[l.pack]._gateSolver.GetValue(l.index,field);
 }
 
 void ResourceManager::SetValue(pn2s::Location l, FIELD::CH field, TYPE_ value)
 {
-	_devices[l.device]->ModelPacks()[l.pack]._chanSolver.SetValue(l.index,field, value);
+	_devices[l.device]->ModelPacks()[l.pack]._gateSolver.SetValue(l.index,field, value);
 }
 
 bool compareModels (pn2s::Model_info i,pn2s::Model_info j) { return (i.nChannel<j.nChannel); }
