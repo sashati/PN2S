@@ -24,7 +24,8 @@ TARGET = _pn2s.o
 COBJS += Device.o \
 	DeviceManager.o 
 		 
-OBJS += ResourceManager.o  
+OBJS += ResourceManager.o \
+	Parameters.o  
 
 SUBDIR = core
 	
@@ -38,6 +39,7 @@ Manager.o: Manager.cpp Manager.h headers.h Parameters.h
 Device.o: Device.cpp Device.h headers.h Parameters.h
 DeviceManager.o: DeviceManager.cpp DeviceManager.h headers.h Parameters.h 
 ResourceManager.o: ResourceManager.cpp ResourceManager.h DeviceManager.cpp DeviceManager.h headers.h Parameters.h
+Parameters.o: Parameters.cpp Parameters.h
 
 $(TARGET): $(OBJS) $(COBJS) $(SUBDIR) 
 	$(LD) -r -o  $(TARGET) $(OBJS) $(COBJS) $(MODULES)

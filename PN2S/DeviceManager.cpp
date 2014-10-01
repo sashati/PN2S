@@ -21,7 +21,7 @@ int DeviceManager::CkeckAvailableDevices(){
 	int device_count = 0;
 	cudaDeviceReset();
 	cudaGetDeviceCount(&device_count);
-	device_count = min(MAX_DEVICE_NUMBER, device_count);
+	device_count = min(Parameters::MAX_DEVICE_NUMBER, device_count);
 	for(int i =0; i<device_count; i++)
 	{
 		Device d(i);
@@ -40,6 +40,17 @@ Error_PN2S DeviceManager::Initialize(){
 	if(!_isInitialized)
 	{
 		_isInitialized = true;
+
+		//Read parameters from environment
+		char * val = getenv("PN2S_MP_SIZE");
+		if (val != NULL)
+			istringstream(val) >> pn2s::Parameters::MP_SIZE;
+		val = getenv("MAX_STREAM_NUMBER");
+		if (val != NULL)
+			istringstream(val) >> pn2s::Parameters::MAX_STREAM_NUMBER;
+		val = getenv("MAX_DEVICE_NUMBER");
+		if (val != NULL)
+			istringstream(val) >> pn2s::Parameters::MAX_DEVICE_NUMBER;
 
 		DeviceManager::CkeckAvailableDevices();
 

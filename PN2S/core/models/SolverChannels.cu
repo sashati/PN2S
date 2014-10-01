@@ -45,9 +45,9 @@ void SolverChannels::AllocateMemory(models::ModelStatistic& s, cudaStream_t stre
 	_channel_base.AllocateMemory(_m_statistic.nChannels_all);
 	_ch_currents_gk_ek.AllocateMemory(_m_statistic.nChannels_all);
 
-	int threadSize = min(max((int)_m_statistic.nChannels_all/NUMBER_OF_MULTI_PROCESSOR,16), 32);
+	int threadSize = min(max((int)_m_statistic.nChannels_all/8,16), 32);
 	_threads=dim3(2,threadSize, 1);
-	_blocks=dim3(max((int)(ceil(_m_statistic.nChannels_all / _threads.y)),1), 1);
+	_blocks=dim3(max((int)(ceil((double)_m_statistic.nChannels_all / _threads.y)),1), 1);
 }
 
 void SolverChannels::PrepareSolver(PField<TYPE_>*  Vm)
@@ -60,9 +60,8 @@ void SolverChannels::PrepareSolver(PField<TYPE_>*  Vm)
 		_comptIndex.Host2Device_Async(_stream);
 		_Vm = Vm;
 
-		int threadSize = min(max((int)_m_statistic.nChannels_all/8,16), 32);
-		_threads=dim3(2,threadSize, 1);
-		_blocks=dim3(max((int)(ceil((double)_m_statistic.nChannels_all / _threads.y)),1), 1);
+		_threads=dim3(2,16, 1);
+		_blocks=dim3(ceil(_m_statistic.nChannels_all / (double)_threads.y));
 	}
 }
 
@@ -150,7 +149,7 @@ __global__ void advanceChannels(
 			temp = 1.0 + dt / 2.0 * B; //new value for temp
 			state[3*idx+threadIdx.x] = ( temp2 * ( 2.0 - temp ) + dt * A ) / temp;
 		}
-
+		__syncthreads();
 		//Update channels characteristics
 		data[i] = temp2;
 		if (power > 1)
@@ -175,32 +174,39 @@ __global__ void advanceChannels(
 	}
 }
 
-void SolverChannels::Input()
+double SolverChannels::Input()
 {
-
+	return 0;
 }
 
-void SolverChannels::Process()
+double SolverChannels::Process()
 {
-	if(_m_statistic.nChannels_all < 1)
-		return;
-	int smem_size = (sizeof(TYPE_) * _threads.x * _threads.y);
-
-	advanceChannels <<<_blocks, _threads,smem_size, _stream>>> (
-			_Vm->device,
-			_comptIndex.device,
-			_state.device,
-			_channel_base.device,
-			_ch_currents_gk_ek.device,
-			_m_statistic.nChannels_all,
-			_m_statistic.dt);
-
-	assert(cudaSuccess == cudaGetLastError());
+	clock_t	start_time = clock();
+	if(_m_statistic.nChannels_all > 0)
+	{
+		int smem_size = (sizeof(TYPE_) * _threads.x * _threads.y);
+		advanceChannels <<<_blocks, _threads,smem_size, _stream>>> (
+				_Vm->device,
+				_comptIndex.device,
+				_state.device,
+				_channel_base.device,
+				_ch_currents_gk_ek.device,
+				_m_statistic.nChannels_all,
+				_m_statistic.dt);
+		assert(cudaSuccess == cudaGetLastError());
+	}
+	double elapsed_time = ( std::clock() - start_time );
+//	cout << "Elasped time is" << elapsed_time << endl << flush;
+	return elapsed_time;
 }
 
-void SolverChannels::Output()
+double SolverChannels::Output()
 {
+	clock_t	start_time = clock();
+
 	_ch_currents_gk_ek.Device2Host_Async(_stream);
+
+	return std::clock() - start_time ;
 }
 
 /**
@@ -242,9 +248,9 @@ void SolverChannels::SetValue(int index, FIELD::CH field, TYPE_ value)
 		case FIELD::CH_Y_POWER:
 			_channel_base[index]._xyz_power[1] = (unsigned char)value;
 			break;
-		case FIELD::CH_Z_POWER:
-			_channel_base[index]._xyz_power[2] = (unsigned char)value;
-			break;
+//		case FIELD::CH_Z_POWER:
+//			_channel_base[index]._xyz_power[2] = (unsigned char)value;
+//			break;
 		case FIELD::CH_X:
 			_state[3*index] = value;
 			break;

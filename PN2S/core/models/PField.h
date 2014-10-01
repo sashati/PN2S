@@ -36,8 +36,8 @@ namespace models
 
 struct ChannelType {
 	//TODO: Constants, put them in texture memory
-	unsigned char _xyz_power [3];
-	TYPE_ _xyz_params[3][13];
+	unsigned char _xyz_power [2];
+	TYPE_ _xyz_params[2][13];
 	unsigned char _instant;
 	TYPE_ _gbar;
 

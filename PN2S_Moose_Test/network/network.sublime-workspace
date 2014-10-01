@@ -72,59 +72,20 @@
 	"buffers":
 	[
 		{
-			"file": "network.py",
+			"contents": "-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0700000000577782	-0.0700000000577782	-0.0700000017912961	-0.0700000387764782	-0.0700101961836826	\n-0.0683249284170994	-0.0683249284170994	-0.018067755715332	1.05418577626778	0.0867366386527333	\n8.00027964598349	7.88854425047305	115.948393713304	6.554920516467	0.0870887988439613	\n8.00027964598349	7.88854425047305	115.948393713304	6.554920516467	0.0870887988439613	\n8.00027964598349	7.88854425047305	115.948393713304	6.554920516467	0.0870887988439613	\n8.00027964598349	7.88854425047305	115.948393713304	6.554920516467	0.0870887988439613	\n8.00027964598349	7.88854425047305	115.948393713304	6.554920516467	0.0870887988439613	\n8.00027964598349	7.88854425047305	115.948393713304	6.554920516467	0.0870887988439613	\n8.00027964598349	7.88854425047305	115.948393713304	6.554920516467	0.0870887988439613	\n8.00027964598349	7.88854425047305	115.948393713304	6.554920516467	0.0870887988439613	\n8.00027964598349	7.88854425047305	115.948393713304	6.554920516467	0.0870887988439613	\n7.99880372020028	7.88706832468984	115.902635586247	5.56438686450156	0.0703517537965871	\n-4.16125901827103e+43	-3.53570456903407e+41	-6.46989943924594e+41	-3.06892183828196e+40	-1.96474135270555e+36	\n0.07	0.07	0.07	0.07	0.07	\n0.07	0.07	0.07	0.07	0.07	\n1901.57141852235	1901.57141852235	58952.3184784484	2796.40160407236	0.249022752220829	\n0.07	0.07	0.07	0.07	0.07	\n4.96282281677807e+195	5.84087012904499e+197	9.08134826664021e+195	4.30763233312083e+194	2.75777091210377e+190	\n1901.4084794049	1901.4084794049	58947.26687699	2800.02848697551	1019.16870654535	\n4.22595826762403e+43	1.00056046148567e+42	2.07056204337515e+43	9.82147115592929e+41	6.28776213318673e+37	\n0.07	0.07	0.07	0.07	0.07	\n0.07	0.07	0.07	0.07	0.07	\n0.07	0.07	0.07	0.07	0.07	\n-4.16125901827103e+43	-3.53570456903407e+41	-6.46989943924594e+41	-3.06892183828196e+40	-1.96474135270555e+36	\n0.07	0.07	0.07	0.07	0.07	\n0.07	0.07	0.07	0.07	0.07	\n8.10435721424971e+151	8.10435721424971e+151	2.51259386713384e+153	5.43905299275391e+154	1.43018618664237e+157	\n",
 			"settings":
 			{
-				"buffer_size": 11263,
-				"line_ending": "Unix"
+				"buffer_size": 4410,
+				"line_ending": "Unix",
+				"name": "-0.0700000000577782	-0.0700000000577782	-0.0700000"
 			}
 		},
 		{
-			"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/testHsolve.py",
+			"file": "/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S/core/ModelPack.cpp",
 			"settings":
 			{
-				"buffer_size": 10289,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/saeed/Downloads/simpleMultiGPU/0_Simple/simpleMultiGPU/simpleMultiGPU.cu",
-			"settings":
-			{
-				"buffer_size": 6882,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "testHsolve.py",
-			"settings":
-			{
-				"buffer_size": 10232,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/recurrentIntFire.py",
-			"settings":
-			{
-				"buffer_size": 4062,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/compartment_net_no_array.py",
-			"settings":
-			{
-				"buffer_size": 15081,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/RandSpikeStats.py",
-			"settings":
-			{
-				"buffer_size": 2845,
-				"line_ending": "Unix"
+				"buffer_size": 1034,
+				"line_ending": "Windows"
 			}
 		}
 	],
@@ -311,15 +272,20 @@
 	],
 	"file_history":
 	[
+		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S/PN2S/core/ModelPack.cpp",
+		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/RandSpikeStats.py",
+		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/compartment_net_no_array.py",
+		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/recurrentIntFire.py",
+		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/testHsolve.py",
+		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/network.py",
+		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/testHsolve.py",
+		"/home/saeed/Downloads/simpleMultiGPU/0_Simple/simpleMultiGPU/simpleMultiGPU.cu",
 		"/home/saeed/tmp/moose/hsolve/HSolve.cpp",
 		"/home/saeed/tmp/moose/hsolve/HSolveActive.cpp",
 		"/home/saeed/tmp/moose/testHsolve.py",
 		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/testSpike.py",
-		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/network.py",
 		"/home/saeed/Dropbox/Solentech/Navitech/Slides/middelware.tex",
 		"/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S_Moose_Test/network/single.py",
-		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/testHsolve.py",
-		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/RandSpikeStats.py",
 		"/src/saeed/cuda-workspace/moose/hsolve/HSolve.cpp",
 		"/src/saeed/cuda-workspace/async_gpu/Demos/snippets/synapse_tutorial.py",
 		"/src/saeed/cuda-workspace/moose/Demos/snippets/testHsolve.py",
@@ -561,213 +527,64 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "network.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 11263,
+						"buffer_size": 4410,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								2703,
+								2703
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
+							"auto_name": "-0.0700000000577782	-0.0700000000577782	-0.0700000",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 5290.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/testHsolve.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10289,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								9822,
-								9822
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 6338.0,
+						"translation.y": 483.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
-					"file": "/home/saeed/Downloads/simpleMultiGPU/0_Simple/simpleMultiGPU/simpleMultiGPU.cu",
+					"buffer": 1,
+					"file": "/src/saeed/cuda-workspace/async_gpu/hsolve/PN2S/core/ModelPack.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6882,
+						"buffer_size": 1034,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								798,
+								798
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Text/Plain text.tmLanguage"
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 414.0,
+						"translation.y": 450.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "testHsolve.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10232,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1251,
-								1251
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 6017.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/recurrentIntFire.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4062,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1426,
-								1426
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 497.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/compartment_net_no_array.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 15081,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								5133,
-								5133
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": -0.0,
-						"translation.y": 3119.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "/src/saeed/cuda-workspace/async_gpu/Demos/snippets/RandSpikeStats.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2845,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1951,
-								1951
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1087.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
 					"type": "text"
 				}
 			]

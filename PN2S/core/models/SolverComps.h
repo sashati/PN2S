@@ -50,9 +50,9 @@ public:
 	~SolverComps();
 	Error_PN2S AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
 	void PrepareSolver(PField<TYPE2_>*  channels_current);
-	void Input();
-	void Process();
-	void Output();
+	double Input();
+	double Process();
+	double Output();
 
 	double GetDt(){ return _statistic.dt;}
 	void SetDt(double dt){ _statistic.dt = dt;}

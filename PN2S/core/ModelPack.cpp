@@ -35,23 +35,26 @@ void ModelPack::PrepareSolvers(){
 }
 
 
-void ModelPack::Input()
+double ModelPack::Input()
 {
-	_compsSolver.Input();
-	_chanSolver.Input();
+	double t = _compsSolver.Input();
+	t += _chanSolver.Input();
+	return t;
 }
 
-void ModelPack::Process()
+double ModelPack::Process()
 {
 	cudaStreamSynchronize(_st);
-	_chanSolver.Process();
-	_compsSolver.Process();
+	double t = _chanSolver.Process();
+	t += _compsSolver.Process();
+	return t;
 }
 
-void ModelPack::Output()
+double ModelPack::Output()
 {
-	_chanSolver.Output();
-	_compsSolver.Output();
+	double t =_chanSolver.Output();
+	t += _compsSolver.Output();
+	return t;
 }
 
 

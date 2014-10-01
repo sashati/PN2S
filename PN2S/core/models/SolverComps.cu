@@ -69,9 +69,8 @@ void SolverComps::PrepareSolver(PField<TYPE2_>*  channels_current)
 	_InjectBasal.Host2Device_Async(_stream);
 	_Constant.Host2Device_Async(_stream);
 	_ext_curr_gh_gkek.Host2Device_Async(_stream);
-
 	_threads=dim3(128);
-	_blocks=dim3( vectorSize / _threads.x + 1);
+	_blocks=dim3( ceil(vectorSize / (double)_threads.x));
 }
 
 /**
@@ -99,51 +98,48 @@ __global__ void update_rhs(
 {
     unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size){ //For each compartment
+    	TYPE_ hm_local;
+    	TYPE_ rhs_local;
 
     	//Find location of A and C in the matrix
 		unsigned int pos_a = idx * nCompt + idx % nCompt;
 
-    	TYPE_ GkSum   = 0.0;
-    	TYPE_ GkEkSum = 0.0;
-    	if(channelIndex[idx].x)
-    	{
-    		size_t pos = channelIndex[idx].y;
-    		for ( int i = 0; i < channelIndex[idx].x; ++i)
-			{
-				GkSum   += ch_curr_gk_ek[pos+i].x;
-				GkEkSum += ch_curr_gk_ek[pos+i].x * ch_curr_gk_ek[pos+i].y;
-			}
-    	}
-
-
-    	hm[pos_a] = constants[idx] + GkSum;
-    	rhs[idx] = vm[idx] * cmByDt[idx] + emByRm[idx] + GkEkSum;
-
     	//Injects from basal or varying resources
-    	rhs[idx] += inject_basal[idx] + inject_varying[idx];
-
     	// add external current
-    	hm[pos_a] += ext_curr_gk_ekgk[idx].x;
-    	rhs[idx] += ext_curr_gk_ekgk[idx].y;
+		rhs_local = inject_basal[idx] + inject_varying[idx] +
+				ext_curr_gk_ekgk[idx].y +
+				vm[idx] * cmByDt[idx] + emByRm[idx];
+    	hm_local = ext_curr_gk_ekgk[idx].x + constants[idx];
+
+		size_t pos = channelIndex[idx].y;
+		for ( int i = 0; i < channelIndex[idx].x; ++i)
+		{
+			hm_local   += ch_curr_gk_ek[pos].x;
+			rhs_local += ch_curr_gk_ek[pos].x * ch_curr_gk_ek[pos].y;
+			pos++;
+		}
+    	__syncthreads();
+    	hm[pos_a] = hm_local;
+    	rhs[idx] = rhs_local;
     }
 }
 
-void SolverComps::Input()
+double SolverComps::Input()
 {
+	clock_t	start_time = clock();
 	_InjectVarying.Host2Device_Async(_stream);
 	_ext_curr_gh_gkek.Host2Device_Async(_stream);
+	return std::clock() - start_time;
 }
 
-void SolverComps::Process()
+
+double SolverComps::Process()
 {
+
+	clock_t	start_time = clock();
+
 	uint vectorSize = _statistic.nModels * _statistic.nCompts_per_model;
 
-//	_hm.print(25);
-//	_rhs.print(5);
-//	_Vm.print(5);
-//	_channelIndex.print(5);
-//	_channels_current->Device2Host();
-//	_channels_current->print(5);
 	update_rhs <<<_blocks, _threads,0, _stream>>> (
 			_hm.device,
 			_rhs.device,
@@ -159,26 +155,29 @@ void SolverComps::Process()
 			_channels_current->device,
 			vectorSize,
 			_statistic.dt);
-	assert(cudaSuccess == cudaGetLastError());
+	double elapsed_time = ( std::clock() - start_time );
 
-//	_hm.Device2Host(); _hm.print(25);
-//	_rhs.Device2Host();	_rhs.print(5);
-//	_channels_current->Device2Host();	_channels_current->print();
+	assert(cudaSuccess == cudaGetLastError());
 
 	SolverMatrix<TYPE_,ARCH_>::fast_solve(
 			_hm.device, _rhs.device, _Vm.device,
 			_statistic.nCompts_per_model, _statistic.nModels, _stream);
-//	_Vm.Device2Host();	_Vm.print(5);
 	assert(cudaSuccess == cudaGetLastError());
 
+//	cout << "Elasped time is" << elapsed_time << endl << flush;
+	return elapsed_time;
 }
 
 
-void SolverComps::Output()
+double SolverComps::Output()
 {
+	clock_t	start_time = clock();
+
 	_Vm.Device2Host_Async(_stream);
 	_ext_curr_gh_gkek.Fill(0.0);
 	_InjectVarying.Fill(0.0);
+
+	return std::clock() - start_time;
 }
 
 /**
@@ -222,6 +221,7 @@ void SolverComps::SetValue(int index, FIELD::CM field, TYPE_ value)
 
 TYPE_ SolverComps::GetValue(int index, FIELD::CM field)
 {
+//	cudaStreamSynchronize(_stream);
 	switch(field)
 	{
 		case FIELD::CM_BY_DT:

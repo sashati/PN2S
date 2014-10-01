@@ -13,8 +13,6 @@
 #include "./models/SolverChannels.h"
 #include "./models/SolverComps.h"
 
-//#include "../../../basecode/header.h" //For seed vector
-
 namespace pn2s
 {
 
@@ -36,9 +34,9 @@ public:
 	void AllocateMemory( models::ModelStatistic s, cudaStream_t st);
 	void PrepareSolvers();
 
-	void Process();
-	void Output();
-	void Input();
+	double Process();
+	double Output();
+	double Input();
 
 	double GetDt(){ return _dt;}
 	models::SolverComps& ComptSolver(){return _compsSolver;}

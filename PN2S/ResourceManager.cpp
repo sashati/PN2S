@@ -28,11 +28,6 @@ Error_PN2S ResourceManager::Initialize(){
 
 		_device_manager.Initialize();
 
-		//	pthread_getschedparam(pthread_self(), &policy, &param);
-		//	param.sched_priority = sched_get_priority_max(policy);
-		//	pthread_setschedparam(pthread_self(), policy, &param);
-
-		//Get Devices
 		_devices = _device_manager.GetDevices();
 	}
 
@@ -81,7 +76,7 @@ void ResourceManager::ModelDistribution(pn2s::Model_pack_info& m, double dt){
 		// TODO: Also consider limitation on channel size. Maybe a
 		// model has a few number of compartment, but many channels
 		// reduce efficiency
-		size_t nModel_in_pack = ceil( (double)MP_CMPT_SIZE_LIMIT / i->first);
+		size_t nModel_in_pack = ceil( (double)Parameters::MP_SIZE / i->first);
 		for(Model_pack_info::iterator start = i->second.begin();
 				start < i->second.end();)
 		{

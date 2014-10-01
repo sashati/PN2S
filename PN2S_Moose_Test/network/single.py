@@ -275,7 +275,7 @@ def test_elec_alone():
     pylab.show()
 
 
-def main():
+def run_simulator():
     test_elec_alone()
 
 Use_MasterHSolve = True
@@ -291,4 +291,4 @@ INJECT_CURRENT = 1e-7
 dt = 1e-6
 
 if __name__ == '__main__':
-    main()
+    run_simulator()

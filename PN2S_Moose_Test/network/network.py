@@ -1,6 +1,8 @@
 import sys
 import os
-os.environ['NUMPTHREADS'] = '8'
+os.environ['MAX_DEVICE_NUMBER'] = '1'
+os.environ['MAX_STREAM_NUMBER'] = '4'
+os.environ['PN2S_MP_SIZE'] = '2048'
 import pylab
 import numpy
 import math
@@ -285,7 +287,7 @@ def make_input_layer(avgFiringRate=10, spike_refractT=74e-4):
     return input_layer
 
 
-def main():
+def run_simulator():
     moose.Neutral('/graphs')
     moose.Neutral('/graphs/cpu')
     moose.Neutral('/graphs/gpu')
@@ -302,12 +304,12 @@ def main():
         hsolve = moose.HSolve('/gpu/hsolve')
         hsolve.dt = dt
         hsolve.target = '/gpu'
-#     else:
+    else:
         create_cells("/cpu", input_layer)
         
         
     for i in range(number_of_ext_cells-2, number_of_ext_cells):
-        add_plot("/cpu/cell" + str(i) + '/soma','getVm', 'cpu/c' + str(i) + '_soma')
+#         add_plot("/cpu/cell" + str(i) + '/soma','getVm', 'cpu/c' + str(i) + '_soma')
         add_plot("/gpu/cell" + str(i) + '/soma','getVm', 'gpu/c' + str(i) + '_soma')
 
     moose.useClock(0, '/##', 'init')
@@ -316,27 +318,28 @@ def main():
     moose.reinit()
     
     start_time = time.time()
-    
     moose.start(Simulation_Time)
-    
-    print("--- %s seconds ---" % str(time.time() - start_time))
+    t_exec = time.time() - start_time - 0.000125
     
     dump_plots()
     pylab.legend()
     pylab.show()
+    
+    print("--- Exec: %s" % str(t_exec * dt / Simulation_Time * 1000000))
+    
 
 
 Use_MasterHSolve = True
 # Use_MasterHSolve = False
-Simulation_Time = 4e-2
+Simulation_Time = 2e-2
 
 number_of_input_cells = 1
-number_of_ext_cells = 1000
+number_of_ext_cells = 100
 number_of_inh_cells = 0
 
 
-IC = 1  # Input connection probability
-P1 = 0  # Exitatory to Excitatory connection probability
+IC = 2  # Input connection probability
+P1 = 1  # Exitatory to Excitatory connection probability
 P2 = 0  # Exitatory to Inhibitory connection probability
 P3 = 0  # Inhibitory to Excitatory connection probability
 
@@ -344,4 +347,4 @@ INJECT_CURRENT = 0
 dt = 2e-6
 
 if __name__ == '__main__':
-    main()
+    run_simulator()

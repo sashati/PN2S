@@ -9,28 +9,27 @@
 #include "headers.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
-// tbb related header files
+#include <assert.h>
+
+//#define USE_TBB
+#ifdef USE_TBB
 #include "tbb/flow_graph.h"
 #include "tbb/atomic.h"
 #include "tbb/tick_count.h"
-#include "core/models/ModelStatistic.h"
-#include <assert.h>
-#include "DeviceManager.h"
-//Moose models
-//#include "../HSolve.h"
-
-//#define USE_TBB
-using namespace pn2s;
 using namespace std;
 using namespace tbb;
 using namespace tbb::flow;
+#endif
 
+#include "core/models/ModelStatistic.h"
+#include "DeviceManager.h"
+using namespace pn2s;
 using namespace pn2s::models;
 
 extern std::map< unsigned int, pn2s::Location > locationMap; //Locates in ResourceManager
 
 
-Device::Device(int _id): id(_id), _dt(1), nstreams(DEFAULT_STREAM_NUMBER){
+Device::Device(int _id): id(_id), _dt(1), nstreams(Parameters::MAX_STREAM_NUMBER){
 	_modelPacks.clear();
 	cudaSetDevice(id);
 	/**
@@ -45,7 +44,7 @@ Device::Device(int _id): id(_id), _dt(1), nstreams(DEFAULT_STREAM_NUMBER){
 	}
 //	cudaSetDeviceFlags(cudaDeviceBlockingSync | cudaDeviceMapHost);
 //	nstreams = deviceProp.multiProcessorCount;
-	nstreams = DEFAULT_STREAM_NUMBER;
+	nstreams = Parameters::MAX_STREAM_NUMBER;
 	/**
 	 * Device initialization
 	 */
@@ -170,20 +169,23 @@ void Device::Process()
 #else
 
 	cudaSetDevice(id);
+	double time = 0;
 	for (vector<ModelPack>::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
 	{
-		it->Input();
+		time += it->Input();
 	}
-	for (vector<ModelPack >::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
-	{
-		it->Process();
-	}
-	for (vector<ModelPack >::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
-	{
-		it->Output();
-	}
-	cudaDeviceSynchronize();
 
+	for (vector<ModelPack >::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
+	{
+		time += it->Process();
+	}
+	for (vector<ModelPack >::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
+	{
+		time += it->Output();
+	}
+//	cudaDeviceSynchronize();
+
+//	cout << time << endl;
 #endif
 }
 

@@ -34,9 +34,9 @@ public:
 	~SolverChannels();
 	void AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
 	void PrepareSolver(PField<TYPE_>*  Vm);
-	void Input();
-	void Process();
-	void Output();
+	double Input();
+	double Process();
+	double Output();
 
 	PField<TYPE2_> * GetFieldChannelCurrents(){return & _ch_currents_gk_ek;}
 
