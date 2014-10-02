@@ -28,6 +28,8 @@ public:
 
 	static void setValue( unsigned int , TYPE_, pn2s::FIELD::CM);
 	static TYPE_ getValue( unsigned int , pn2s::FIELD::CM);
+	static void setValue( unsigned int , TYPE_, pn2s::FIELD::GATE);
+	static TYPE_ getValue( unsigned int , pn2s::FIELD::GATE);
 	static void setValue( unsigned int , TYPE_, pn2s::FIELD::CH);
 	static TYPE_ getValue( unsigned int , pn2s::FIELD::CH);
 

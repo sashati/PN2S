@@ -22,12 +22,25 @@ private:
 	ModelStatistic _m_statistic;
 	cudaStream_t _stream;
 
-	PField<TYPE_>*  _Vm; //Link to the compartments
+	PField<TYPE_>*  _Vm; // Comes from compartments
 
 	PField<TYPE_>  _state;
-	PField<int>  _comptIndex;
-	PField<ChannelType>  _channel_base;
+	PField<TYPE_>  _gk;
 	PField<TYPE2_>  _ch_currents_gk_ek;
+
+	//Constant values
+	PField<TYPE_>  _power;
+	PField<pn2s::models::GateParams> _params; //10 values
+	PField<TYPE3_> _params_div_min_max;
+	PField<TYPE_> _gbar;
+	PField<TYPE_>  _ek;
+
+
+	//indexes
+	PField<int>  _comptIndex;
+	PField<int>  _channelIndex;
+	PField<int>  _gateIndex;
+
 
 public:
 	dim3 _threads, _blocks;
@@ -44,12 +57,10 @@ public:
 	double GetDt(){ return _m_statistic.dt;}
 	void SetDt(double dt){ _m_statistic.dt = dt;}
 
-	void 	SetGateXParams(int index, vector<double>& params);
-	void 	SetGateYParams(int index, vector<double>& params);
-	void 	SetGateZParams(int index, vector<double>& params);
+	void 	SetGateParams(int index, vector<double>& params);
 
-	void 	SetValue(int index, FIELD::CH field, TYPE_ value);
-	TYPE_ 	GetValue(int index, FIELD::CH field);
+	void 	SetValue(int index, FIELD::GATE, TYPE_ value);
+	TYPE_ 	GetValue(int index, FIELD::GATE);
 };
 
 }

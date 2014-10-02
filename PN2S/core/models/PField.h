@@ -34,6 +34,11 @@ namespace models
 #define PARAMS_MIN 11
 #define PARAMS_MAX 12
 
+
+struct GateParams {
+	TYPE_ p[10];
+};
+
 struct ChannelType {
 	//TODO: Constants, put them in texture memory
 	unsigned char _xyz_power [2];
@@ -52,6 +57,7 @@ struct ChannelType {
 	    return out;
 	}
 };
+
 
 template <typename T>
 class PField
@@ -88,8 +94,8 @@ public:
 	thrust::device_ptr<T> DeviceStart() {return thrust::device_ptr<T> (device); }
 	thrust::device_ptr<T> DeviceEnd() {return thrust::device_ptr<T> (device+_size); }
 
-	T operator [](int i) const {return host[i];}
-	T & operator [](int i) {return host[i];}
+	T operator [](int i) const;
+	T & operator [](int i);
 
 	void print();
 	void print(int seperator);

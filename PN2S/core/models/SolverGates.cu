@@ -21,10 +21,13 @@ using namespace pn2s::models;
 #define INSTANT_X 1
 #define INSTANT_Y 2
 #define INSTANT_Z 4
+#define IS_SECOND_GATE 8
 
 #define NUMBER_OF_MULTI_PROCESSOR 8
 
-SolverGates::SolverGates(): _stream(0)
+#define PARAM_SIZE	13
+
+SolverGates::SolverGates(): _stream(0), _Vm(0)
 {
 }
 
@@ -37,13 +40,25 @@ void SolverGates::AllocateMemory(models::ModelStatistic& s, cudaStream_t stream)
 	_m_statistic = s;
 	_stream = stream;
 
-	if(_m_statistic.nChannels_all == 0)
+	if(_m_statistic.nGates <= 0)
 		return;
 
-	_state.AllocateMemory(_m_statistic.nChannels_all*3);
-	_comptIndex.AllocateMemory(_m_statistic.nChannels_all);
-	_channel_base.AllocateMemory(_m_statistic.nChannels_all);
-	_ch_currents_gk_ek.AllocateMemory(_m_statistic.nChannels_all);
+	_ch_currents_gk_ek.AllocateMemory(_m_statistic.nChannels_all);//TODO: remove
+
+	_state.AllocateMemory(_m_statistic.nGates, 0);
+	_gk.AllocateMemory(_m_statistic.nChannels_all, 0); //Channel currents
+
+	//Indices
+	_comptIndex.AllocateMemory(_m_statistic.nGates, 0);
+	_channelIndex.AllocateMemory(_m_statistic.nGates, 0);
+	_gateIndex.AllocateMemory(_m_statistic.nGates, 0);
+
+	//Constant values
+	_ek.AllocateMemory(_m_statistic.nGates, 0);
+	_gbar.AllocateMemory(_m_statistic.nGates, 0);
+	_power.AllocateMemory(_m_statistic.nGates, 0);
+	_params.AllocateMemory(_m_statistic.nGates, 0);
+	_params_div_min_max.AllocateMemory(_m_statistic.nGates, 0);
 
 	int threadSize = min(max((int)_m_statistic.nChannels_all/8,16), 32);
 	_threads=dim3(2,threadSize, 1);
@@ -52,125 +67,152 @@ void SolverGates::AllocateMemory(models::ModelStatistic& s, cudaStream_t stream)
 
 void SolverGates::PrepareSolver(PField<TYPE_>*  Vm)
 {
-	if(_m_statistic.nChannels_all)
+	if(_m_statistic.nGates)
 	{
-		_state.Host2Device_Async(_stream);
-		_channel_base.Host2Device_Async(_stream);
 		_ch_currents_gk_ek.Host2Device_Async(_stream);
+
+		_state.Host2Device_Async(_stream);
+		_gk.Host2Device_Async(_stream);
 		_comptIndex.Host2Device_Async(_stream);
+		_channelIndex.Host2Device_Async(_stream);
+		_gateIndex.Host2Device_Async(_stream);
+		_ek.Host2Device_Async(_stream);
+		_gbar.Host2Device_Async(_stream);
+		_power.Host2Device_Async(_stream);
+		_params.Host2Device_Async(_stream);
+		_params_div_min_max.Host2Device_Async(_stream);
 		_Vm = Vm;
 
-		_threads=dim3(2,16, 1);
-		_blocks=dim3(ceil(_m_statistic.nChannels_all / (double)_threads.y));
+		_threads=dim3(32);
+		_blocks=dim3(ceil(_m_statistic.nGates / (double)_threads.x));
 	}
 }
 
 /**
  * KERNELS
  */
-extern __shared__ TYPE_ shmem[];
-
-__global__ void advanceChannels(
-		TYPE_* v,
-		int* compIndex,
-		TYPE_* state,
-		pn2s::models::ChannelType* ch,
+__global__ void advanceGates(
+		TYPE_*  state,
+		TYPE_*  gk,
 		TYPE2_* current,
+		TYPE_*  power,
+		pn2s::models::GateParams* params,
+		TYPE3_* div_min_max,
+		TYPE_* gbar,
+		TYPE_*  ek,
+		int*  comptIndex,
+		int*  channelIndex,
+		int*  gateIndex,
+		TYPE_* v,
 		size_t size, TYPE_ dt)
 {
+	extern __shared__ TYPE2_ data[];
 	TYPE_ temp, temp2, A, B;
-	TYPE_* data = shmem;
-	int idx = blockIdx.x * blockDim.y + threadIdx.y;
+	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if (idx >= size)
 		return;
 
-	int i = threadIdx.y * 2 + threadIdx.x;
-	data[i] = 1.0;
+	int ch_idx = channelIndex[idx];
+	int fi = gateIndex[idx];
 
-	TYPE_ power = ch[idx]._xyz_power[threadIdx.x];
-	if ( power > 0.0 )
+	if ( power[idx] > 0.0 )
 	{
-		int cIdx = compIndex[idx];
-		TYPE_ x = v[cIdx];
+		TYPE_ x = v[comptIndex[idx]];
 
-		temp = ch[idx]._xyz_params[threadIdx.x][PARAMS_MIN];
-		temp2 = ch[idx]._xyz_params[threadIdx.x][PARAMS_MAX];
+		temp = div_min_max[idx].y;
+		temp2 = div_min_max[idx].z;
+
+		// Calculate new states
+		TYPE_ dx = ( temp2 - temp ) / div_min_max[idx].x;
+
 		// Check boundaries
 		x = fmax(temp, x);
 		x = fmin(temp2, x);
 
-		// Calculate new states
-		TYPE_ dx = ( temp2 - temp ) / ch[idx]._xyz_params[threadIdx.x][PARAMS_DIV];
 
-		if ( fabs(ch[idx]._xyz_params[threadIdx.x][PARAMS_A_F]) < SINGULARITY ) {
+		if ( fabs(params[idx].p[PARAMS_A_F]) < SINGULARITY ) {
 			temp = 0.0;
 			A = 0.0;
 		} else {
-			temp2 = ch[idx]._xyz_params[threadIdx.x][PARAMS_A_C] + exp( ( x + ch[idx]._xyz_params[threadIdx.x][PARAMS_A_D] ) / ch[idx]._xyz_params[threadIdx.x][PARAMS_A_F] );
+			temp2 = params[idx].p[PARAMS_A_C] + exp( ( x + params[idx].p[PARAMS_A_D] ) / params[idx].p[PARAMS_A_F] );
 			if ( fabs( temp2 ) < SINGULARITY ) {
-				temp2 = ch[idx]._xyz_params[threadIdx.x][PARAMS_A_C] + exp( ( x + dx/10.0 + ch[idx]._xyz_params[threadIdx.x][PARAMS_A_D] ) / ch[idx]._xyz_params[threadIdx.x][PARAMS_A_F] );
-				temp = ( ch[idx]._xyz_params[threadIdx.x][PARAMS_A_A] + ch[idx]._xyz_params[threadIdx.x][PARAMS_A_B] * (x + dx/10 ) ) / temp2;
+				temp2 = params[idx].p[PARAMS_A_C] + exp( ( x + dx/10.0 + params[idx].p[PARAMS_A_D] ) / params[idx].p[PARAMS_A_F] );
+				temp = ( params[idx].p[PARAMS_A_A] + params[idx].p[PARAMS_A_B] * (x + dx/10 ) ) / temp2;
 
-				temp2 = ch[idx]._xyz_params[threadIdx.x][PARAMS_A_C] + exp( ( x - dx/10.0 + ch[idx]._xyz_params[threadIdx.x][PARAMS_A_D] ) / ch[idx]._xyz_params[threadIdx.x][PARAMS_A_F] );
-				temp += ( ch[idx]._xyz_params[threadIdx.x][PARAMS_A_A] + ch[idx]._xyz_params[threadIdx.x][1] * (x - dx/10 ) ) / temp2;
+				temp2 = params[idx].p[PARAMS_A_C] + exp( ( x - dx/10.0 + params[idx].p[PARAMS_A_D] ) / params[idx].p[PARAMS_A_F] );
+				temp += ( params[idx].p[PARAMS_A_A] + params[idx].p[1] * (x - dx/10 ) ) / temp2;
 				temp /= 2.0;
 
 				A = temp;
 			} else {
-				temp = ( ch[idx]._xyz_params[threadIdx.x][PARAMS_A_A] + ch[idx]._xyz_params[threadIdx.x][PARAMS_A_B] * x) / temp2;
+				temp = ( params[idx].p[PARAMS_A_A] + params[idx].p[PARAMS_A_B] * x) / temp2;
 				A = temp;
 			}
 		}
 
-		if ( fabs( ch[idx]._xyz_params[threadIdx.x][PARAMS_B_F] ) < SINGULARITY ) {
+		if ( fabs( params[idx].p[PARAMS_B_F] ) < SINGULARITY ) {
 			B = 0.0;
 		} else {
-			temp2 = ch[idx]._xyz_params[threadIdx.x][7] + exp( ( x + ch[idx]._xyz_params[threadIdx.x][8] ) / ch[idx]._xyz_params[threadIdx.x][9] );
+			temp2 = params[idx].p[7] + exp( ( x + params[idx].p[8] ) / params[idx].p[9] );
 			if ( fabs( temp2 ) < SINGULARITY ) {
-				temp2 = ch[idx]._xyz_params[threadIdx.x][7] + exp( ( x + dx/10.0 + ch[idx]._xyz_params[threadIdx.x][8] ) / ch[idx]._xyz_params[threadIdx.x][9] );
-				temp = (ch[idx]._xyz_params[threadIdx.x][5] + ch[idx]._xyz_params[threadIdx.x][6] * (x + dx/10) ) / temp2;
-				temp2 = ch[idx]._xyz_params[threadIdx.x][7] + exp( ( x - dx/10.0 + ch[idx]._xyz_params[threadIdx.x][8] ) / ch[idx]._xyz_params[threadIdx.x][9] );
-				temp += (ch[idx]._xyz_params[threadIdx.x][5] + ch[idx]._xyz_params[threadIdx.x][6] * (x - dx/10) ) / temp2;
+				temp2 = params[idx].p[7] + exp( ( x + dx/10.0 + params[idx].p[8] ) / params[idx].p[9] );
+				temp = (params[idx].p[5] + params[idx].p[6] * (x + dx/10) ) / temp2;
+				temp2 = params[idx].p[7] + exp( ( x - dx/10.0 + params[idx].p[8] ) / params[idx].p[9] );
+				temp += (params[idx].p[5] + params[idx].p[6] * (x - dx/10) ) / temp2;
 				temp /= 2.0;
 				B = temp;
 			} else {
-				B = (ch[idx]._xyz_params[threadIdx.x][5] + ch[idx]._xyz_params[threadIdx.x][6] * x ) / temp2;
+				B = (params[idx].p[5] + params[idx].p[6] * x ) / temp2;
 			}
 		}
 
 		if ( fabs( temp2 ) > SINGULARITY )
 			B += temp;
 
-		temp2 = state[3*idx+threadIdx.x];
-		if ( ch[idx]._instant& INSTANT_X )
-			state[3*idx+threadIdx.x] = A / B;
-		else
-		{
-			temp = 1.0 + dt / 2.0 * B; //new value for temp
-			state[3*idx+threadIdx.x] = ( temp2 * ( 2.0 - temp ) + dt * A ) / temp;
-		}
+		temp2 = state[idx];
+		temp = 1.0 + dt / 2.0 * B; //new value for temp
+		state[idx] = ( temp2 * ( 2.0 - temp ) + dt * A ) / temp;
+
 		__syncthreads();
 		//Update channels characteristics
-		data[i] = temp2;
-		if (power > 1)
+		data[threadIdx.x].x = temp2;
+		if (power[idx] > 1)
 		{
-			data[i] *= temp2;
-			if (power > 2)
+			data[threadIdx.x].x *= temp2;
+			if (power[idx] > 2)
 			{
-				data[i] *= temp2;
-				if (power > 3)
+				data[threadIdx.x].x *= temp2;
+				if (power[idx] > 3)
 				{
-					data[i] *= temp2;
-					if (power > 4)
+					data[threadIdx.x].x *= temp2;
+					if (power[idx] > 4)
 					{
-						data[i] = pow( temp2, power);
+						data[threadIdx.x].x = pow( temp2, power[idx]);
 					}
 				}
 			}
 		}
 		__syncthreads();
-		if(!threadIdx.x)
-			current[idx].x = ch[idx]._gbar * data[i] * data[i+1];
+
+		if((fi & 0x01) && (threadIdx.x != 0)) //TODO: Find a good solution
+		{
+			data[threadIdx.x-1].x *= data[threadIdx.x].x;
+			data[threadIdx.x].x = 0;
+		}
+		__syncthreads();
+		data[threadIdx.x].x = gbar[idx] *data[threadIdx.x].x;
+		data[threadIdx.x].y = ek[idx] *data[threadIdx.x].x;
+		if(!(fi & 0x01))
+			current[channelIndex[idx]].x = data[threadIdx.x].x;
+		for (int bit = 2; bit < 5; ++bit) {
+			fi = fi >> 1;
+			if(fi & 0x01) //FIND it and write it back to Component solver
+			{
+
+			}
+		}
+
+
 	}
 }
 
@@ -182,21 +224,28 @@ double SolverGates::Input()
 double SolverGates::Process()
 {
 	clock_t	start_time = clock();
-	if(_m_statistic.nChannels_all > 0)
+	if(_m_statistic.nGates > 0)
 	{
-		int smem_size = (sizeof(TYPE_) * _threads.x * _threads.y);
-		advanceChannels <<<_blocks, _threads,smem_size, _stream>>> (
-				_Vm->device,
-				_comptIndex.device,
+		int smem_size = (sizeof(TYPE2_) * _threads.x);
+		advanceGates <<<_blocks, _threads, smem_size, _stream>>> (
 				_state.device,
-				_channel_base.device,
+				_gk.device,
 				_ch_currents_gk_ek.device,
-				_m_statistic.nChannels_all,
-				_m_statistic.dt);
+				_power.device,
+				_params.device,
+				_params_div_min_max.device,
+				_gbar.device,
+				_ek.device,
+				_comptIndex.device,
+				_channelIndex.device,
+				_gateIndex.device,
+				_Vm->device,
+				_m_statistic.nGates, _m_statistic.dt);
 		assert(cudaSuccess == cudaGetLastError());
 	}
+
 	double elapsed_time = ( std::clock() - start_time );
-//	cout << "Elasped time is" << elapsed_time << endl << flush;
+//	cout << "GATE: " << elapsed_time << endl << flush;
 	return elapsed_time;
 }
 
@@ -213,60 +262,50 @@ double SolverGates::Output()
  * Set/Get methods
  */
 
-void SolverGates::SetGateXParams(int index, vector<double>& params)
+void SolverGates::SetGateParams(int index, vector<double>& params)
 {
 	for (int i = 0; i < min((int)params.size(),13); ++i)
-		_channel_base[index]._xyz_params[0][i] = (TYPE_)params[i];
-}
-void SolverGates::SetGateYParams(int index, vector<double>& params)
-{
-	for (int i = 0; i < min((int)params.size(),13); ++i)
-		_channel_base[index]._xyz_params[1][i] = (TYPE_)params[i];
-}
-void SolverGates::SetGateZParams(int index, vector<double>& params)
-{
-//	for (int i = 0; i < min((int)params.size(),13); ++i)
-//		_channel_base[index]._xyz_params[2][i] = (TYPE_)params[i];
+		_params[index].p[i] = (TYPE_)params[i];
+
+	_params_div_min_max[index].x = (TYPE_)params[PARAMS_DIV];
+	_params_div_min_max[index].y = (TYPE_)params[PARAMS_MIN];
+	_params_div_min_max[index].z = (TYPE_)params[PARAMS_MAX];
 }
 
-void SolverGates::SetValue(int index, FIELD::CH field, TYPE_ value)
+void SolverGates::SetValue(int index, FIELD::GATE field, TYPE_ value)
 {
 	switch(field)
 	{
-		case FIELD::CH_GBAR:
-			_channel_base[index]._gbar = value;
+		case FIELD::GATE_CH_GBAR:
+			_gbar[index] = value;
 			break;
-		case FIELD::CH_GK:
-			_ch_currents_gk_ek[index].x = value;
+		case FIELD::GATE_CH_GK:
+			_gk[index] = value;
+			_ch_currents_gk_ek[_channelIndex[index]].x = value;
 			break;
-		case FIELD::CH_EK:
-			_ch_currents_gk_ek[index].y = value;
+		case FIELD::GATE_CH_EK:
+			_ek[index] = value;
+			_ch_currents_gk_ek[_channelIndex[index]].y = value;
 			break;
-		case FIELD::CH_X_POWER:
-			_channel_base[index]._xyz_power[0] = (unsigned char)value;
+		case FIELD::GATE_POWER:
+			_power[index] = (unsigned char)value;
 			break;
-		case FIELD::CH_Y_POWER:
-			_channel_base[index]._xyz_power[1] = (unsigned char)value;
+		case FIELD::GATE_STATE:
+			_state[index] = value;
 			break;
-//		case FIELD::CH_Z_POWER:
-//			_channel_base[index]._xyz_power[2] = (unsigned char)value;
-//			break;
-		case FIELD::CH_X:
-			_state[3*index] = value;
-			break;
-		case FIELD::CH_Y:
-			_state[3*index+1] = value;
-			break;
-		case FIELD::CH_Z:
-			_state[3*index+2] = value;
-			break;
-		case FIELD::CH_COMPONENT_INDEX:
+		case FIELD::GATE_COMPONENT_INDEX:
 			_comptIndex[index] = (int)value;
+			break;
+		case FIELD::GATE_CHANNEL_INDEX:
+			_channelIndex[index] = (int)value;
+			break;
+		case FIELD::GATE_INDEX:
+			_gateIndex[index] = (int)value;
 			break;
 	}
 }
 
-TYPE_ SolverGates::GetValue(int index, FIELD::CH field)
+TYPE_ SolverGates::GetValue(int index, FIELD::GATE field)
 {
 //	switch(field)
 //	{

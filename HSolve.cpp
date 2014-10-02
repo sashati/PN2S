@@ -243,7 +243,8 @@ void HSolve::reinit( const Eref& hsolve, ProcPtr p )
 			models.push_back( pn2s::Model_info(
 					i->value(),
 					h->nCompt_,
-					h->HSolveActive::channelId_.size()));
+					h->HSolveActive::channelId_.size(),
+					h->HSolveActive::gateId_.size()));
 			modelId_map[i->value()] = *i;
 //			cout << i->value() << " " <<h->nCompt_ << endl<< flush;
 		}

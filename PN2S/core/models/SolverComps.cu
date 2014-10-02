@@ -112,13 +112,13 @@ __global__ void update_rhs(
     	hm_local = ext_curr_gk_ekgk[idx].x + constants[idx];
 
 		size_t pos = channelIndex[idx].y;
-//		for ( int i = 0; i < channelIndex[idx].x; ++i)
-//		{
-//			hm_local   += ch_curr_gk_ek[pos].x;
-//			rhs_local += ch_curr_gk_ek[pos].x * ch_curr_gk_ek[pos].y;
-//			pos++;
-//		}
-//    	__syncthreads();
+		for ( int i = 0; i < channelIndex[idx].x; ++i)
+		{
+			hm_local   += ch_curr_gk_ek[pos].x;
+			rhs_local += ch_curr_gk_ek[pos].x * ch_curr_gk_ek[pos].y;
+			pos++;
+		}
+    	__syncthreads();
     	hm[pos_a] = hm_local;
     	rhs[idx] = rhs_local;
     }
@@ -140,29 +140,29 @@ double SolverComps::Process()
 
 	uint vectorSize = _statistic.nModels * _statistic.nCompts_per_model;
 
-	update_rhs <<<_blocks, _threads,0, _stream>>> (
-			_hm.device,
-			_rhs.device,
-			_Vm.device,
-			_Constant.device,
-			_statistic.nCompts_per_model,
-			_CmByDt.device,
-			_EmByRm.device,
-			_InjectBasal.device,
-			_InjectVarying.device,
-			_ext_curr_gh_gkek.device,
-			_channelIndex.device,
-			_channels_current->device,
-			vectorSize,
-			_statistic.dt);
-	double elapsed_time = ( std::clock() - start_time );
+//	update_rhs <<<_blocks, _threads,0, _stream>>> (
+//			_hm.device,
+//			_rhs.device,
+//			_Vm.device,
+//			_Constant.device,
+//			_statistic.nCompts_per_model,
+//			_CmByDt.device,
+//			_EmByRm.device,
+//			_InjectBasal.device,
+//			_InjectVarying.device,
+//			_ext_curr_gh_gkek.device,
+//			_channelIndex.device,
+//			_channels_current->device,
+//			vectorSize,
+//			_statistic.dt);
 
-	assert(cudaSuccess == cudaGetLastError());
+//	assert(cudaSuccess == cudaGetLastError());
 
 	SolverMatrix<TYPE_,ARCH_>::fast_solve(
 			_hm.device, _rhs.device, _Vm.device,
 			_statistic.nCompts_per_model, _statistic.nModels, _stream);
 	assert(cudaSuccess == cudaGetLastError());
+	double elapsed_time = ( std::clock() - start_time );
 
 //	cout << "Elasped time is" << elapsed_time << endl << flush;
 	return elapsed_time;

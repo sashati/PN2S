@@ -75,8 +75,6 @@ Error_PN2S Device::AllocateMemory(vector<Model_pack_info> &mps, double dt ){
 	cudaSetDevice(id);
 	_dt = dt;
 
-	//Distribute model into packs
-//	model_t* st_start = &mps[start];
 	size_t nPack = mps.size();
 
 	//Distribute Modelpacks over streams

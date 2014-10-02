@@ -44,8 +44,8 @@ __inline__ Error_PN2S sendVector(uint size, T* h, T* d)
 template <typename T>
 __inline__ Error_PN2S getVector(uint size, T* h, T* d)
 {
-	cudaError_t stat = cudaMemcpy(h, d, sizeof(h[0])*size, cudaMemcpyDeviceToHost);
-	assert(stat == cudaSuccess);
+	cublasStatus_t stat = cublasGetVector(size, sizeof(h[0]),d, 1,h,1);
+	assert(stat == CUBLAS_STATUS_SUCCESS);
 	return Error_PN2S::NO_ERROR;
 }
 
@@ -83,6 +83,19 @@ template <typename T>
 PField<T>::~PField(){
 	//Driver shutting down, so not necessary to release memory
 }
+
+template <typename T>
+T PField<T>::operator [](int i) const{
+	assert(i < _size);
+	return host[i];
+}
+
+template <typename T>
+T & PField<T>::operator [](int i) {
+	assert(i < _size);
+	return host[i];
+}
+
 
 
 template <typename T>
@@ -161,12 +174,30 @@ Error_PN2S PField<T>::Send2Host_Async(PField& _hostResource,cudaStream_t stream)
 string convert(double v) { ostringstream ss; ss << std::setprecision (std::numeric_limits< double >::digits10) << v; return ss.str();}
 string convert(float v) { ostringstream ss; ss << std::setprecision (std::numeric_limits< double >::digits10) << v; return ss.str(); }
 string convert(int v) { ostringstream ss; ss << v; return ss.str(); }
-string convert(unsigned char v) { ostringstream ss; ss << v; return ss.str();}
+string convert(GateParams v) { ostringstream ss; ss << v.p[0]; return ss.str(); }
+string convert(unsigned char v) { ostringstream ss; ss << std::hex << (unsigned int)v; return ss.str();}
 string convert(TYPE2_ v) {
 	std::stringstream ss;
 	ss << "("
 			<< std::setprecision (std::numeric_limits< double >::digits10) << v.x <<", "
 			<< std::setprecision (std::numeric_limits< double >::digits10) << v.y <<")";
+	return ss.str();
+}
+string convert(TYPE3_ v) {
+	std::stringstream ss;
+	ss << "("
+			<< std::setprecision (std::numeric_limits< double >::digits10) << v.x <<", "
+			<< std::setprecision (std::numeric_limits< double >::digits10) << v.y <<", "
+			<< std::setprecision (std::numeric_limits< double >::digits10) << v.z <<")";
+	return ss.str();
+}
+string convert(TYPE4_ v) {
+	std::stringstream ss;
+	ss << "("
+			<< std::setprecision (std::numeric_limits< double >::digits10) << v.x <<", "
+			<< std::setprecision (std::numeric_limits< double >::digits10) << v.y <<", "
+			<< std::setprecision (std::numeric_limits< double >::digits10) << v.z <<", "
+			<< std::setprecision (std::numeric_limits< double >::digits10) << v.w <<")";
 	return ss.str();
 }
 string convert(int2 v) { ostringstream ss; ss << "(" << v.x <<", " <<v.y <<")"; return ss.str(); }
@@ -198,5 +229,8 @@ template class PField<int>;
 template class PField<int2>;
 template class PField<unsigned char>;
 template class PField<ChannelType>;
+template class PField<GateParams>;
 template class PField<TYPE2_>;
+template class PField<TYPE3_>;
+template class PField<TYPE4_>;
 

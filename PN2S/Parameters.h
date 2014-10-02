@@ -7,8 +7,12 @@
 
 #if TYPE_ == double
 	#define TYPE2_	double2
+	#define TYPE3_	double3
+	#define TYPE4_	double4
 #else
 	#define TYPE2_	float2
+	#define TYPE3_	float3
+	#define TYPE4_	float4
 #endif
 
 namespace pn2s

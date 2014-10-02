@@ -10,6 +10,7 @@
 #include "models/ModelStatistic.h"
 #include <cuda.h>
 #include "../headers.h"
+#include "./models/SolverChannels.h"
 #include "models/SolverGates.h"
 #include "./models/SolverComps.h"
 
@@ -21,6 +22,7 @@ class ModelPack
 	cudaStream_t _st;
 public:
 	models::SolverComps _compsSolver;
+	models::SolverChannels _chanSolver;
 	models::SolverGates _gateSolver;
 
 	double _dt;
@@ -40,6 +42,7 @@ public:
 
 	double GetDt(){ return _dt;}
 	models::SolverComps& ComptSolver(){return _compsSolver;}
+	models::SolverChannels& ChannelSolver(){return _chanSolver;}
 	models::SolverGates& GatesSolver(){return _gateSolver;}
 
 
