@@ -368,7 +368,11 @@ void HSolve::setPath( const Eref& hsolve, string path )
 		wildcardFind(path, ids);
 	}
 
-    seeds_.clear();
+	if(seeds_.size() > 0)
+	{
+		seeds_.clear();
+
+	}
     if (ids.size() > 0)
     {
     	if(ids.size() == 1)

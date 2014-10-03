@@ -5,9 +5,10 @@ import numpy
 import math
 import time
 from numpy import random as nprand, where
-
+import csv 
 import moose
 import moose.utils
+from matplotlib.pyplot import plot
 
 EREST_ACT = -70e-3
 
@@ -326,7 +327,7 @@ IC = 0  # Input connection probability
 P1 = 0  # Exitatory to Excitatory connection probability
 P2 = 0  # Exitatory to Inhibitory connection probability
 P3 = 0  # Inhibitory to Excitatory connection probability
-number_of_input_cells = 1
+number_of_input_cells = 0
 number_of_ext_cells = 100
 number_of_inh_cells = 0
 
@@ -351,8 +352,14 @@ if __name__ == '__main__':
     os.environ['INIT_TIME'] = str(ti)      
     
     if len(sys.argv) > 5:
-        with open(sys.argv[5], 'a') as f:
-            f.write(str(te) + "\t")
+        with open(sys.argv[5], 'wb') as csvfile:
+            spamwriter = csv.writer(csvfile, delimiter=',',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            cellnumber = number_of_input_cells + number_of_ext_cells + number_of_ext_cells
+            mp = int(os.environ['PN2S_MP_SIZE'])
+            st = int(os.environ['MAX_STREAM_NUMBER'])
+            spamwriter.writerow([ st, mp, cellnumber, te])
+            spamwriter.writerow([ st, mp, cellnumber, te])
         
         
         

@@ -13,7 +13,7 @@ from fileinput import filename
 
 if __name__ == '__main__':
     
-    stream_numbers = [8, 6, 4, 2]
+    stream_numbers = [8, 4, 2, 1]
     model_pack_size = [32, 64, 128, 256, 512, 800, 1024, 2048, 3072, 4086, 5120, 6144, 7168, 8192, 9216, 10240, 20480, 30720]
     model_size = [10, 50, 80, 100, 200, 400, 600, 800, 1000, 1500, 2000, 4000, 8000, 10000]
     fname = 'result.log'

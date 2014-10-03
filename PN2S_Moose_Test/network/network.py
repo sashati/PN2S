@@ -8,7 +8,7 @@ import numpy
 import math
 import time
 from numpy import random as nprand, where
-
+import csv
 import moose
 import moose.utils
 
@@ -333,7 +333,7 @@ Use_MasterHSolve = True
 Simulation_Time = 1e-2
 
 number_of_input_cells = 1
-number_of_ext_cells = 100
+number_of_ext_cells = 1
 number_of_inh_cells = 0
 
 
