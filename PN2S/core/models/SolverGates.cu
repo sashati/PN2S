@@ -211,8 +211,6 @@ __global__ void advanceGates(
 
 			}
 		}
-
-
 	}
 }
 

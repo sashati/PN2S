@@ -321,7 +321,7 @@ INJECT_CURRENT = 0
 dt = 2e-6
 Use_MasterHSolve = True
 # Use_MasterHSolve = False
-Simulation_Time = 2e-3
+Simulation_Time = 2e-2
 IC = 0  # Input connection probability
 P1 = 0  # Exitatory to Excitatory connection probability
 P2 = 0  # Exitatory to Inhibitory connection probability
@@ -336,7 +336,7 @@ if __name__ == '__main__':
         in_benchmark = True
         Use_MasterHSolve = (sys.argv[1] == 'gpu')
     else:
-        print "Usage: python model.py [gpu|cpu] model_size MP_size streams filename "
+        print "Usage: python model.py [gpu|cpu] model_size MP filename "
         exit()
     
     import moose
@@ -346,21 +346,18 @@ if __name__ == '__main__':
         number_of_ext_cells = int(sys.argv[2])  
     if len(sys.argv) > 3:
         os.environ['PN2S_MP_SIZE'] = sys.argv[3]
-    if len(sys.argv) > 4:
-        os.environ['MAX_STREAM_NUMBER'] = sys.argv[4]
     
     ti, te = run_simulator()
     
     print(str(ti)+"\t"+str(te))
     
-    if len(sys.argv) > 5:
-        with open(sys.argv[5], 'a') as csvfile:
+    if len(sys.argv) > 4:
+        with open(sys.argv[4], 'a') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
             cellnumber = number_of_input_cells + number_of_ext_cells + number_of_ext_cells
             mp = int(os.environ['PN2S_MP_SIZE'])
-            st = int(os.environ['MAX_STREAM_NUMBER'])
-            spamwriter.writerow([ st, mp, cellnumber, te])
+            spamwriter.writerow([ mp, cellnumber, te])
         
 #     os.environ['EXEC_TIME'] = str(te)
 #     os.environ['INIT_TIME'] = str(ti)      

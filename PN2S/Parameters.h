@@ -2,8 +2,8 @@
 
 //#define ARCH_ 	ARCH_SM35
 #define ARCH_ 	ARCH_SM30
-#define TYPE_	float
-//#define TYPE_	double
+//#define TYPE_	float
+#define TYPE_	double
 
 #if TYPE_ == double
 	#define TYPE2_	double2
