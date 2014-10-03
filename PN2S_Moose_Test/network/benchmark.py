@@ -14,7 +14,7 @@ from fileinput import filename
 if __name__ == '__main__':
     
     model_pack_size = [2048, 10240, 30720]
-    model_size = [10, 50, 80, 100, 200, 400, 600, 800, 1000, 1500, 2000, 4000, 8000, 10000]
+    model_size = [10, 20, 50, 80, 100, 200, 400, 600, 800, 1000, 1200, 1500, 2000, 3000, 4000, 6000, 8000]
     fname = 'result.log'
     if len(sys.argv) > 1:
         fname = sys.argv[1]
