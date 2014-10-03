@@ -6,8 +6,6 @@ import math
 import time
 from numpy import random as nprand, where
 import csv 
-import moose
-import moose.utils
 from matplotlib.pyplot import plot
 
 EREST_ACT = -70e-3
@@ -72,6 +70,7 @@ def create_squid(parent):
     xGate = moose.HHGate(nachan.path + '/gateX')
     xGate.setupAlpha(Na_m_params + [VDIVS, VMIN, VMAX])
     # This is important: one can run without it but the output will diverge.
+
     xGate.useInterpolation = 1
     nachan.Ypower = 1
     yGate = moose.HHGate(nachan.path + '/gateY')
@@ -336,6 +335,12 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         in_benchmark = True
         Use_MasterHSolve = (sys.argv[1] == 'gpu')
+    else:
+        print "Usage: python model.py [gpu|cpu] model_size MP_size streams filename "
+        exit()
+    
+    import moose
+    import moose.utils
     
     if len(sys.argv) > 2:
         number_of_ext_cells = int(sys.argv[2])  
@@ -345,6 +350,7 @@ if __name__ == '__main__':
         os.environ['MAX_STREAM_NUMBER'] = sys.argv[4]
     
     ti, te = run_simulator()
+    
     
     print(str(ti)+"\t"+str(te))
     
