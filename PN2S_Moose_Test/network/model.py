@@ -351,22 +351,19 @@ if __name__ == '__main__':
     
     ti, te = run_simulator()
     
-    
     print(str(ti)+"\t"+str(te))
     
-    os.environ['EXEC_TIME'] = str(te)
-    os.environ['INIT_TIME'] = str(ti)      
-    
     if len(sys.argv) > 5:
-        with open(sys.argv[5], 'wb') as csvfile:
+        with open(sys.argv[5], 'a') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
             cellnumber = number_of_input_cells + number_of_ext_cells + number_of_ext_cells
             mp = int(os.environ['PN2S_MP_SIZE'])
             st = int(os.environ['MAX_STREAM_NUMBER'])
             spamwriter.writerow([ st, mp, cellnumber, te])
-            spamwriter.writerow([ st, mp, cellnumber, te])
         
+#     os.environ['EXEC_TIME'] = str(te)
+#     os.environ['INIT_TIME'] = str(ti)      
         
         
         
