@@ -1,8 +1,5 @@
 import sys
 import os
-os.environ['MAX_DEVICE_NUMBER'] = '1'
-os.environ['MAX_STREAM_NUMBER'] = '4'
-os.environ['PN2S_MP_SIZE'] = '2048'
 import pylab
 import numpy
 import math
@@ -288,62 +285,87 @@ def make_input_layer(avgFiringRate=10, spike_refractT=74e-4):
 
 
 def run_simulator():
-    moose.Neutral('/graphs')
-    moose.Neutral('/graphs/cpu')
-    moose.Neutral('/graphs/gpu')
-
+    start_time = time.time()
     moose.setClock(0, dt)
     moose.setClock(1, dt)
-    moose.setClock(2, dt)
-    moose.setClock(8, dt)
 
     input_layer = make_input_layer()
 
+    create_cells("/net", input_layer)
+    
     if Use_MasterHSolve:
-        create_cells("/gpu", input_layer)
-        hsolve = moose.HSolve('/gpu/hsolve')
+        hsolve = moose.HSolve('/net/hsolve')
         hsolve.dt = dt
-        hsolve.target = '/gpu'
-    else:
-        create_cells("/cpu", input_layer)
-        
-#     for i in range(number_of_ext_cells):
-#         add_plot("/cpu/cell" + str(i) + '/soma','getVm', 'cpu/c' + str(i) + '_soma')
-#         add_plot("/gpu/cell" + str(i) + '/soma','getVm', 'gpu/c' + str(i) + '_soma')
+        hsolve.target = '/net'
 
     moose.useClock(0, '/##', 'init')
     moose.useClock(1, '/##', 'process')
-    moose.useClock(8, '/graphs/##', 'process')
     moose.reinit()
     
-    start_time = time.time()
+    init_time = time.time()
+    t_init = init_time - start_time
     moose.start(Simulation_Time)
-    t_exec = time.time() - start_time - 0.000125
     
+    t_exec = time.time() - init_time   
+    
+#     for i in range(number_of_ext_cells-2, number_of_ext_cells):
+#         add_plot("/cpu/cell" + str(i) + '/soma','getVm', 'cpu/c' + str(i) + '_soma')
+#         add_plot("/gpu/cell" + str(i) + '/soma','getVm', 'gpu/c' + str(i) + '_soma')
 #     dump_plots()
 #     pylab.legend()
 #     pylab.show()
-#     
-    print("--- Exec: %s" % str(t_exec * dt / Simulation_Time * 1000000))
-   
+    
+    return t_init , t_exec * dt / Simulation_Time * 1e6 - 50
 
-
+INJECT_CURRENT = 0
+dt = 2e-6
 Use_MasterHSolve = True
 # Use_MasterHSolve = False
-Simulation_Time = 1e-2
-
+Simulation_Time = 2e-3
+IC = 0  # Input connection probability
+P1 = 0  # Exitatory to Excitatory connection probability
+P2 = 0  # Exitatory to Inhibitory connection probability
+P3 = 0  # Inhibitory to Excitatory connection probability
 number_of_input_cells = 1
 number_of_ext_cells = 100
 number_of_inh_cells = 0
 
-
-IC = 1  # Input connection probability
-P1 = 0  # Exitatory to Excitatory connection probability
-P2 = 0  # Exitatory to Inhibitory connection probability
-P3 = 0  # Inhibitory to Excitatory connection probability
-
-INJECT_CURRENT = 0
-dt = 2e-6
-
 if __name__ == '__main__':
-    run_simulator()
+    in_benchmark = False
+    if len(sys.argv) > 1:
+        in_benchmark = True
+        Use_MasterHSolve = (sys.argv[1] == 'gpu')
+    
+    if len(sys.argv) > 2:
+        number_of_ext_cells = int(sys.argv[2])  
+    if len(sys.argv) > 3:
+        os.environ['PN2S_MP_SIZE'] = sys.argv[3]
+    if len(sys.argv) > 4:
+        os.environ['MAX_STREAM_NUMBER'] = sys.argv[4]
+    
+    ti, te = run_simulator()
+    
+    print(str(ti)+"\t"+str(te))
+    
+    os.environ['EXEC_TIME'] = str(te)
+    os.environ['INIT_TIME'] = str(ti)      
+    
+    if len(sys.argv) > 5:
+        with open(sys.argv[5], 'a') as f:
+            f.write(str(te) + "\t")
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        

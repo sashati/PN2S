@@ -44,15 +44,15 @@ void ResourceManager::SetValue(pn2s::Location l, FIELD::CM field, TYPE_ value)
 	_devices[l.device]->ModelPacks()[l.pack]._compsSolver.SetValue(l.index,field, value);
 }
 
-TYPE_ ResourceManager::GetValue(pn2s::Location l, FIELD::CH field)
-{
-	return _devices[l.device]->ModelPacks()[l.pack]._chanSolver.GetValue(l.index,field);
-}
+//TYPE_ ResourceManager::GetValue(pn2s::Location l, FIELD::CH field)
+//{
+//	return _devices[l.device]->ModelPacks()[l.pack]._chanSolver.GetValue(l.index,field);
+//}
 
-void ResourceManager::SetValue(pn2s::Location l, FIELD::CH field, TYPE_ value)
-{
-	_devices[l.device]->ModelPacks()[l.pack]._chanSolver.SetValue(l.index,field, value);
-}
+//void ResourceManager::SetValue(pn2s::Location l, FIELD::CH field, TYPE_ value)
+//{
+//	_devices[l.device]->ModelPacks()[l.pack]._chanSolver.SetValue(l.index,field, value);
+//}
 
 TYPE_ ResourceManager::GetValue(pn2s::Location l, FIELD::GATE field)
 {

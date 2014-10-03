@@ -17,8 +17,8 @@ public:
 	static void Close();
 	static TYPE_ GetValue(pn2s::Location address, FIELD::CM field);
 	static void SetValue(pn2s::Location address, FIELD::CM field, TYPE_ value);
-	static TYPE_ GetValue(pn2s::Location address, FIELD::CH field);
-	static void SetValue(pn2s::Location address, FIELD::CH field, TYPE_ value);
+//	static TYPE_ GetValue(pn2s::Location address, FIELD::CH field);
+//	static void SetValue(pn2s::Location address, FIELD::CH field, TYPE_ value);
 	static TYPE_ GetValue(pn2s::Location address, FIELD::GATE field);
 	static void SetValue(pn2s::Location address, FIELD::GATE field, TYPE_ value);
 

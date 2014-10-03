@@ -83,7 +83,7 @@ void SolverGates::PrepareSolver(PField<TYPE_>*  Vm)
 		_params_div_min_max.Host2Device_Async(_stream);
 		_Vm = Vm;
 
-		_threads=dim3(32);
+		_threads=dim3(64);
 		_blocks=dim3(ceil(_m_statistic.nGates / (double)_threads.x));
 	}
 }

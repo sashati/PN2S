@@ -99,9 +99,9 @@ void PN2S_Proxy::fillData(map<unsigned int, Id> &modelId_map){
 					{
 						if(ichannel->Xpower_)
 						{
-							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_X_POWER,ichannel->Xpower_);
-							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_X,*istate);
-							mp.ChannelSolver().SetGateXParams(ch_idx,ichannel->Xparams);
+//							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_X_POWER,ichannel->Xpower_);
+//							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_X,*istate);
+//							mp.ChannelSolver().SetGateXParams(ch_idx,ichannel->Xparams);
 
 							mp.GatesSolver().SetValue(gate_idx,FIELD::GATE_INDEX, gate_local_index * 2);
 							mp.GatesSolver().SetValue(gate_idx,FIELD::GATE_COMPONENT_INDEX,cmpt_idx);
@@ -117,9 +117,9 @@ void PN2S_Proxy::fillData(map<unsigned int, Id> &modelId_map){
 						}
 						if(ichannel->Ypower_)
 						{
-							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Y_POWER,ichannel->Ypower_);
-							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Y,*istate);
-							mp.ChannelSolver().SetGateYParams(ch_idx,ichannel->Yparams);
+//							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Y_POWER,ichannel->Ypower_);
+//							mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_Y,*istate);
+//							mp.ChannelSolver().SetGateYParams(ch_idx,ichannel->Yparams);
 
 							mp.GatesSolver().SetValue(gate_idx,FIELD::GATE_INDEX, gate_local_index * 2 + 1);
 							mp.GatesSolver().SetValue(gate_idx,FIELD::GATE_CHANNEL_INDEX,ch_idx);
@@ -134,13 +134,13 @@ void PN2S_Proxy::fillData(map<unsigned int, Id> &modelId_map){
 							istate++;	gate_idx++;
 						}
 
-						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_GBAR,ichannel->Gbar_);
-						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_GK,icurrent->Gk);
-						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_EK,icurrent->Ek);
+//						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_GBAR,ichannel->Gbar_);
+//						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_GK,icurrent->Gk);
+//						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_EK,icurrent->Ek);
 
 						//Connect the channel with the compartment
 						mp.ComptSolver().ConnectChannel(cmpt_idx,ch_idx);
-						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_COMPONENT_INDEX,cmpt_idx);
+//						mp.ChannelSolver().SetValue(ch_idx,FIELD::CH_COMPONENT_INDEX,cmpt_idx);
 
 					}
 				}
@@ -233,12 +233,12 @@ TYPE_ PN2S_Proxy::getValue( unsigned int id, FIELD::GATE n)
 {
 	return 	ResourceManager::GetValue(locationMap[id], n);
 }
-void PN2S_Proxy::setValue( unsigned int id, TYPE_ value , FIELD::CH n)
-{
-	ResourceManager::SetValue(locationMap[id], n,value);
-}
-
-TYPE_ PN2S_Proxy::getValue( unsigned int id, FIELD::CH n)
-{
-	return 	ResourceManager::GetValue(locationMap[id], n);
-}
+//void PN2S_Proxy::setValue( unsigned int id, TYPE_ value , FIELD::CH n)
+//{
+//	ResourceManager::SetValue(locationMap[id], n,value);
+//}
+//
+//TYPE_ PN2S_Proxy::getValue( unsigned int id, FIELD::CH n)
+//{
+//	return 	ResourceManager::GetValue(locationMap[id], n);
+//}
