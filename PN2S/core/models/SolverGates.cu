@@ -35,34 +35,37 @@ SolverGates::~SolverGates()
 {
 }
 
-void SolverGates::AllocateMemory(models::ModelStatistic& s, cudaStream_t stream)
+size_t SolverGates::AllocateMemory(models::ModelStatistic& s, cudaStream_t stream)
 {
 	_m_statistic = s;
 	_stream = stream;
 
 	if(_m_statistic.nGates <= 0)
-		return;
+		return 0;
 
-	_ch_currents_gk_ek.AllocateMemory(_m_statistic.nChannels_all);//TODO: remove
+	size_t val = 0;
+	val += _ch_currents_gk_ek.AllocateMemory(_m_statistic.nChannels_all);//TODO: remove
 
-	_state.AllocateMemory(_m_statistic.nGates, 0);
-	_gk.AllocateMemory(_m_statistic.nChannels_all, 0); //Channel currents
+	val += _state.AllocateMemory(_m_statistic.nGates, 0);
+	val += _gk.AllocateMemory(_m_statistic.nChannels_all, 0); //Channel currents
 
 	//Indices
-	_comptIndex.AllocateMemory(_m_statistic.nGates, 0);
-	_channelIndex.AllocateMemory(_m_statistic.nGates, 0);
-	_gateIndex.AllocateMemory(_m_statistic.nGates, 0);
+	val += _comptIndex.AllocateMemory(_m_statistic.nGates, 0);
+	val += _channelIndex.AllocateMemory(_m_statistic.nGates, 0);
+	val += _gateIndex.AllocateMemory(_m_statistic.nGates, 0);
 
 	//Constant values
-	_ek.AllocateMemory(_m_statistic.nGates, 0);
-	_gbar.AllocateMemory(_m_statistic.nGates, 0);
-	_power.AllocateMemory(_m_statistic.nGates, 0);
-	_params.AllocateMemory(_m_statistic.nGates, 0);
-	_params_div_min_max.AllocateMemory(_m_statistic.nGates, 0);
+	val += _ek.AllocateMemory(_m_statistic.nGates, 0);
+	val += _gbar.AllocateMemory(_m_statistic.nGates, 0);
+	val += _power.AllocateMemory(_m_statistic.nGates, 0);
+	val += _params.AllocateMemory(_m_statistic.nGates, 0);
+	val += _params_div_min_max.AllocateMemory(_m_statistic.nGates, 0);
 
 	int threadSize = min(max((int)_m_statistic.nChannels_all/8,16), 32);
 	_threads=dim3(2,threadSize, 1);
 	_blocks=dim3(max((int)(ceil((double)_m_statistic.nChannels_all / _threads.y)),1), 1);
+
+	return val;
 }
 
 void SolverGates::PrepareSolver(PField<TYPE_>*  Vm)

@@ -24,7 +24,7 @@ SolverComps::~SolverComps()
 }
 
 
-Error_PN2S SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t stream)
+size_t SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t stream)
 {
 	_statistic = s;
 	_stream = stream;
@@ -35,21 +35,22 @@ Error_PN2S SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t s
 	size_t modelSize = s.nCompts_per_model*s.nCompts_per_model;
 	size_t vectorSize = s.nModels * s.nCompts_per_model;
 
-	_hm.AllocateMemory(modelSize*s.nModels);
-	_rhs.AllocateMemory(vectorSize);
-	_Vm.AllocateMemory(vectorSize);
-	_Constant.AllocateMemory(vectorSize);
-	_Ra.AllocateMemory(vectorSize);
-	_CmByDt.AllocateMemory(vectorSize);
-	_EmByRm.AllocateMemory(vectorSize);
-	_InjectBasal.AllocateMemory(vectorSize);
-	_InjectVarying.AllocateMemory(vectorSize, 0);
-	_ext_curr_gh_gkek.AllocateMemory(vectorSize, 0);
+	size_t val = 0;
+	val += _hm.AllocateMemory(modelSize*s.nModels);
+	val += _rhs.AllocateMemory(vectorSize);
+	val += _Vm.AllocateMemory(vectorSize);
+	val += _Constant.AllocateMemory(vectorSize);
+	val += _Ra.AllocateMemory(vectorSize);
+	val += _CmByDt.AllocateMemory(vectorSize);
+	val += _EmByRm.AllocateMemory(vectorSize);
+	val += _InjectBasal.AllocateMemory(vectorSize);
+	val += _InjectVarying.AllocateMemory(vectorSize, 0);
+	val += _ext_curr_gh_gkek.AllocateMemory(vectorSize, 0);
 
 	//Connection to Channels
-	_channelIndex.AllocateMemory(vectorSize, 0); //Filled with zero
+	val += _channelIndex.AllocateMemory(vectorSize, 0); //Filled with zero
 
-	return Error_PN2S::NO_ERROR;
+	return val;
 }
 
 void SolverComps::PrepareSolver(PField<TYPE2_>*  channels_current)

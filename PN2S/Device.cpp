@@ -79,6 +79,7 @@ Error_PN2S Device::AllocateMemory(vector<Model_pack_info> &mps, double dt ){
 
 	//Distribute Modelpacks over streams
 	_modelPacks.resize(nPack);
+	size_t val_sum = 0;
 	for (int pack = 0; pack < nPack; ++pack) {
 		/**
 		 * Create statistic and Allocate memory for Modelpacks
@@ -93,8 +94,13 @@ Error_PN2S Device::AllocateMemory(vector<Model_pack_info> &mps, double dt ){
 			_modelPacks[pack].models.push_back( m->id);
 		}
 		ModelStatistic stat(dt, mps[pack].size(), nCompt, nChannels, nGates);
-		_modelPacks[pack].AllocateMemory(stat,streams[pack%nstreams]);
+		size_t val = _modelPacks[pack].AllocateMemory(stat,streams[pack%nstreams]);
+		cout << "Device" << id << "\t ModelPack " << pack << ": " <<
+				std::fixed <<std::setprecision(2) << (double)val/1024.0 << " MB"<<
+				"(" << stat.nModels << " models with " <<stat.nCompts_per_model << " compartments)" << endl;
+		val_sum += val;
 	}
+	cout << "Device" << id << "\t Total: " << std::fixed <<std::setprecision(2) << (double)val_sum/1024.0 << " MB"<<endl;
 	return Error_PN2S::NO_ERROR;
 }
 

@@ -48,7 +48,7 @@ public:
 
 	SolverComps();
 	~SolverComps();
-	Error_PN2S AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
+	size_t AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
 	void PrepareSolver(PField<TYPE2_>*  channels_current);
 	double Input();
 	double Process();

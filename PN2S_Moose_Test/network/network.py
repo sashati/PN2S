@@ -333,7 +333,7 @@ Use_MasterHSolve = True
 Simulation_Time = 1e-3
 
 number_of_input_cells = 1
-number_of_ext_cells = 1000
+number_of_ext_cells = 8000
 number_of_inh_cells = 0
 
 

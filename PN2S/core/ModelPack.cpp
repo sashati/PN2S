@@ -21,12 +21,14 @@ ModelPack::~ModelPack(){
 
 }
 
-void ModelPack::AllocateMemory(models::ModelStatistic s, cudaStream_t st){
+size_t ModelPack::AllocateMemory(models::ModelStatistic s, cudaStream_t st){
+	size_t val = 0;
 	stat = s;
 	_st = st;
-	_compsSolver.AllocateMemory(stat, st);
+	val += _compsSolver.AllocateMemory(stat, st);
 //	_chanSolver.AllocateMemory(stat, st);
-	_gateSolver.AllocateMemory(stat, st);
+	val += _gateSolver.AllocateMemory(stat, st);
+	return val;
 }
 
 void ModelPack::PrepareSolvers(){

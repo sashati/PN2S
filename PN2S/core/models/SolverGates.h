@@ -46,7 +46,7 @@ public:
 	dim3 _threads, _blocks;
 	SolverGates();
 	~SolverGates();
-	void AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
+	size_t AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
 	void PrepareSolver(PField<TYPE_>*  Vm);
 	double Input();
 	double Process();

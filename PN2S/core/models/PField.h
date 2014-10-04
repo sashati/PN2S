@@ -79,8 +79,8 @@ public:
 
 	virtual ~PField();
 
-	Error_PN2S AllocateMemory(size_t size);
-	Error_PN2S AllocateMemory(size_t size, TYPE_ defaultValue);
+	size_t AllocateMemory(size_t size);
+	size_t AllocateMemory(size_t size, TYPE_ defaultValue);
 
 	void Fill(TYPE_ value);
 	Error_PN2S Host2Device_Async(cudaStream_t stream);

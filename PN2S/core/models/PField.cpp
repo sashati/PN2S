@@ -99,13 +99,13 @@ T & PField<T>::operator [](int i) {
 
 
 template <typename T>
-Error_PN2S PField<T>::AllocateMemory(size_t size)
+size_t PField<T>::AllocateMemory(size_t size)
 {
 	_size = size;
 	CUDA_SAFE_CALL(cudaMallocHost((void **) &host, size * sizeof(host[0]))); //Define pinned memories
 	CUDA_SAFE_CALL(cudaMalloc((void **) &device, size * sizeof(device[0])));
 
-	return Error_PN2S::NO_ERROR;
+	return size * sizeof(host[0]);
 }
 
 template <typename T>
@@ -115,14 +115,14 @@ __inline__ void PField<T>::Fill(TYPE_ value)
 }
 
 template <typename T>
-Error_PN2S PField<T>::AllocateMemory(size_t size, TYPE_ host_defaultValue)
+size_t PField<T>::AllocateMemory(size_t size, TYPE_ host_defaultValue)
 {
 	_size = size;
 	CUDA_SAFE_CALL(cudaMallocHost((void **) &host, size * sizeof(host[0]))); //Define pinned memories
 	memset(host,host_defaultValue, size * sizeof(host[0])); //Fill
 	CUDA_SAFE_CALL(cudaMalloc((void **) &device, size * sizeof(device[0])));
 
-	return Error_PN2S::NO_ERROR;
+	return size * sizeof(host[0]);
 }
 
 template <typename T>

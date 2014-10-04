@@ -33,7 +33,7 @@ public:
 	virtual ~ModelPack();
 
 
-	void AllocateMemory( models::ModelStatistic s, cudaStream_t st);
+	size_t AllocateMemory( models::ModelStatistic s, cudaStream_t st);
 	void PrepareSolvers();
 
 	double Process();
