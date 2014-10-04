@@ -22,7 +22,6 @@ private:
 	ModelStatistic _m_statistic;
 	cudaStream_t _stream;
 
-	PField<TYPE_>*  _Vm; // Comes from compartments
 
 	PField<TYPE_>  _state;
 	PField<TYPE_>  _gk;
@@ -35,19 +34,22 @@ private:
 	PField<TYPE_> _gbar;
 	PField<TYPE_>  _ek;
 
-
 	//indexes
 	PField<int>  _comptIndex;
 	PField<int>  _channelIndex;
 	PField<int>  _gateIndex;
 
+	// External fields
+	PField<TYPE_>*  _Vm;
+	PField<TYPE_>*  _rhs;
+	PField<TYPE_>*  _hm;
 
 public:
 	dim3 _threads, _blocks;
 	SolverGates();
 	~SolverGates();
 	size_t AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
-	void PrepareSolver(PField<TYPE_>*  Vm);
+	void PrepareSolver(PField<TYPE_>*  Vm, PField<TYPE_>*  hm,  PField<TYPE_>*  rhs);
 	double Input();
 	double Process();
 	double Output();

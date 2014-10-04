@@ -26,15 +26,19 @@ size_t ModelPack::AllocateMemory(models::ModelStatistic s, cudaStream_t st){
 	stat = s;
 	_st = st;
 	val += _compsSolver.AllocateMemory(stat, st);
-//	_chanSolver.AllocateMemory(stat, st);
+	_chanSolver.AllocateMemory(stat, st);
 	val += _gateSolver.AllocateMemory(stat, st);
 	return val;
 }
 
 void ModelPack::PrepareSolvers(){
 	_compsSolver.PrepareSolver(_gateSolver.GetFieldChannelCurrents());
-//	_chanSolver.PrepareSolver(_compsSolver.GetFieldVm());
-	_gateSolver.PrepareSolver(_compsSolver.GetFieldVm());
+	_chanSolver.PrepareSolver(_compsSolver.GetFieldVm());
+	_gateSolver.PrepareSolver(
+			_compsSolver.GetFieldVm(),
+			_compsSolver.GetFieldHinesMatrix(),
+			_compsSolver.GetFieldRHS()
+			);
 	cudaDeviceSynchronize();
 }
 
@@ -51,7 +55,7 @@ double ModelPack::Process()
 {
 	cudaStreamSynchronize(_st);
 	double t = 0;
-//	t += _chanSolver.Process();
+	t += _chanSolver.Process();
 	t += _gateSolver.Process();
 	t += _compsSolver.Process();
 	return t;

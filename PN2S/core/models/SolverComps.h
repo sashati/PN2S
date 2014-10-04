@@ -62,8 +62,11 @@ public:
 	void 	SetValue(int cmpt_index, FIELD::CM field, TYPE_ value);
 	TYPE_ 	GetValue(int cmpt_index, FIELD::CM field);
 	void ConnectChannel(int cmpt_index,  int ch_index);
-	PField<TYPE_> * GetFieldVm(){return & _Vm;}
 	void AddExternalCurrent( int index, TYPE_ Gk, TYPE_ GkEk);
+
+	PField<TYPE_> * GetFieldVm(){return & _Vm;}
+	PField<TYPE_> * GetFieldRHS(){return & _rhs;}
+	PField<TYPE_> * GetFieldHinesMatrix(){return & _hm;}
 };
 
 }

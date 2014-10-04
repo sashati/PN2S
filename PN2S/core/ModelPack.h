@@ -22,7 +22,7 @@ class ModelPack
 	cudaStream_t _st;
 public:
 	models::SolverComps _compsSolver;
-//	models::SolverChannels _chanSolver;
+	models::SolverChannels _chanSolver;
 	models::SolverGates _gateSolver;
 
 	double _dt;
@@ -42,7 +42,7 @@ public:
 
 	double GetDt(){ return _dt;}
 	models::SolverComps& ComptSolver(){return _compsSolver;}
-//	models::SolverChannels& ChannelSolver(){return _chanSolver;}
+	models::SolverChannels& ChannelSolver(){return _chanSolver;}
 	models::SolverGates& GatesSolver(){return _gateSolver;}
 
 

@@ -68,7 +68,7 @@ size_t SolverGates::AllocateMemory(models::ModelStatistic& s, cudaStream_t strea
 	return val;
 }
 
-void SolverGates::PrepareSolver(PField<TYPE_>*  Vm)
+void SolverGates::PrepareSolver(PField<TYPE_>*  Vm, PField<TYPE_>*  hm,  PField<TYPE_>*  rhs)
 {
 	if(_m_statistic.nGates)
 	{
@@ -84,9 +84,12 @@ void SolverGates::PrepareSolver(PField<TYPE_>*  Vm)
 		_power.Host2Device_Async(_stream);
 		_params.Host2Device_Async(_stream);
 		_params_div_min_max.Host2Device_Async(_stream);
-		_Vm = Vm;
 
-		_threads=dim3(64);
+		_Vm = Vm;
+		_rhs = rhs;
+		_hm = hm;
+
+		_threads=dim3(32*3);
 		_blocks=dim3(ceil(_m_statistic.nGates / (double)_threads.x));
 	}
 }
@@ -115,7 +118,6 @@ __global__ void advanceGates(
 	if (idx >= size)
 		return;
 
-	int ch_idx = channelIndex[idx];
 	int fi = gateIndex[idx];
 
 	if ( power[idx] > 0.0 )
@@ -197,7 +199,8 @@ __global__ void advanceGates(
 		}
 		__syncthreads();
 
-		if((fi & 0x01) && (threadIdx.x != 0)) //TODO: Find a good solution
+		unsigned char bitmap = 1;
+		if(fi & bitmap)
 		{
 			data[threadIdx.x-1].x *= data[threadIdx.x].x;
 			data[threadIdx.x].x = 0;
@@ -205,15 +208,21 @@ __global__ void advanceGates(
 		__syncthreads();
 		data[threadIdx.x].x = gbar[idx] *data[threadIdx.x].x;
 		data[threadIdx.x].y = ek[idx] *data[threadIdx.x].x;
-		if(!(fi & 0x01))
+		if(!(fi & bitmap))
 			current[channelIndex[idx]].x = data[threadIdx.x].x;
-		for (int bit = 2; bit < 5; ++bit) {
-			fi = fi >> 1;
-			if(fi & 0x01) //FIND it and write it back to Component solver
-			{
 
-			}
-		}
+//		for (bitmap = 2; bitmap < 60; bitmap <<=1 ) {
+//			if(fi & bitmap)
+//			{
+//				int it = fi/bitmap/2 + threadIdx.x - fi;
+//				data[threadIdx.x].x += data[it].x;
+//				data[threadIdx.x].y += data[it].y;
+//			}
+//		}
+//		if(fi == 0)
+//		{
+//
+//		}
 	}
 }
 

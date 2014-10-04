@@ -141,23 +141,23 @@ double SolverComps::Process()
 
 	uint vectorSize = _statistic.nModels * _statistic.nCompts_per_model;
 
-//	update_rhs <<<_blocks, _threads,0, _stream>>> (
-//			_hm.device,
-//			_rhs.device,
-//			_Vm.device,
-//			_Constant.device,
-//			_statistic.nCompts_per_model,
-//			_CmByDt.device,
-//			_EmByRm.device,
-//			_InjectBasal.device,
-//			_InjectVarying.device,
-//			_ext_curr_gh_gkek.device,
-//			_channelIndex.device,
-//			_channels_current->device,
-//			vectorSize,
-//			_statistic.dt);
+	update_rhs <<<_blocks, _threads,0, _stream>>> (
+			_hm.device,
+			_rhs.device,
+			_Vm.device,
+			_Constant.device,
+			_statistic.nCompts_per_model,
+			_CmByDt.device,
+			_EmByRm.device,
+			_InjectBasal.device,
+			_InjectVarying.device,
+			_ext_curr_gh_gkek.device,
+			_channelIndex.device,
+			_channels_current->device,
+			vectorSize,
+			_statistic.dt);
 
-//	assert(cudaSuccess == cudaGetLastError());
+	assert(cudaSuccess == cudaGetLastError());
 
 	SolverMatrix<TYPE_,ARCH_>::fast_solve(
 			_hm.device, _rhs.device, _Vm.device,
