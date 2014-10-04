@@ -35,7 +35,7 @@ MODULES = 	models/_models.o
 all: $(TARGET)
 default: all
 
-ModelPack.o: ModelPack.cpp ModelPack.h models/SolverGates.cu models/SolverGates.h models/SolverComps.cu models/SolverComps.h 
+ModelPack.o: ModelPack.cpp ModelPack.h models/SolverChannels.cu models/SolverChannels.h models/SolverComps.cu models/SolverComps.h 
 NetworkAnalyzer.o: NetworkAnalyzer.cpp NetworkAnalyzer.h
 
 $(TARGET): $(OBJS) $(COBJS) $(SUBDIR) 

@@ -25,7 +25,7 @@ HEADERS = ../../headers.h
 		 
 OBJS +=					
 
-COBJS += SolverGates.o	\
+COBJS += 	\
 		SolverComps.o	\
 		PField.o		\
 		SolverMatrix.o	\
@@ -37,7 +37,6 @@ default: all
 
 PField.o: PField.cpp PField.h
 SolverChannels.o: SolverChannels.cu SolverChannels.h PField.cpp PField.h
-SolverGates.o: SolverGates.cu SolverGates.h PField.cpp PField.h
 SolverComps.o: SolverComps.cu SolverComps.h PField.cpp PField.h SolverMatrix.cu SolverMatrix.h
 SolverMatrix.o: SolverMatrix.cu SolverMatrix.h operations.h
 

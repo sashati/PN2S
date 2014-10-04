@@ -32,22 +32,25 @@ SolverChannels::~SolverChannels()
 {
 }
 
-void SolverChannels::AllocateMemory(models::ModelStatistic& s, cudaStream_t stream)
+size_t SolverChannels::AllocateMemory(models::ModelStatistic& s, cudaStream_t stream)
 {
 	_m_statistic = s;
 	_stream = stream;
 
+	size_t val = 0;
 	if(_m_statistic.nChannels_all == 0)
-		return;
+		return val;
 
-	_state.AllocateMemory(_m_statistic.nChannels_all*3);
-	_comptIndex.AllocateMemory(_m_statistic.nChannels_all);
-	_channel_base.AllocateMemory(_m_statistic.nChannels_all);
-	_ch_currents_gk_ek.AllocateMemory(_m_statistic.nChannels_all);
+	val += _state.AllocateMemory(_m_statistic.nChannels_all*3);
+	val += _comptIndex.AllocateMemory(_m_statistic.nChannels_all);
+	val += _channel_base.AllocateMemory(_m_statistic.nChannels_all);
+	val += _ch_currents_gk_ek.AllocateMemory(_m_statistic.nChannels_all);
 
 	int threadSize = min(max((int)_m_statistic.nChannels_all/8,16), 32);
 	_threads=dim3(2,threadSize, 1);
 	_blocks=dim3(max((int)(ceil((double)_m_statistic.nChannels_all / _threads.y)),1), 1);
+
+	return val;
 }
 
 void SolverChannels::PrepareSolver(PField<TYPE_>*  Vm)
