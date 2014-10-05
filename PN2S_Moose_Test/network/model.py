@@ -361,18 +361,3 @@ if __name__ == '__main__':
         
 #     os.environ['EXEC_TIME'] = str(te)
 #     os.environ['INIT_TIME'] = str(ti)      
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        

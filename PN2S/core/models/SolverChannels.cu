@@ -198,10 +198,6 @@ double SolverChannels::Process()
 				_m_statistic.dt);
 		assert(cudaSuccess == cudaGetLastError());
 	}
-	cudaDeviceSynchronize();
-//	_ch_currents_gk_ek.Device2Host();
-//	_ch_currents_gk_ek.print();
-
 	double elapsed_time = ( std::clock() - start_time );
 //	cout << "Channel: " << elapsed_time << endl << flush;
 	return elapsed_time;

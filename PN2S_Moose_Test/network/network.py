@@ -307,7 +307,7 @@ def run_simulator():
     else:
         create_cells("/cpu", input_layer)
         
-    for i in range(1):
+    for i in range(number_of_ext_cells-10, number_of_ext_cells):
         add_plot("/gpu/cell" + str(i) + '/soma','getVm', 'gpu/c' + str(i) + '_soma')
 #         add_plot("/cpu/cell" + str(i) + '/soma','getVm', 'cpu/c' + str(i) + '_soma')
 
@@ -323,7 +323,7 @@ def run_simulator():
     dump_plots()
     pylab.legend()
     pylab.show()
-     
+      
     print("--- Exec: %s" % str(t_exec * dt / Simulation_Time * 1000000))
    
 
