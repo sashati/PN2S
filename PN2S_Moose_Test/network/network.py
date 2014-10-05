@@ -307,8 +307,8 @@ def run_simulator():
     else:
         create_cells("/cpu", input_layer)
         
-    for i in range(number_of_ext_cells-10, number_of_ext_cells):
-        add_plot("/gpu/cell" + str(i) + '/soma','getVm', 'gpu/c' + str(i) + '_soma')
+#     for i in range(number_of_ext_cells-10, number_of_ext_cells):
+#         add_plot("/gpu/cell" + str(i) + '/soma','getVm', 'gpu/c' + str(i) + '_soma')
 #         add_plot("/cpu/cell" + str(i) + '/soma','getVm', 'cpu/c' + str(i) + '_soma')
 
     moose.useClock(0, '/##', 'init')
@@ -320,21 +320,21 @@ def run_simulator():
     moose.start(Simulation_Time)
     t_exec = time.time() - start_time - 0.000125
     
-    dump_plots()
-    pylab.legend()
-    pylab.show()
+#     dump_plots()
+#     pylab.legend()
+#     pylab.show()
       
     print("--- Exec: %s" % str(t_exec * dt / Simulation_Time * 1000000))
    
 
 
 Use_MasterHSolve = True
-# Use_MasterHSolve = False
+Use_MasterHSolve = False
 Simulation_Time = 1e-1
 
 number_of_input_cells = 1
-number_of_ext_cells = 100
-number_of_inh_cells = 0
+number_of_ext_cells = 500
+number_of_inh_cells = 500
 
 
 IC = 1  # Input connection probability

@@ -23,6 +23,7 @@ public:
 	models::SolverComps _compsSolver;
 	models::SolverChannels _chanSolver;
 
+	int _device_id;
 	double _dt;
 	vector<unsigned int> models;
 	models::ModelStatistic stat;
