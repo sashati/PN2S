@@ -344,8 +344,6 @@ if __name__ == '__main__':
     
     if len(sys.argv) > 2:
         number_of_ext_cells = int(sys.argv[2])  
-    if len(sys.argv) > 3:
-        os.environ['PN2S_MP_SIZE'] = sys.argv[3]
     
     ti, te = run_simulator()
     
@@ -356,7 +354,6 @@ if __name__ == '__main__':
             spamwriter = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
             cellnumber = number_of_input_cells + number_of_ext_cells + number_of_ext_cells
-            mp = int(os.environ['PN2S_MP_SIZE'])
             spamwriter.writerow([ mp, cellnumber, te])
         
 #     os.environ['EXEC_TIME'] = str(te)

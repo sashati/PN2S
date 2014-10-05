@@ -9,6 +9,12 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <assert.h>
+#include "tbb/flow_graph.h"
+#include "tbb/atomic.h"
+#include "tbb/tick_count.h"
+using namespace tbb;
+using namespace tbb::flow;
+
 
 using namespace pn2s;
 static bool _isInitialized = false;
@@ -42,10 +48,7 @@ Error_PN2S DeviceManager::Initialize(){
 		_isInitialized = true;
 
 		//Read parameters from environment
-		char * val = getenv("PN2S_MP_SIZE");
-		if (val != NULL)
-			istringstream(val) >> pn2s::Parameters::MP_SIZE;
-		val = getenv("MAX_STREAM_NUMBER");
+		char * val = getenv("MAX_STREAM_NUMBER");
 		if (val != NULL)
 			istringstream(val) >> pn2s::Parameters::MAX_STREAM_NUMBER;
 		val = getenv("MAX_DEVICE_NUMBER");
@@ -70,21 +73,43 @@ Error_PN2S DeviceManager::Initialize(){
 void DeviceManager::AllocateMemory(vector< vector <Model_pack_info> > &m, double dt){
 	assert(m.size() > 0);
 	for(int i = 0; i < _device.size(); i++)
+	{
+		cudaSetDevice(_device[i].id);
 		_device[i].AllocateMemory(m[i], dt);
+	}
 }
 
 void DeviceManager::PrepareSolvers()
 {
 	for(vector<Device>::iterator device = _device.begin(); device != _device.end(); ++device)
 	{
+		cudaSetDevice(device->id);
 		device->PrepareSolvers();
 	}
 }
 
+/**
+ * Multithread tasks section
+ */
+
+struct process_body{
+	Device* operator()( Device* d) {
+//		_D(std::cout<< "Process" << m<<endl<<flush);
+		cudaSetDevice(d->id);
+		d->Process();
+        return d;
+    }
+};
+
 void DeviceManager::Process()
 {
+	graph scheduler;
+	broadcast_node<Device*> broadcast(scheduler);
+	function_node< Device*, Device* > process_node(scheduler, 1, process_body());
+	make_edge( broadcast, process_node );
 	for(vector<Device>::iterator device = _device.begin(); device != _device.end(); ++device)
-		device->Process();
+		broadcast.try_put(&(*device));
+	scheduler.wait_for_all();
 }
 
 void DeviceManager::Close()

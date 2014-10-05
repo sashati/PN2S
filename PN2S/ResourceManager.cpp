@@ -66,17 +66,15 @@ void ResourceManager::ModelDistribution(pn2s::Model_pack_info& m, double dt){
 		splited[i->nCompt].push_back(*i);
 	}
 
+	size_t ds = _devices.size();
 	vector<Model_pack_info> packs;
 	typedef std::map<unsigned int, Model_pack_info >::iterator it_type;
 	for(it_type i = splited.begin(); i != splited.end(); i++) {
 		std::sort(i->second.begin(), i->second.end(), compareModels);
 		/**
-		 * Create modelpacks
+		 * Create modelpacks: Assign a portion to each device
 		 */
-		// TODO: Also consider limitation on channel size. Maybe a
-		// model has a few number of compartment, but many channels
-		// reduce efficiency
-		size_t nModel_in_pack = ceil( (double)Parameters::MP_SIZE / i->first);
+		size_t nModel_in_pack = ceil( (double)i->second.size() / ds);
 		for(Model_pack_info::iterator start = i->second.begin();
 				start < i->second.end();)
 		{
@@ -93,7 +91,6 @@ void ResourceManager::ModelDistribution(pn2s::Model_pack_info& m, double dt){
 		}
 	}
 
-	size_t ds = _devices.size();
 	vector< vector <Model_pack_info> > allocation(ds);
 	int index = 0;
 	for(vector<Model_pack_info>::iterator i = packs.begin(); i != packs.end(); i++)

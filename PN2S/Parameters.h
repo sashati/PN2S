@@ -21,7 +21,6 @@ class Parameters {
 public:
 	static int MAX_DEVICE_NUMBER;
 	static int MAX_STREAM_NUMBER;
-	static long int MP_SIZE;
 
 private:
 

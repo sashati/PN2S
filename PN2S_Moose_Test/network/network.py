@@ -1,8 +1,6 @@
 import sys
 import os
-os.environ['MAX_DEVICE_NUMBER'] = '1'
-os.environ['MAX_STREAM_NUMBER'] = '4'
-os.environ['PN2S_MP_SIZE'] = '30000'
+os.environ['MAX_DEVICE_NUMBER'] = '4'
 import pylab
 import numpy
 import math
@@ -329,12 +327,12 @@ def run_simulator():
 
 
 Use_MasterHSolve = True
-Use_MasterHSolve = False
-Simulation_Time = 1e-1
+#Use_MasterHSolve = False
+Simulation_Time = 1e-3
 
 number_of_input_cells = 1
-number_of_ext_cells = 500
-number_of_inh_cells = 500
+number_of_ext_cells = 1000
+number_of_inh_cells = 0
 
 
 IC = 1  # Input connection probability
