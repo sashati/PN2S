@@ -158,7 +158,9 @@ def make_spiny_compt(root_path, number, isExcitatory):
     d3 = create_dendrit('d3', d2, cell, spineLength, spineDia / 2)
     if isExcitatory:
         d4 = create_dendrit('d4', d2, cell, spineLength, spineDia/2)
-
+    if is_6_cmpt == True:
+        create_dendrit('d5', d4, cell, spineLength, spineDia)
+    
     # Excitatory
     gluR_Ex = moose.SynChan(d3.path + '/gluR')
     gluR_Ex.tau1 = 4e-3
@@ -331,9 +333,10 @@ P2 = 0  # Exitatory to Inhibitory connection probability
 P3 = 0  # Inhibitory to Excitatory connection probability
 number_of_input_cells = 0
 number_of_ext_cells = 0
-number_of_inh_cells = 1
+number_of_inh_cells = 0
 
-is_3_cmpt = True
+is_3_cmpt = False
+is_6_cmpt = True
 
 if __name__ == '__main__':
     in_benchmark = False
@@ -348,7 +351,7 @@ if __name__ == '__main__':
     import moose.utils
     
     if len(sys.argv) > 2:
-        number_of_inh_cells = int(sys.argv[2])  
+        number_of_ext_cells = int(sys.argv[2])  
      
     ti, te = run_simulator()
     
