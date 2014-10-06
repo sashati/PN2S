@@ -320,7 +320,7 @@ def run_simulator():
 #     pylab.legend()
 #     pylab.show()
     
-    return t_init , t_exec * dt / Simulation_Time * 1e6 
+    return t_init , t_exec * dt / Simulation_Time * 1e3 
 
 INJECT_CURRENT = 0
 dt = 2e-6
