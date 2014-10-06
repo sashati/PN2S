@@ -8,6 +8,7 @@ from numpy import random as nprand, where
 import csv 
 from matplotlib.pyplot import plot
 
+os.environ['MAX_DEVICE_NUMBER'] = '1'
 EREST_ACT = -70e-3
 
 # Gate equations have the form:
@@ -354,7 +355,7 @@ if __name__ == '__main__':
             spamwriter = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
             cellnumber = number_of_input_cells + number_of_ext_cells + number_of_ext_cells
-            spamwriter.writerow([ mp, cellnumber, te])
+            spamwriter.writerow([ cellnumber, te])
         
 #     os.environ['EXEC_TIME'] = str(te)
 #     os.environ['INIT_TIME'] = str(ti)      

@@ -104,6 +104,11 @@ void Device::PrepareSolvers(){
 
 void Device::Process()
 {
+//	sched_param param;
+//	int policy;
+//	pthread_getschedparam(pthread_self(), &policy, &param);
+//	param.sched_priority = sched_get_priority_max(policy);
+//	pthread_setschedparam(pthread_self(), policy, &param);
 
 	uint model_n = _modelPacks.size();
 	if(model_n < 1)

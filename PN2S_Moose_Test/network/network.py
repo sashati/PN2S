@@ -1,6 +1,6 @@
 import sys
 import os
-os.environ['MAX_DEVICE_NUMBER'] = '4'
+os.environ['MAX_DEVICE_NUMBER'] = '1'
 import pylab
 import numpy
 import math
@@ -316,7 +316,7 @@ def run_simulator():
     
     start_time = time.time()
     moose.start(Simulation_Time)
-    t_exec = time.time() - start_time - 0.000125
+    t_exec = time.time() - start_time
     
 #     dump_plots()
 #     pylab.legend()
@@ -327,8 +327,8 @@ def run_simulator():
 
 
 Use_MasterHSolve = True
-#Use_MasterHSolve = False
-Simulation_Time = 1e-3
+# Use_MasterHSolve = False
+Simulation_Time = 1e-2
 
 number_of_input_cells = 1
 number_of_ext_cells = 1000

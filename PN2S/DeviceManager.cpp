@@ -8,17 +8,16 @@
 #include "DeviceManager.h"
 #include <cuda.h>
 #include <cuda_runtime_api.h>
+#include <pthread.h>
 #include <assert.h>
-#include "tbb/flow_graph.h"
-#include "tbb/atomic.h"
-#include "tbb/tick_count.h"
-using namespace tbb;
-using namespace tbb::flow;
-
 
 using namespace pn2s;
 static bool _isInitialized = false;
 extern std::map< unsigned int, pn2s::Location > locationMap;
+
+/**
+ * Multithread tasks section
+ */
 
 int DeviceManager::CkeckAvailableDevices(){
 //	cudaProfilerStop();
@@ -57,9 +56,6 @@ Error_PN2S DeviceManager::Initialize(){
 
 		DeviceManager::CkeckAvailableDevices();
 
-//	pthread_getschedparam(pthread_self(), &policy, &param);
-//	param.sched_priority = sched_get_priority_max(policy);
-//	pthread_setschedparam(pthread_self(), policy, &param);
 	}
 	return  Error_PN2S::NO_ERROR;
 }
@@ -86,30 +82,30 @@ void DeviceManager::PrepareSolvers()
 		cudaSetDevice(device->id);
 		device->PrepareSolvers();
 	}
+
+	//Prepare the scheduling mechanism
+
 }
 
-/**
- * Multithread tasks section
- */
-
-struct process_body{
-	Device* operator()( Device* d) {
-//		_D(std::cout<< "Process" << m<<endl<<flush);
-		cudaSetDevice(d->id);
-		d->Process();
-        return d;
-    }
-};
+void* process( void* a) {
+	Device *d = reinterpret_cast<Device *>(a);
+	cudaSetDevice(d->id);
+	d->Process();
+	return 0;
+}
 
 void DeviceManager::Process()
 {
-	graph scheduler;
-	broadcast_node<Device*> broadcast(scheduler);
-	function_node< Device*, Device* > process_node(scheduler, 1, process_body());
-	make_edge( broadcast, process_node );
-	for(vector<Device>::iterator device = _device.begin(); device != _device.end(); ++device)
-		broadcast.try_put(&(*device));
-	scheduler.wait_for_all();
+	for(int i = 0; i< _device.size();i++)
+		_device[i].Process();
+
+//	pthread_t threads[16];
+//	for(int i = 0; i< _device.size();i++)
+//		pthread_create(threads + i, NULL,process,&_device[i]);
+//
+//
+//	for(int i = 0; i< _device.size();i++)
+//		pthread_join(threads[i], NULL);
 }
 
 void DeviceManager::Close()
