@@ -320,7 +320,7 @@ def run_simulator():
 #     pylab.legend()
 #     pylab.show()
     
-    return t_init , t_exec * dt / Simulation_Time * 1e3 
+    return t_init , t_exec * dt / Simulation_Time * 1e6 
 
 INJECT_CURRENT = 0
 dt = 2e-6
@@ -336,7 +336,7 @@ number_of_ext_cells = 0
 number_of_inh_cells = 0
 
 is_3_cmpt = False
-is_6_cmpt = True
+is_6_cmpt = False
 
 if __name__ == '__main__':
     in_benchmark = False
