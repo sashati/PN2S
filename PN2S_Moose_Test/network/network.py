@@ -327,7 +327,7 @@ def run_simulator():
 
 
 Use_MasterHSolve = True
-Use_MasterHSolve = False
+#Use_MasterHSolve = False
 Simulation_Time = 2e-2
 
 number_of_input_cells = 1
