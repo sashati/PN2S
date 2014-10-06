@@ -316,7 +316,7 @@ def run_simulator():
 #     pylab.legend()
 #     pylab.show()
     
-    return t_init , t_exec * dt / Simulation_Time * 1e6 - 50
+    return t_init , t_exec * dt / Simulation_Time * 1e6
 
 INJECT_CURRENT = 0
 dt = 2e-6
@@ -354,7 +354,7 @@ if __name__ == '__main__':
         with open(sys.argv[3], 'a') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            cellnumber = number_of_input_cells + number_of_ext_cells + number_of_ext_cells
+            cellnumber = number_of_input_cells + number_of_ext_cells + number_of_inh_cells
             spamwriter.writerow([ cellnumber, te])
         
 #     os.environ['EXEC_TIME'] = str(te)
