@@ -322,23 +322,23 @@ def run_simulator():
 #     pylab.legend()
 #     pylab.show()
       
-    print("--- Exec: %s" % str(t_exec * dt / Simulation_Time * 1000000))
+    print("--- Exec: %s ms" % str(t_exec * dt / Simulation_Time * 1000))
    
 
 
 Use_MasterHSolve = True
-# Use_MasterHSolve = False
-Simulation_Time = 1e-2
+Use_MasterHSolve = False
+Simulation_Time = 2e-2
 
 number_of_input_cells = 1
 number_of_ext_cells = 1000
-number_of_inh_cells = 0
+number_of_inh_cells = 200
 
 
-IC = 1  # Input connection probability
-P1 = 0  # Exitatory to Excitatory connection probability
-P2 = 0  # Exitatory to Inhibitory connection probability
-P3 = 0  # Inhibitory to Excitatory connection probability
+IC = 100  # Input connection probability
+P1 = 0.1  # Exitatory to Excitatory connection probability
+P2 = 0.2  # Exitatory to Inhibitory connection probability
+P3 = 0.2  # Inhibitory to Excitatory connection probability
 
 INJECT_CURRENT = 0
 dt = 2e-6
