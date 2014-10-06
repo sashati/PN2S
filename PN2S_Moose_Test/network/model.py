@@ -336,20 +336,20 @@ number_of_inh_cells = 1
 is_3_cmpt = True
 
 if __name__ == '__main__':
-#     in_benchmark = False
-#     if len(sys.argv) > 1:
-#         in_benchmark = True
-#         Use_MasterHSolve = (sys.argv[1] == 'gpu')
-#     else:
-#         print "Usage: python model.py [gpu|cpu] model_size filename "
-#         exit()
+    in_benchmark = False
+    if len(sys.argv) > 1:
+        in_benchmark = True
+        Use_MasterHSolve = (sys.argv[1] == 'gpu')
+    else:
+        print "Usage: python model.py [gpu|cpu] model_size filename "
+        exit()
     
     import moose
-#     import moose.utils
+    import moose.utils
     
-#     if len(sys.argv) > 2:
-#         number_of_inh_cells = int(sys.argv[2])  
-#     
+    if len(sys.argv) > 2:
+        number_of_inh_cells = int(sys.argv[2])  
+     
     ti, te = run_simulator()
     
     print(str(ti)+"\t"+str(te))
