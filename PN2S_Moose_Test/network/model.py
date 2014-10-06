@@ -1,12 +1,12 @@
 import sys
 import os
-import pylab
+# import pylab
 import numpy
 import math
 import time
 from numpy import random as nprand, where
 import csv 
-from matplotlib.pyplot import plot
+# from matplotlib.pyplot import plot
 
 os.environ['MAX_DEVICE_NUMBER'] = '1'
 EREST_ACT = -70e-3
@@ -328,7 +328,7 @@ P1 = 0  # Exitatory to Excitatory connection probability
 P2 = 0  # Exitatory to Inhibitory connection probability
 P3 = 0  # Inhibitory to Excitatory connection probability
 number_of_input_cells = 0
-number_of_ext_cells = 100
+number_of_ext_cells = 0
 number_of_inh_cells = 0
 
 if __name__ == '__main__':
@@ -341,10 +341,10 @@ if __name__ == '__main__':
         exit()
     
     import moose
-    import moose.utils
+#     import moose.utils
     
     if len(sys.argv) > 2:
-        number_of_ext_cells = int(sys.argv[2])  
+        number_of_inh_cells = int(sys.argv[2])  
     
     ti, te = run_simulator()
     

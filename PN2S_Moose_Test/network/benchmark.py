@@ -4,7 +4,7 @@ import time
 
 if __name__ == '__main__':
     
-    model_size = [10, 100, 1000, 10000]
+    model_size = [100, 1000, 10000]
     fname = 'result.log'
     if len(sys.argv) > 1:
         fname = sys.argv[1]
