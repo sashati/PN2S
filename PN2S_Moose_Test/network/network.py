@@ -206,7 +206,7 @@ def create_cells(net, input_layer):
             syn = moose.element(cell.path + '/d3/gluR/handler/synapse')
             moose.connect(input_layer[j], 'spikeOut', syn, 'addSpike')
             syn.weight = 1.0 / number_of_input_cells
-            syn.delay = 0#2e-3 + (8e-3 - 2e-3) * nprand.random_sample()  # random
+            syn.delay = 2e-3 + (8e-3 - 2e-3) * nprand.random_sample()  # random
 
     # Create Inh cells
     for i in range(number_of_inh_cells):
@@ -250,7 +250,7 @@ def create_cells(net, input_layer):
             spike = moose.element(net+'/cell' + str(j) + '/spike')
             moose.connect(spike, 'spikeOut', syn, 'addSpike')
             syn.weight = 1.0 / number_of_ext_cells
-            syn.delay = 0 #2e-3 + (8e-3 - 2e-3) * nprand.random_sample()  # random
+            syn.delay = 2e-3 + (8e-3 - 2e-3) * nprand.random_sample()  # random
  
     # Assign HSolve objects
     for i in range(number_of_ext_cells):
@@ -295,6 +295,7 @@ def run_simulator():
     moose.setClock(2, dt)
     moose.setClock(8, dt)
 
+    
     input_layer = make_input_layer()
 
     if Use_MasterHSolve:
@@ -328,15 +329,15 @@ def run_simulator():
 
 Use_MasterHSolve = True
 #Use_MasterHSolve = False
-Simulation_Time = 2e-2
+Simulation_Time = 1e-1
 
 number_of_input_cells = 1
-number_of_ext_cells = 1000
-number_of_inh_cells = 200
+number_of_ext_cells = 500
+number_of_inh_cells = 0
 
 
-IC = 100  # Input connection probability
-P1 = 0.1  # Exitatory to Excitatory connection probability
+IC = 1  # Input connection probability
+P1 = 0 # Exitatory to Excitatory connection probability
 P2 = 0.2  # Exitatory to Inhibitory connection probability
 P3 = 0.2  # Inhibitory to Excitatory connection probability
 
