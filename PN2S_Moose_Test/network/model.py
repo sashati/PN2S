@@ -337,7 +337,7 @@ if __name__ == '__main__':
         in_benchmark = True
         Use_MasterHSolve = (sys.argv[1] == 'gpu')
     else:
-        print "Usage: python model.py [gpu|cpu] model_size MP filename "
+        print "Usage: python model.py [gpu|cpu] model_size filename "
         exit()
     
     import moose
@@ -350,8 +350,8 @@ if __name__ == '__main__':
     
     print(str(ti)+"\t"+str(te))
     
-    if len(sys.argv) > 4:
-        with open(sys.argv[4], 'a') as csvfile:
+    if len(sys.argv) > 3:
+        with open(sys.argv[3], 'a') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
             cellnumber = number_of_input_cells + number_of_ext_cells + number_of_ext_cells

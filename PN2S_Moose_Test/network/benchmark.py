@@ -1,28 +1,18 @@
-import getopt
-import subprocess
 import sys
 import os
-import socket
-import multiprocessing
-import subprocess
-from datetime import datetime, timedelta
-from collections import defaultdict
-import random
-from fileinput import filename
-
+import time
 
 if __name__ == '__main__':
     
-    model_pack_size = [2048, 10240, 30720]
-    model_size = [10, 20, 50, 80, 100, 200, 400, 600, 800, 1000, 1200, 1500, 2000, 3000, 4000, 6000, 8000]
+    model_size = [10, 50, 100, 500, 1000]
     fname = 'result.log'
     if len(sys.argv) > 1:
         fname = sys.argv[1]
 
-    start_time = datetime.now()
+    start_time = time.time()
     
     for s in model_size:
-        for m in model_pack_size:
-            os.system("python model.py gpu %d %d %s" % (s,m,fname))
+        os.system("python model.py gpu %d %s" % (s,fname))
 
-    print "\n Simulation time: %d sec\t" % datetime.now - start_time
+    t_exec = time.time() - start_time
+    print "\n Simulation time: %s sec\t" % str(t_exec)
