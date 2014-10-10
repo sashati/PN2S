@@ -1,8 +1,8 @@
 import sys
 import os
-os.environ['MAX_STREAM_NUMBER'] = '2'
-os.environ['PN2S_MP_SIZE'] = '50'
-os.environ['MAX_DEVICE_NUMBER'] = '1'
+#os.environ['MAX_STREAM_NUMBER'] = '2'
+#os.environ['PN2S_MP_SIZE'] = '50'
+#os.environ['MAX_DEVICE_NUMBER'] = '1'
 import pylab
 import numpy
 import math
@@ -304,11 +304,11 @@ def run_simulator():
         hsolve = moose.HSolve('/gpu/hsolve')
         hsolve.dt = dt
         hsolve.target = '/gpu'
-    else:
+#    else:
         create_cells("/cpu", input_layer)
         
         
-    for i in range(number_of_ext_cells-2, number_of_ext_cells):
+    for i in range(number_of_ext_cells):
         add_plot("/cpu/cell" + str(i) + '/soma','getVm', 'cpu/c' + str(i) + '_soma')
         add_plot("/gpu/cell" + str(i) + '/soma','getVm', 'gpu/c' + str(i) + '_soma')
 
@@ -334,7 +334,7 @@ Use_MasterHSolve = True
 Simulation_Time = 1e-2
 
 number_of_input_cells = 1
-number_of_ext_cells = 10
+number_of_ext_cells = 1
 number_of_inh_cells = 0
 
 

@@ -63,7 +63,7 @@ void SolverChannels::PrepareSolver(PField<TYPE_>*  Vm)
 		_comptIndex.Host2Device_Async(_stream);
 		_Vm = Vm;
 
-		_threads=dim3(2,16, 1);
+		_threads=dim3(2,64, 1);
 		_blocks=dim3(ceil(_m_statistic.nChannels_all / (double)_threads.y));
 	}
 }
