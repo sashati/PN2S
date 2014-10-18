@@ -36,7 +36,8 @@ private:
 
 	//Channel currents
 	PField<int2>  _channelIndex; 	// (NumberOfChannels, Index in _current)
-	PField<TYPE2_>*  _channels_current;	// Refer to channel kernel
+	PField<TYPE_>*  _ch_gk;	// Refer to channel kernel
+	PField<TYPE_>*  _ch_ek;	// Refer to channel kernel
 
 	void getValues();
 
@@ -49,7 +50,7 @@ public:
 	SolverComps();
 	~SolverComps();
 	size_t AllocateMemory(models::ModelStatistic& s, cudaStream_t stream);
-	void PrepareSolver(PField<TYPE2_>*  channels_current);
+	void PrepareSolver(PField<TYPE_>*  channels_gk, PField<TYPE_>*  channels_ek);
 	double Input();
 	double Process();
 	double Output();

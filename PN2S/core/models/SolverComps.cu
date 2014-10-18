@@ -14,7 +14,7 @@
 
 using namespace pn2s::models;
 
-SolverComps::SolverComps(): _stream(0), _channels_current(0)
+SolverComps::SolverComps(): _stream(0), _ch_gk(0), _ch_ek(0)
 {
 
 }
@@ -53,13 +53,14 @@ size_t SolverComps::AllocateMemory(models::ModelStatistic& s, cudaStream_t strea
 	return val;
 }
 
-void SolverComps::PrepareSolver(PField<TYPE2_>*  channels_current)
+void SolverComps::PrepareSolver(PField<TYPE_>*  channels_gk, PField<TYPE_>*  channels_ek)
 {
 	int vectorSize = _statistic.nModels * _statistic.nCompts_per_model;
 	if(vectorSize == 0)
 		return;
 
-	_channels_current = channels_current;
+	_ch_gk = channels_gk;
+	_ch_ek = channels_ek;
 
 	//Copy to GPU
 	_hm.Host2Device_Async(_stream);
@@ -93,35 +94,34 @@ __global__ void update_rhs(
 		TYPE_* inject_varying,
 		TYPE2_* ext_curr_gk_ekgk,
 		int2* channelIndex,
-		TYPE2_* ch_curr_gk_ek,
+		TYPE_* ch_curr_gk,
+		TYPE_* ch_curr_ek,
 		unsigned int size,
 		TYPE_ dt)
 {
     unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size){ //For each compartment
-    	TYPE_ hm_local;
-    	TYPE_ rhs_local;
+    	TYPE_ hm_local = ch_curr_gk[idx];
+    	TYPE_ rhs_local = ch_curr_ek[idx];
 
-    	//Find location of A and C in the matrix
-		unsigned int pos_a = idx * nCompt + idx % nCompt;
-
-    	//Injects from basal or varying resources
-    	// add external current
-		rhs_local = inject_basal[idx] + inject_varying[idx] +
-				ext_curr_gk_ekgk[idx].y +
-				vm[idx] * cmByDt[idx] + emByRm[idx];
-    	hm_local = ext_curr_gk_ekgk[idx].x + constants[idx];
-
+    	hm_local = 0;
+    	rhs_local = 0;
 		size_t pos = channelIndex[idx].y;
 		for ( int i = 0; i < channelIndex[idx].x; ++i)
 		{
-			hm_local   += ch_curr_gk_ek[pos].x;
-			rhs_local += ch_curr_gk_ek[pos].x * ch_curr_gk_ek[pos].y;
+			hm_local   += ch_curr_gk[pos];
+			rhs_local += ch_curr_gk[pos] * ch_curr_ek[pos];
 			pos++;
 		}
     	__syncthreads();
-    	hm[pos_a] = hm_local;
-    	rhs[idx] = rhs_local;
+
+    	//Find location of A and C in the matrix
+    	//Injects from basal or varying resources
+    	// add external current
+		unsigned int pos_a = idx * nCompt + idx % nCompt;
+    	hm[pos_a] = hm_local+ ext_curr_gk_ekgk[idx].x + constants[idx];
+    	rhs[idx] = rhs_local + inject_basal[idx] + inject_varying[idx] +
+				ext_curr_gk_ekgk[idx].y + vm[idx] * cmByDt[idx] + emByRm[idx];
     }
 }
 
@@ -153,7 +153,8 @@ double SolverComps::Process()
 			_InjectVarying.device,
 			_ext_curr_gh_gkek.device,
 			_channelIndex.device,
-			_channels_current->device,
+			_ch_gk->device,
+			_ch_ek->device,
 			vectorSize,
 			_statistic.dt);
 
