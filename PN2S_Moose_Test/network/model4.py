@@ -298,7 +298,7 @@ def run_simulator():
 
     create_cells("/net", input_layer)
     
-    if Use_MasterHSolve:
+    if Use_GPU:
         hsolve = moose.HSolve('/net/hsolve')
         hsolve.dt = dt
         hsolve.target = '/net'
@@ -324,8 +324,8 @@ def run_simulator():
 
 INJECT_CURRENT = 0
 dt = 2e-6
-Use_MasterHSolve = True
-# Use_MasterHSolve = False
+Use_GPU = True
+# Use_GPU = False
 Simulation_Time = 1e-1
 IC = 0  # Input connection probability
 P1 = 0  # Exitatory to Excitatory connection probability
@@ -342,7 +342,7 @@ if __name__ == '__main__':
     in_benchmark = False
     if len(sys.argv) > 1:
         in_benchmark = True
-        Use_MasterHSolve = (sys.argv[1] == 'gpu')
+        Use_GPU = (sys.argv[1] == 'gpu')
     else:
         print "Usage: python model.py [gpu|cpu] model_size filename "
         exit()

@@ -233,7 +233,7 @@ def test_elec_alone():
         hsolve.dt = dt
         hsolve.target = '/cpu/cell' + str(i) + '/compt'
 
-    if Use_MasterHSolve:
+    if Use_GPU:
         print "*****************"
         createCells("/gpu")
         moose.useClock(0, '/gpu/##[ISA=Compartment]', 'init')
@@ -278,8 +278,8 @@ def test_elec_alone():
 def run_simulator():
     test_elec_alone()
 
-Use_MasterHSolve = True
-# Use_MasterHSolve = False
+Use_GPU = True
+# Use_GPU = False
 Simulation_Time = 1e-2
 
 number_of_input_cells = 1
