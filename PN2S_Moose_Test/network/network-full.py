@@ -100,14 +100,10 @@ def add_plot(objpath, field, plot):
 
 
 def dump_plots():
-#         print x.vector
-    csvfile = open("plot.csv", 'a')
-#     spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
     pylab.figure(1)
     for x in moose.wildcardFind('/graphs/cpu/#[ISA=Table]'):
         t = numpy.arange(0, len(x.vector), 1)
         pylab.plot(t, x.vector, label=("CPU:%s" % x.name))
-#         spamwriter.writerow(x.vector)
     for x in moose.wildcardFind('/graphs/gpu/#[ISA=Table]'):
         t = numpy.arange(0, len(x.vector), 1)
         pylab.plot(t, x.vector, label=("GPU:%s" % x.name))
@@ -344,27 +340,30 @@ def run_simulator():
     input_layer = make_input_layer()
 
     create_cells("/net", input_layer)
-    for i in range(number_of_ext_cells):
-        add_plot("/net/cell" + str(i) + '/soma','getVm', 'cpu/c' + str(i) + '_soma')
-        add_plot("/net/cell" + str(i) + '/stat','getMean', 'cpu/stat/c' + str(i))
-    for i in range(number_of_inh_cells):
-        add_plot("/net/cell_in" + str(i) + '/soma','getVm', 'cpu/c_in' + str(i) + '_soma')
-        add_plot("/net/cell_in" + str(i) + '/stat','getMean', 'cpu/stat/c_in' + str(i))
 
-    moose.useClock(0, '/##', 'init')
-    moose.useClock(1, '/##', 'process')
-    moose.useClock(8, '/graphs/##', 'process')
+    if Use_CPU:
+        for i in range(number_of_ext_cells):
+            add_plot("/net/cell" + str(i) + '/soma','getVm', 'cpu/c' + str(i) + '_soma')
+            add_plot("/net/cell" + str(i) + '/stat','getMean', 'cpu/stat/c' + str(i))
+        for i in range(number_of_inh_cells):
+            add_plot("/net/cell_in" + str(i) + '/soma','getVm', 'cpu/c_in' + str(i) + '_soma')
+            add_plot("/net/cell_in" + str(i) + '/stat','getMean', 'cpu/stat/c_in' + str(i))
+
+        moose.useClock(0, '/##', 'init')
+        moose.useClock(1, '/##', 'process')
+        moose.useClock(8, '/graphs/##', 'process')
+        moose.reinit()
+        
+        start_time = time.time()
+        moose.start(Simulation_Time)
+        t_exec = time.time() - start_time    
+        print("--- Exec: %s ms" % str(t_exec * dt / Simulation_Time * 1000))
+        
+        dump_plots()
+    
+    
     moose.reinit()
-    
-    start_time = time.time()
-    moose.start(Simulation_Time)
-    t_exec = time.time() - start_time    
-    print("--- Exec: %s ms" % str(t_exec * dt / Simulation_Time * 1000))
-    
-    dump_plots()
-    
-    moose.reinit()
-    if Use_MasterHSolve:
+    if Use_GPU:
         hsolve = moose.HSolve('/net/hsolve')
         hsolve.dt = dt
         hsolve.target = '/net'
@@ -393,8 +392,9 @@ def run_simulator():
    
 
 
-# Use_MasterHSolve = True
-Use_MasterHSolve = False
+Use_CPU = False
+Use_GPU = True
+
 Simulation_Time = 2
 
 number_of_input_cells = 10

@@ -298,7 +298,7 @@ def run_simulator():
     
     input_layer = make_input_layer()
 
-    if Use_MasterHSolve:
+    if Use_GPU:
         create_cells("/gpu", input_layer)
         hsolve = moose.HSolve('/gpu/hsolve')
         hsolve.dt = dt
@@ -327,9 +327,9 @@ def run_simulator():
    
 
 
-Use_MasterHSolve = True
-#Use_MasterHSolve = False
-Simulation_Time = 1e-1
+Use_GPU = True
+# Use_GPU = False
+Simulation_Time = 2
 
 number_of_input_cells = 1
 number_of_ext_cells = 500
