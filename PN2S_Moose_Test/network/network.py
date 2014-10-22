@@ -293,7 +293,7 @@ def run_simulator():
     moose.setClock(0, dt)
     moose.setClock(1, dt)
     moose.setClock(2, dt)
-    moose.setClock(8, dt)
+    moose.setClock(8, 1e-4)
 
     
     input_layer = make_input_layer()
@@ -329,7 +329,7 @@ def run_simulator():
 
 Use_GPU = True
 # Use_GPU = False
-Simulation_Time = 2
+Simulation_Time = 1e-4
 
 number_of_input_cells = 1
 number_of_ext_cells = 500

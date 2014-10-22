@@ -15,9 +15,9 @@ int main()
 {
 	Py_Initialize();
 
-	FILE *file = fopen("network/network.py", "r+");
+	FILE *file = fopen("network/network-full.py", "r+");
 	if(file != NULL) {
-	     PyRun_SimpleFile(file, "network/network.py");
+	     PyRun_SimpleFile(file, "network/network-full.py");
 	}
 
 	fclose(file);

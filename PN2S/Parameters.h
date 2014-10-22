@@ -1,7 +1,7 @@
 #pragma once
 
-//#define ARCH_ 	ARCH_SM35
-#define ARCH_ 	ARCH_SM30
+#define ARCH_ 	ARCH_SM35
+//#define ARCH_ 	ARCH_SM30
 //#define TYPE_	float
 #define TYPE_	double
 
