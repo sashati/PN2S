@@ -70,7 +70,7 @@ void SolverComps::PrepareSolver(PField<TYPE2_>*  channels_current)
 	_InjectBasal.Host2Device_Async(_stream);
 	_Constant.Host2Device_Async(_stream);
 	_ext_curr_gh_gkek.Host2Device_Async(_stream);
-	_threads=dim3(128);
+	_threads=dim3(256);
 	_blocks=dim3( ceil(vectorSize / (double)_threads.x));
 }
 

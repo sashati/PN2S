@@ -397,7 +397,6 @@ Use_CPU = True
 Use_GPU = True
 
 Simulation_Time = 10
-
 number_of_input_cells = 10
 number_of_ext_cells = 100
 number_of_inh_cells = 20
