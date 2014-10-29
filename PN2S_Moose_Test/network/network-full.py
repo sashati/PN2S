@@ -123,24 +123,22 @@ def dump_plots():
     pylab.show()
 
 def save_plots():
+#     cpufile = open("rate.csv", 'a')
+#     cpuwriter = csv.writer(cpufile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+#     first_line = True
+#     for x in moose.wildcardFind('/graphs/cpu/stat/#[ISA=Table]'):
+#         cpuwriter.writerow(x.vector)
+        
     cpufile = open("cpufile.csv", 'a')
     cpuwriter = csv.writer(cpufile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
     first_line = True
     for x in moose.wildcardFind('/graphs/cpu/#[ISA=Table]'):
-        if first_line:
-            t = numpy.arange(0, len(x.vector), 1)
-            cpuwriter.writerow(t)
-            first_line = False
         cpuwriter.writerow(x.vector)
     
     gpufile = open("gpufile.csv", 'a')
     gpuwriter = csv.writer(gpufile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
     first_line = True
     for x in moose.wildcardFind('/graphs/gpu/#[ISA=Table]'):
-        if first_line:
-            t = numpy.arange(0, len(x.vector), 1)
-            gpuwriter.writerow(t)
-            first_line = False
         gpuwriter.writerow(x.vector)
     
     
@@ -328,7 +326,7 @@ def run_simulator():
     moose.setClock(0, dt)
     moose.setClock(1, dt)
     moose.setClock(2, dt)
-    moose.setClock(8, 2e-4)
+    moose.setClock(8, dt)
     
     input_layer = make_input_layer()
 
@@ -373,11 +371,11 @@ def run_simulator():
         
         for i in range(number_of_ext_cells):
             add_plot("/net/cell" + str(i) + '/soma','getVm', 'gpu/c' + str(i) + '_soma')
-            add_plot("/net/cell" + str(i) + '/stat','getMean', 'gpu/stat/c' + str(i))
+#             add_plot("/net/cell" + str(i) + '/stat','getMean', 'gpu/stat/c' + str(i))
         for i in range(number_of_inh_cells):
             add_plot("/net/cell_in" + str(i) + '/soma','getVm', 'gpu/c_in' + str(i) + '_soma')
-            add_plot("/net/cell_in" + str(i) + '/stat','getMean', 'gpu/stat/c_in' + str(i))
-
+#             add_plot("/net/cell_in" + str(i) + '/stat','getMean', 'gpu/stat/c_in' + str(i))
+            
         moose.useClock(0, '/##', 'init')
         moose.useClock(1, '/##', 'process')
         moose.useClock(8, '/graphs/##', 'process')
@@ -398,7 +396,7 @@ def run_simulator():
 Use_CPU = True
 Use_GPU = True
 
-Simulation_Time = 2
+Simulation_Time = 10
 
 number_of_input_cells = 10
 number_of_ext_cells = 100
@@ -411,7 +409,7 @@ P2 = .4  # Exitatory to Inhibitory connection probability
 P3 = .4  # Inhibitory to Excitatory connection probability
 
 INJECT_CURRENT = 0
-dt = 2e-6
+dt = 1e-4
 
 if __name__ == '__main__':
     run_simulator()

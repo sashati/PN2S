@@ -328,8 +328,8 @@ def run_simulator():
 
 
 Use_GPU = True
-# Use_GPU = False
-Simulation_Time = 2
+#Use_GPU = False
+Simulation_Time = 1
 
 number_of_input_cells = 1
 number_of_ext_cells = 500
