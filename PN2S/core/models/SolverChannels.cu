@@ -185,6 +185,7 @@ double SolverChannels::Input()
 double SolverChannels::Process()
 {
 	clock_t	start_time = clock();
+	cudaStreamSynchronize(_stream);
 	if(_m_statistic.nChannels_all > 0)
 	{
 		int smem_size = (sizeof(TYPE_) * _threads.x * _threads.y);
@@ -198,9 +199,9 @@ double SolverChannels::Process()
 				_m_statistic.dt);
 		assert(cudaSuccess == cudaGetLastError());
 	}
-	double elapsed_time = ( std::clock() - start_time );
+
 //	cout << "Channel: " << elapsed_time << endl << flush;
-	return elapsed_time;
+	return ( std::clock() - start_time ) / (double) CLOCKS_PER_SEC;;
 }
 
 double SolverChannels::Output()

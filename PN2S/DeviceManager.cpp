@@ -15,6 +15,9 @@ using namespace pn2s;
 static bool _isInitialized = false;
 extern std::map< unsigned int, pn2s::Location > locationMap;
 
+double _gtime = 0;
+double _ptime = 0;
+int _steps = 0;
 /**
  * Multithread tasks section
  */
@@ -96,9 +99,12 @@ void* process( void* a) {
 
 void DeviceManager::Process()
 {
+	_steps++;
+	clock_t	start_time = clock();
 	for(int i = 0; i< _device.size();i++)
-		_device[i].Process();
+		_gtime+= _device[i].Process();
 
+	_ptime += ( std::clock() - start_time ) / (double) CLOCKS_PER_SEC;
 //	pthread_t threads[16];
 //	for(int i = 0; i< _device.size();i++)
 //		pthread_create(threads + i, NULL,process,&_device[i]);
@@ -112,5 +118,12 @@ void DeviceManager::Close()
 {
 	for(vector<Device>::iterator device = _device.begin(); device != _device.end(); ++device)
 		device->Destroy();
+
+	cout << "Steps:" << _steps << "\tgtime: " << std::setprecision (std::numeric_limits< double >::digits10) <<
+			_gtime*1000.0 <<"\tavg: "<< (double)_gtime*1000.0/(double)_steps <<endl<< flush;
+	cout << "Steps:" << _steps << "\tptime: " << std::setprecision (std::numeric_limits< double >::digits10) <<
+			_ptime*1000.0 <<"\tavg: "<< (double)_ptime*1000.0/(double)_steps <<endl<< flush;
+
+
 }
 

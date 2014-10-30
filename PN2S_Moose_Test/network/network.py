@@ -323,16 +323,16 @@ def run_simulator():
 #     pylab.legend()
 #     pylab.show()
       
-    print("--- Exec: %s ms" % str(t_exec * dt / Simulation_Time * 1000))
+    print "--- Exec time:", str(t_exec * 1000), "\t", str(t_exec * dt / Simulation_Time * 1000) 
    
 
 
 Use_GPU = True
 #Use_GPU = False
-Simulation_Time = 1
+Simulation_Time = 2
 
 number_of_input_cells = 1
-number_of_ext_cells = 500
+number_of_ext_cells = 512
 number_of_inh_cells = 0
 
 
@@ -342,7 +342,10 @@ P2 = 0.2  # Exitatory to Inhibitory connection probability
 P3 = 0.2  # Inhibitory to Excitatory connection probability
 
 INJECT_CURRENT = 0
-dt = 2e-6
+dt = 1e-4
 
 if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        Use_GPU = (sys.argv[1] == 'gpu')
+        
     run_simulator()

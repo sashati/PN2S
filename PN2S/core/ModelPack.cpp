@@ -47,7 +47,6 @@ double ModelPack::Input()
 
 double ModelPack::Process()
 {
-	cudaStreamSynchronize(_st);
 	double t = 0;
 	t += _chanSolver.Process();
 	t += _compsSolver.Process();

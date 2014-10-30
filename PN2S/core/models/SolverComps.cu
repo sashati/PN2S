@@ -130,7 +130,7 @@ double SolverComps::Input()
 	clock_t	start_time = clock();
 	_InjectVarying.Host2Device_Async(_stream);
 	_ext_curr_gh_gkek.Host2Device_Async(_stream);
-	return std::clock() - start_time;
+	return ( std::clock() - start_time ) / (double) CLOCKS_PER_SEC;
 }
 
 
@@ -163,10 +163,8 @@ double SolverComps::Process()
 			_hm.device, _rhs.device, _Vm.device,
 			_statistic.nCompts_per_model, _statistic.nModels, _stream);
 	assert(cudaSuccess == cudaGetLastError());
-	double elapsed_time = ( std::clock() - start_time );
 
-//	cout << "Elasped time is" << elapsed_time << endl << flush;
-	return elapsed_time;
+	return ( std::clock() - start_time ) / (double) CLOCKS_PER_SEC;
 }
 
 
@@ -178,7 +176,7 @@ double SolverComps::Output()
 	_ext_curr_gh_gkek.Fill(0.0);
 	_InjectVarying.Fill(0.0);
 
-	return std::clock() - start_time;
+	return ( std::clock() - start_time ) / (double) CLOCKS_PER_SEC;
 }
 
 /**

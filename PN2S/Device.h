@@ -35,7 +35,7 @@ public:
 	void PrepareSolvers();
 
 	void Destroy();
-	void Process();
+	double Process();
 	void Sync();
 private:
 	vector<ModelPack> _modelPacks;

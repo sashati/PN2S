@@ -102,19 +102,19 @@ void Device::PrepareSolvers(){
 	}
 }
 
-void Device::Process()
+double Device::Process()
 {
 //	sched_param param;
 //	int policy;
 //	pthread_getschedparam(pthread_self(), &policy, &param);
 //	param.sched_priority = sched_get_priority_max(policy);
 //	pthread_setschedparam(pthread_self(), policy, &param);
+	double time = 0;
 
 	uint model_n = _modelPacks.size();
 	if(model_n < 1)
-		return;
+		return time;
 
-	double time = 0;
 	for (vector<ModelPack>::iterator it = _modelPacks.begin(); it != _modelPacks.end(); ++it)
 	{
 		time += it->Input();
@@ -130,6 +130,6 @@ void Device::Process()
 	}
 //	cudaDeviceSynchronize();
 
-//	cout << time << endl;
+	return time;
 }
 

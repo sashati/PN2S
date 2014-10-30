@@ -194,7 +194,8 @@ HSolve::HSolve()
 }
 
 HSolve::~HSolve(){
-	PN2S_Proxy::Close();
+	if( isMasterHSolve_)
+		PN2S_Proxy::Close();
 }
 
 
